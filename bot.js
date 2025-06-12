@@ -1,5 +1,6 @@
 const createTest = require("./createTest");
 const handleBuyService = require("./buyService");
+const handleTopUp = require("./handleTopUp");
 
 require("dotenv").config();
 const TelegramBot = require("node-telegram-bot-api");
@@ -7,7 +8,6 @@ const TelegramBot = require("node-telegram-bot-api");
 const TOKEN = process.env.BOT_TOKEN;
 const bot = new TelegramBot(TOKEN, { polling: true });
 
-// 📩 پیام‌های متنی
 bot.on("message", (msg) => {
   const chatId = msg.chat.id;
 
@@ -47,5 +47,8 @@ bot.on("message", (msg) => {
   // 🛒 خرید سرویس
   if (msg.text === "🛒 خرید سرویس") {
     handleBuyService(bot, chatId);
+  }
+    if (msg.text === "💰 افزایش موجودی") {
+    handleTopUp(bot, chatId);
   }
 });
