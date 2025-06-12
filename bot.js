@@ -1,11 +1,13 @@
 const createTest = require("./createTest");
+const handleBuyService = require("./handleBuyService");
+
 require("dotenv").config();
 const TelegramBot = require("node-telegram-bot-api");
 
 const TOKEN = process.env.BOT_TOKEN;
-
 const bot = new TelegramBot(TOKEN, { polling: true });
 
+// 📩 پیام‌های متنی
 bot.on("message", (msg) => {
   const chatId = msg.chat.id;
 
@@ -36,10 +38,14 @@ bot.on("message", (msg) => {
     bot.sendMessage(chatId, welcomeMessage, keyboard);
   }
 
-
+  // 🎁 سرویس تست
   if (msg.text === "🎁 سرویس تست") {
     const userId = msg.from.id;
     createTest(bot, chatId, userId, process.env.VPN_API_KEY);
   }
 
+  // 🛒 خرید سرویس
+  if (msg.text === "🛒 خرید سرویس") {
+    handleBuyService(bot, chatId);
+  }
 });
