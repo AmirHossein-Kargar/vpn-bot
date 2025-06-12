@@ -37,6 +37,8 @@ bot.onText(/\/create_test/, async (msg) => {
     if (data.ok) {
       usedUsers.add(userId);
       const result = data.result;
+        const randomTakLink = result.tak_links[Math.floor(Math.random() * data.result.tak_links.length)];
+        const locationName = decodeURIComponent(randomTakLink.split("#")[1] || "ناشناخته");
 
       const message = `🎉 سرویس تست 1 روزه شما با موفقیت فعال شد.
 
@@ -46,8 +48,9 @@ bot.onText(/\/create_test/, async (msg) => {
 🔗 لینک هوشمند اتصال (شامل تمام لوکیشن‌ها):
 ${result.sub_link}
 
-👈 لینک تکی از لوکیشن پیشنهادی : ( 🇮🇹 Italy 🚀 TCP-TLS )
-${result.tak_links[0]}
+👈 لینک تکی از لوکیشن پیشنهادی : (${locationName})
+${randomTakLink}
+
 
 ⚠️ کانکشن‌های ما از نوع هوشمند (Subscription) می‌باشد و برای اتصال به لینک هوشمند می‌بایست راهنمای زیر را مشاهده کنید.`;
 
