@@ -28,11 +28,10 @@ bot.on("message", (msg) => {
     bot.sendMessage(chatId, welcomeMessage, keyboard);
   }
 
-  // اینجا میتونی با msg.text دکمه‌ها رو هندل کنی
+
   if (msg.text === "🎁 سرویس تست") {
     const userId = msg.from.id;
     createTest(bot, chatId, userId, process.env.VPN_API_KEY);
   }
 
-  // سایر هندلرها...
 });
