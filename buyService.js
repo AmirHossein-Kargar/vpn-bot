@@ -9,7 +9,7 @@ function handleBuyService(bot, chatId) {
     return [
       {
         text: `${plan.name} - ${plan.price.toLocaleString()} تومان`,
-        callback_data: `plan_${id}`,
+        callback_data: `plan_${plan.id}`,  // اینجا اصلاح شد
       },
     ];
   });
