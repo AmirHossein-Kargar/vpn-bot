@@ -5,11 +5,11 @@ function handleBuyService(bot, chatId) {
 
 🔻 یکی از پلن‌های موجود را انتخاب کنید :`;
 
-  const inlineKeyboard = plans.map((plan, index) => {
+  const inlineKeyboard = plans.map((plan) => {
     return [
       {
-        text: `${plan.label} - ${plan.price.toLocaleString()} تومان`,
-        callback_data: `plan_${index}`,
+        text: `${plan.name} - ${plan.price.toLocaleString()} تومان`,
+        callback_data: `plan_${id}`,
       },
     ];
   });
