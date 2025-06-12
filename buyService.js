@@ -1,4 +1,4 @@
-const plans = require("../plans");
+const plans = require("./plans");
 
 function handleBuyService(bot, chatId) {
   const message = `🛒 در 2 مرحله سرویس اختصاصی بگیرید ..
