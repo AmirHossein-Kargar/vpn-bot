@@ -1,5 +1,5 @@
 const createTest = require("./createTest");
-const handleBuyService = require("./actions/buyService");
+const handleBuyService = require("./buyService");
 
 require("dotenv").config();
 const TelegramBot = require("node-telegram-bot-api");
