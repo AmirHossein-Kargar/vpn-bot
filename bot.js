@@ -35,11 +35,23 @@ bot.onText(/\/create_test/, async (msg) => {
     const data = res.data;
 
     if (data.ok) {
-      usedUsers.add(userId)
-      bot.sendMessage(
-        chatId,
-        `✅ سرویس تست ساخته شد!\n🔗 لینک: ${data.result.link}`
-      );
+      usedUsers.add(userId);
+      const result = data.result;
+
+      const message = `🎉 سرویس تست 1 روزه شما با موفقیت فعال شد.
+
+👤 حداکثر اتصال: 1 کاربر
+📥 مصرف مجاز: 2 گیگابایت
+
+🔗 لینک هوشمند اتصال (شامل تمام لوکیشن‌ها):
+${result.sub_link}
+
+👈 لینک تکی از لوکیشن پیشنهادی : ( 🇮🇹 Italy 🚀 TCP-TLS )
+${result.tak_links[0]}
+
+⚠️ کانکشن‌های ما از نوع هوشمند (Subscription) می‌باشد و برای اتصال به لینک هوشمند می‌بایست راهنمای زیر را مشاهده کنید.`;
+
+      bot.sendMessage(chatId, message);
     } else {
       bot.sendMessage(chatId, `❌ خطا: ${data.error}`);
     }
