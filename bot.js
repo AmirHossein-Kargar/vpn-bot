@@ -7,8 +7,16 @@ const VPN_API_KEY = process.env.VPN_API_KEY;
 
 const bot = new TelegramBot(TOKEN, { polling: true });
 
+const usedUsers = new Set();
+
 bot.onText(/\/create_test/, async (msg) => {
   const chatId = msg.chat.id;
+  const userId = msg.from.id;
+
+  if (usedUsers.has(userId)) {
+    bot.sendMessage(chatId, "⚠️ شما قبلاً یک بار سرویس تست دریافت کرده‌اید.");
+    return;
+  }
 
   try {
     const formData = new URLSearchParams();
@@ -19,7 +27,7 @@ bot.onText(/\/create_test/, async (msg) => {
       {
         headers: {
           Authorization: `Bearer ${VPN_API_KEY}`,
-          "Content-Type": "application/json",
+          "Content-Type": "application/x-www-form-urlencoded",
         },
       }
     );
@@ -27,6 +35,7 @@ bot.onText(/\/create_test/, async (msg) => {
     const data = res.data;
 
     if (data.ok) {
+      usedUsers.add(userId)
       bot.sendMessage(
         chatId,
         `✅ سرویس تست ساخته شد!\n🔗 لینک: ${data.result.link}`
