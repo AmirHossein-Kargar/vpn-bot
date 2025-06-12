@@ -1,8 +1,22 @@
+const fs = require("fs");
+const path = require("path");
 const axios = require("axios");
 
-const usedUsers = new Set();
+const FILE_PATH = path.join(__dirname, "usedTestUsers.json");
+
+function readUsedUsers() {
+  if (!fs.existsSync(FILE_PATH)) return new Set();
+  const data = JSON.parse(fs.readFileSync(FILE_PATH, "utf-8"));
+  return new Set(data);
+}
+
+function saveUsedUsers(set) {
+  fs.writeFileSync(FILE_PATH, JSON.stringify([...set]), "utf-8");
+}
 
 async function createTest(bot, chatId, userId, VPN_API_KEY) {
+  const usedUsers = readUsedUsers();
+
   if (usedUsers.has(userId)) {
     bot.sendMessage(chatId, "⚠️ شما قبلاً یک بار سرویس تست دریافت کرده‌اید.");
     return;
@@ -27,6 +41,8 @@ async function createTest(bot, chatId, userId, VPN_API_KEY) {
 
     if (data.ok) {
       usedUsers.add(userId);
+      saveUsedUsers(usedUsers);
+
       const result = data.result;
       const randomTakLink = result.tak_links[Math.floor(Math.random() * result.tak_links.length)];
       const locationName = decodeURIComponent(randomTakLink.split("#")[1] || "ناشناخته");
