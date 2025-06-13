@@ -1,11 +1,11 @@
 const createTest = require("./createTest");
 const handleBuyService = require("./buyService");
 const handleTopUp = require("./handleTopUp");
-const handleProfile = require("./handleProfile")
+const handleProfile = require("./handleProfile");
+const User = require("./models/User");
 
-
-const connectDB = require("./db")
-connectDB()
+const connectDB = require("./db");
+connectDB();
 
 require("dotenv").config();
 const TelegramBot = require("node-telegram-bot-api");
@@ -13,8 +13,28 @@ const TelegramBot = require("node-telegram-bot-api");
 const TOKEN = process.env.BOT_TOKEN;
 const bot = new TelegramBot(TOKEN, { polling: true });
 
-bot.on("message", (msg) => {
+bot.on("message", async (msg) => {
   const chatId = msg.chat.id;
+
+  if (msg.contact) {
+    const phone = msg.contact.phone_number;
+    const telegramId = msg.from.id;
+
+    try {
+      await User.findOneAndUpdate(
+        { telegramId },
+        { phoneNumber: phone },
+        { new: true }
+      );
+      bot.sendMessage(
+        chatId,
+        "✅ شماره تلفن شما با موفقیت ذخیره شد.\nدوباره روی «👤 پروفایل من» کلیک کنید."
+      );
+    } catch (error) {
+      bot.sendMessage(chatId, "❌ مشکلی در ذخیره شماره پیش آمد.");
+    }
+    return;
+  }
 
   if (msg.text === "/start") {
     const welcomeMessage = `🤖 به ربات سویفت خوش آمدید...
@@ -43,7 +63,6 @@ bot.on("message", (msg) => {
     bot.sendMessage(chatId, welcomeMessage, keyboard);
   }
 
-  // 🎁 سرویس تست
   if (msg.text === "🎁 سرویس تست") {
     const userId = msg.from.id;
     createTest(bot, chatId, userId, process.env.VPN_API_KEY);
@@ -52,11 +71,11 @@ bot.on("message", (msg) => {
   if (msg.text === "🛒 خرید سرویس") {
     handleBuyService(bot, chatId);
   }
-    if (msg.text === "💰 افزایش موجودی") {
+  if (msg.text === "💰 افزایش موجودی") {
     handleTopUp(bot, chatId);
   }
-  if(msg.text === "👤 پروفایل من") {
-    const userId = msg.from.id
-      handleProfile(bot, chatId, userId)
+  if (msg.text === "👤 پروفایل من") {
+    const userId = msg.from.id;
+    handleProfile(bot, chatId, userId);
   }
 });
