@@ -1,6 +1,11 @@
 const createTest = require("./createTest");
 const handleBuyService = require("./buyService");
 const handleTopUp = require("./handleTopUp");
+const handleProfile = require("./handleProfile")
+
+
+const connectDB = require("./db")
+connectDB()
 
 require("dotenv").config();
 const TelegramBot = require("node-telegram-bot-api");
@@ -44,11 +49,14 @@ bot.on("message", (msg) => {
     createTest(bot, chatId, userId, process.env.VPN_API_KEY);
   }
 
-  // 🛒 خرید سرویس
   if (msg.text === "🛒 خرید سرویس") {
     handleBuyService(bot, chatId);
   }
     if (msg.text === "💰 افزایش موجودی") {
     handleTopUp(bot, chatId);
+  }
+  if(msg.text === "👤 پروفایل من") {
+    const userId = msg.from.id
+      handleProfile(bot, chatId, userId)
   }
 });
