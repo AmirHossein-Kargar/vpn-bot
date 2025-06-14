@@ -4,6 +4,20 @@ const handleTopUp = require("./handleTopUp");
 const handleProfile = require("./handleProfile");
 const User = require("./models/User");
 
+    const keyboard = {
+      reply_markup: {
+        keyboard: [
+          ["🛒 خرید سرویس", "💰 افزایش موجودی"],
+          ["📦 سرویس‌های من", "👤 پروفایل من"],
+          ["🎁 سرویس تست", "📖 راهنما"],
+          ["🛠 پشتیبانی"],
+        ],
+        resize_keyboard: true,
+        one_time_keyboard: false,
+      },
+    };
+
+
 const connectDB = require("./db");
 connectDB();
 
@@ -33,7 +47,8 @@ bot.on("message", async (msg) => {
       );
       bot.sendMessage(
         chatId,
-        "✅ شماره تلفن شما با موفقیت ذخیره شد.\nدوباره روی «👤 پروفایل من» کلیک کنید."
+        "✅ شماره تلفن شما با موفقیت ذخیره شد.\nدوباره روی «👤 پروفایل من» کلیک کنید.",
+        keyboard
       );
     } catch (error) {
       bot.sendMessage(chatId, "❌ مشکلی در ذخیره شماره پیش آمد.");
@@ -52,18 +67,6 @@ bot.on("message", async (msg) => {
 
 🔻 از این پایین یک گزینه رو انتخاب کن.️️`;
 
-    const keyboard = {
-      reply_markup: {
-        keyboard: [
-          ["🛒 خرید سرویس", "💰 افزایش موجودی"],
-          ["📦 سرویس‌های من", "👤 پروفایل من"],
-          ["🎁 سرویس تست", "📖 راهنما"],
-          ["🛠 پشتیبانی"],
-        ],
-        resize_keyboard: true,
-        one_time_keyboard: false,
-      },
-    };
 
     bot.sendMessage(chatId, welcomeMessage, keyboard);
   }
