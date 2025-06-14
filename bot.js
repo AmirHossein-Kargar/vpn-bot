@@ -17,13 +17,18 @@ bot.on("message", async (msg) => {
   const chatId = msg.chat.id;
 
   if (msg.contact) {
-    const phone = msg.contact.phone_number;
+    const phoneNumber = msg.contact.phone_number;
     const telegramId = msg.from.id;
+
+    let formattedPhone = phoneNumber;
+    if (formattedPhone.startsWith("+98")) {
+      formattedPhone = formattedPhone.replace("+98", "0");
+    }
 
     try {
       await User.findOneAndUpdate(
         { telegramId },
-        { phoneNumber: phone },
+        { phoneNumber: formattedPhone },
         { new: true }
       );
       bot.sendMessage(
