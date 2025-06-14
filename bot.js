@@ -48,7 +48,13 @@ bot.on("message", async (msg) => {
       bot.sendMessage(
         chatId,
         "✅ شماره تلفن شما با موفقیت ذخیره شد.\nدوباره روی «👤 پروفایل من» کلیک کنید.",
-        keyboard
+{
+  reply_markup: {
+    remove_keyboard: true
+  }
+}.then(() => {
+  bot.sendMessage(chatId, "🔻 لطفاً یک گزینه را انتخاب کنید:", keyboard)
+})
       );
     } catch (error) {
       bot.sendMessage(chatId, "❌ مشکلی در ذخیره شماره پیش آمد.");
