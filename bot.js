@@ -4,19 +4,18 @@ const handleTopUp = require("./handleTopUp");
 const handleProfile = require("./handleProfile");
 const User = require("./models/User");
 
-    const keyboard = {
-      reply_markup: {
-        keyboard: [
-          ["🛒 خرید سرویس", "💰 افزایش موجودی"],
-          ["📦 سرویس‌های من", "👤 پروفایل من"],
-          ["🎁 سرویس تست", "📖 راهنما"],
-          ["🛠 پشتیبانی"],
-        ],
-        resize_keyboard: true,
-        one_time_keyboard: false,
-      },
-    };
-
+const keyboard = {
+  reply_markup: {
+    keyboard: [
+      ["🛒 خرید سرویس", "💰 افزایش موجودی"],
+      ["📦 سرویس‌های من", "👤 پروفایل من"],
+      ["🎁 سرویس تست", "📖 راهنما"],
+      ["🛠 پشتیبانی"],
+    ],
+    resize_keyboard: true,
+    one_time_keyboard: false,
+  },
+};
 
 const connectDB = require("./db");
 connectDB();
@@ -40,23 +39,33 @@ bot.on("message", async (msg) => {
     }
 
     try {
-      await User.findOneAndUpdate(
-        { telegramId },
-        { phoneNumber: formattedPhone },
-        { new: true }
-      );
-      bot.sendMessage(
+      let user = await User.findOne({ telegramId });
+      
+      if (!user) {
+        user = await User.create({
+          telegramId,
+          phoneNumber: formattedPhone
+        });
+      } else {
+        user = await User.findOneAndUpdate(
+          { telegramId },
+          { phoneNumber: formattedPhone },
+          { new: true }
+        );
+      }
+
+      await bot.sendMessage(
         chatId,
         "✅ شماره تلفن شما با موفقیت ذخیره شد.\nدوباره روی «👤 پروفایل من» کلیک کنید.",
-{
-  reply_markup: {
-    remove_keyboard: true
-  }
-}.then(() => {
-  bot.sendMessage(chatId, "🔻 لطفاً یک گزینه را انتخاب کنید:", keyboard)
-})
+        {
+          reply_markup: {
+            remove_keyboard: true,
+          },
+        }
       );
+      bot.sendMessage(chatId, "🔻 لطفاً یک گزینه را انتخاب کنید:", keyboard);
     } catch (error) {
+      console.error("Error saving phone number:", error);
       bot.sendMessage(chatId, "❌ مشکلی در ذخیره شماره پیش آمد.");
     }
     return;
@@ -72,7 +81,6 @@ bot.on("message", async (msg) => {
 🌐 قابل استفاده بر روی تمام اینترنت‌ها
 
 🔻 از این پایین یک گزینه رو انتخاب کن.️️`;
-
 
     bot.sendMessage(chatId, welcomeMessage, keyboard);
   }

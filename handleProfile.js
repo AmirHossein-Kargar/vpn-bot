@@ -4,10 +4,7 @@ const moment = require("moment-jalaali");
 module.exports = async function handleProfile(bot, chatId, userId) {
   try {
     let user = await User.findOne({ telegramId: userId });
-    if (!user) {
-      user = await User.create({ telegramId: userId });
-    }
-    if (!user.phoneNumber) {
+    if (!user || !user.phoneNumber) {
       const requestContactKeyboard = {
         reply_markup: {
           keyboard: [
