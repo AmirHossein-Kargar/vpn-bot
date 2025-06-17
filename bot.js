@@ -57,10 +57,10 @@ bot.on("contact", async (msg) => {
     if (!user) {
       await User.create({
         telegramId: userId,
-        phoneNumber: phoneNumber,
         balance: 0,
         successfulPayments: 0,
         totalServices: 0,
+        phoneNumber: phoneNumber,
       });
     } else if (!user.phoneNumber) {
       (user.phoneNumber = phoneNumber), await user.save();
@@ -70,7 +70,7 @@ bot.on("contact", async (msg) => {
         remove_keyboard: true,
       },
     });
-    await bot.sendMessage(chatId, "🔻 از منوی زیر یکی رو انتخاب کن:", keyboard);
+    await bot.sendMessage(chatId, keyboard);
     const handleProfile = require("./handleProfile");
     handleProfile(bot, chatId, userId);
   } catch (error) {
