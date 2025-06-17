@@ -1,9 +1,11 @@
+// spell-checker: disable
 const createTest = require("./createTest");
 const handleBuyService = require("./buyService");
 const handleTopUp = require("./handleTopUp");
 const handleProfile = require("./handleProfile");
 const User = require("./models/User");
 
+// * Keyboard
 const keyboard = {
   reply_markup: {
     keyboard: [
@@ -28,49 +30,6 @@ const bot = new TelegramBot(TOKEN, { polling: true });
 
 bot.on("message", async (msg) => {
   const chatId = msg.chat.id;
-
-  if (msg.contact) {
-    const phoneNumber = msg.contact.phone_number;
-    const telegramId = msg.from.id;
-
-    let formattedPhone = phoneNumber;
-    if (formattedPhone.startsWith("+98")) {
-      formattedPhone = formattedPhone.replace("+98", "0");
-    }
-
-    try {
-      let user = await User.findOne({ telegramId });
-      
-      if (!user) {
-        user = await User.create({
-          telegramId,
-          phoneNumber: formattedPhone
-        });
-      } else {
-        user = await User.findOneAndUpdate(
-          { telegramId },
-          { phoneNumber: formattedPhone },
-          { new: true }
-        );
-      }
-
-      await bot.sendMessage(
-        chatId,
-        "✅ شماره تلفن شما با موفقیت ذخیره شد.\nدوباره روی «👤 پروفایل من» کلیک کنید.",
-        {
-          reply_markup: {
-            remove_keyboard: true,
-          },
-        }
-      );
-      bot.sendMessage(chatId, "🔻 لطفاً یک گزینه را انتخاب کنید:", keyboard);
-    } catch (error) {
-      console.error("Error saving phone number:", error);
-      bot.sendMessage(chatId, "❌ مشکلی در ذخیره شماره پیش آمد.");
-    }
-    return;
-  }
-
   if (msg.text === "/start") {
     const welcomeMessage = `🤖 به ربات سویفت خوش آمدید...
 
