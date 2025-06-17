@@ -59,4 +59,26 @@ bot.on("message", async (msg) => {
     const userId = msg.from.id;
     handleProfile(bot, chatId, userId);
   }
+  bot.on("contact", async (msg) => {
+    const chatId = msg.chat.id;
+    const userId = msg.from.id;
+    const phoneNumber = msg.contact.phone_number;
+    try {
+      let user = await User.findOne({ telegramId: userId });
+      if (!user) {
+        await User.create({
+          telegramId: userId,
+          phoneNumber: phoneNumber,
+          balance: 0,
+          successfulPayments: 0,
+          totalServices: 0,
+        });
+      } else if (!user.phoneNumber) {
+        (user.phoneNumber = phoneNumber), await User.save();
+      }
+      bot.sendMessage(chatId, "✅ شماره تلفن شما با موفقیت ثبت شد.");
+    } catch (error) {
+      bot.sendMessage(chatId, "❌ مشکلی در ذخیره شماره تلفن رخ داد.");
+    }
+  });
 });

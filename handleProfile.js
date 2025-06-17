@@ -1,18 +1,40 @@
 // spell-checker: disable
-// Disable unknown word warning for moment-jalaali
 const moment = require("moment-jalaali");
 const User = require("./models/User");
-
 
 moment.loadPersian({ usePersianDigits: false, dialect: "persian-modern" });
 
 module.exports = async function handleProfile(bot, chatId, userId) {
   try {
-    let user = await User.findOne({ telegramId: userId });
+    const user = await User.findOne({ telegramId: userId });
 
-    const phone = user?.phoneNumber?.startsWith("+98")
+    if (!user || !user.phoneNumber) {
+      const requestContactKeyboard = {
+        reply_markup: {
+          keyboard: [
+            [
+              {
+                text: "📞 ارسال شماره من",
+                request_contact: true,
+              },
+            ],
+          ],
+          resize_keyboard: true,
+          one_time_keyboard: true,
+        },
+      };
+
+      bot.sendMessage(
+        chatId,
+        "📞 لطفاً شماره تلفن خود را ارسال کنید:",
+        requestContactKeyboard
+      );
+      return;
+    }
+
+    const phone = user.phoneNumber.startsWith("+98")
       ? user.phoneNumber.replace("+98", "0")
-      : user?.phoneNumber || "ثبت نشده";
+      : user.phoneNumber;
 
     const formattedDate = moment(user.createdAt).format("jYYYY/jM/jD");
 
