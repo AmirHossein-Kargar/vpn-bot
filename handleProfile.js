@@ -1,8 +1,10 @@
 // spell-checker: disable
 // Disable unknown word warning for moment-jalaali
-moment.loadPersian({ usePersianDigits: false, dialect: "persian-modern" });
-const User = require("./models/User");
 const moment = require("moment-jalaali");
+const User = require("./models/User");
+
+
+moment.loadPersian({ usePersianDigits: false, dialect: "persian-modern" });
 
 module.exports = async function handleProfile(bot, chatId, userId) {
   try {
