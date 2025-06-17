@@ -4,20 +4,7 @@ const handleBuyService = require("./buyService");
 const handleTopUp = require("./handleTopUp");
 const handleProfile = require("./handleProfile");
 const User = require("./models/User");
-
-// * Keyboard
-const keyboard = {
-  reply_markup: {
-    keyboard: [
-      ["🛒 خرید سرویس", "💰 افزایش موجودی"],
-      ["📦 سرویس‌های من", "👤 پروفایل من"],
-      ["🎁 سرویس تست", "📖 راهنما"],
-      ["🛠 پشتیبانی"],
-    ],
-    resize_keyboard: true,
-    one_time_keyboard: false,
-  },
-};
+const keyboard = require("./keyBoard");
 
 const connectDB = require("./db");
 connectDB();
@@ -59,26 +46,34 @@ bot.on("message", async (msg) => {
     const userId = msg.from.id;
     handleProfile(bot, chatId, userId);
   }
-  bot.on("contact", async (msg) => {
-    const chatId = msg.chat.id;
-    const userId = msg.from.id;
-    const phoneNumber = msg.contact.phone_number;
-    try {
-      let user = await User.findOne({ telegramId: userId });
-      if (!user) {
-        await User.create({
-          telegramId: userId,
-          phoneNumber: phoneNumber,
-          balance: 0,
-          successfulPayments: 0,
-          totalServices: 0,
-        });
-      } else if (!user.phoneNumber) {
-        (user.phoneNumber = phoneNumber), await User.save();
-      }
-      bot.sendMessage(chatId, "✅ شماره تلفن شما با موفقیت ثبت شد.");
-    } catch (error) {
-      bot.sendMessage(chatId, "❌ مشکلی در ذخیره شماره تلفن رخ داد.");
+});
+
+bot.on("contact", async (msg) => {
+  const chatId = msg.chat.id;
+  const userId = msg.from.id;
+  const phoneNumber = msg.contact.phone_number;
+  try {
+    let user = await User.findOne({ telegramId: userId });
+    if (!user) {
+      await User.create({
+        telegramId: userId,
+        phoneNumber: phoneNumber,
+        balance: 0,
+        successfulPayments: 0,
+        totalServices: 0,
+      });
+    } else if (!user.phoneNumber) {
+      (user.phoneNumber = phoneNumber), await user.save();
     }
-  });
+    bot.sendMessage(chatId, "✅ شماره تلفن شما با موفقیت ثبت شد.", {
+      reply_markup: {
+        remove_keyboard: true,
+      },
+    });
+    await bot.sendMessage(chatId, "🔻 از منوی زیر یکی رو انتخاب کن:", keyboard);
+    const handleProfile = require("./handleProfile");
+    handleProfile(bot, chatId, userId);
+  } catch (error) {
+    bot.sendMessage(chatId, "❌ مشکلی در ذخیره شماره تلفن رخ داد.");
+  }
 });
