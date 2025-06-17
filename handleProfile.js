@@ -41,8 +41,8 @@ module.exports = async function handleProfile(bot, chatId, userId) {
     const message = `👤 شناسه کاربری: <code>${user.telegramId}</code>
     
 💰 موجودی: <code>${user.balance.toLocaleString()}</code> تومان
-🟢 پرداخت های موفق: <code>${user.successfulPayments}</code> عدد
-📦 کل سرویس ها: <code>${user.totalServices}</code> عدد
+🟢 پرداخت های موفق: <code>${user.successfulPayments} عدد</code>
+📦 کل سرویس ها: <code>${user.totalServices} عدد</code>
 📞 شماره تلفن: <code>${phone}</code>
 🕒 تاریخ عضویت: ${formattedDate}`;
 
