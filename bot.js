@@ -65,12 +65,8 @@ bot.on("contact", async (msg) => {
     } else if (!user.phoneNumber) {
       (user.phoneNumber = phoneNumber), await user.save();
     }
-    bot.sendMessage(chatId, "✅ شماره تلفن شما با موفقیت ثبت شد.", {
-      reply_markup: {
-        remove_keyboard: true,
-      },
-    });
-    await bot.sendMessage(chatId, keyboard);
+    bot.sendMessage(chatId, "✅ شماره تلفن شما با موفقیت ثبت شد.", keyboard);
+    // await bot.sendMessage(chatId, keyboard);
     const handleProfile = require("./handleProfile");
     handleProfile(bot, chatId, userId);
   } catch (error) {
