@@ -3,6 +3,7 @@ const createTest = require("./createTest");
 const handleBuyService = require("./buyService");
 const handleTopUp = require("./handleTopUp");
 const handleProfile = require("./handleProfile");
+const handleGuide = require("./handleGuide")
 const User = require("./models/User");
 const keyboard = require("./keyBoard");
 
@@ -45,6 +46,9 @@ bot.on("message", async (msg) => {
   if (msg.text === "👤 پروفایل من") {
     const userId = msg.from.id;
     handleProfile(bot, chatId, userId);
+  }
+  if(msg.text === "📖 راهنما") {
+    handleGuide(bot, chatId)
   }
 });
 
