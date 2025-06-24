@@ -3,7 +3,7 @@ const createTest = require("./createTest");
 const handleBuyService = require("./buyService");
 const handleTopUp = require("./handleTopUp");
 const handleProfile = require("./handleProfile");
-const handleGuide = require("./handleGuide")
+const handleGuide = require("./handleGuide");
 const User = require("./models/User");
 const keyboard = require("./keyBoard");
 
@@ -47,8 +47,8 @@ bot.on("message", async (msg) => {
     const userId = msg.from.id;
     handleProfile(bot, chatId, userId);
   }
-  if(msg.text === "📖 راهنما") {
-    handleGuide(bot, chatId)
+  if (msg.text === "📖 راهنما") {
+    handleGuide(bot, chatId);
   }
 });
 
@@ -56,6 +56,7 @@ bot.on("contact", async (msg) => {
   const chatId = msg.chat.id;
   const userId = msg.from.id;
   const phoneNumber = msg.contact.phone_number;
+
   try {
     let user = await User.findOne({ telegramId: userId });
     if (!user) {
@@ -77,3 +78,7 @@ bot.on("contact", async (msg) => {
     bot.sendMessage(chatId, "❌ مشکلی در ذخیره شماره تلفن رخ داد.");
   }
 });
+
+bot.on("callback_query", async(query) => {
+ await handleCallbackQuery(bot, query);
+})
