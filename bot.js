@@ -6,6 +6,7 @@ const handleProfile = require("./handleProfile");
 const handleGuide = require("./handleGuide");
 const User = require("./models/User");
 const keyboard = require("./keyBoard");
+const handleCallbackQuery = require("./handlers/callbackHandlers")
 
 const connectDB = require("./db");
 connectDB();
