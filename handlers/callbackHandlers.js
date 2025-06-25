@@ -1,6 +1,6 @@
 const showPaymentStep = require("../showPaymentStep");
 const sessions = require("../sessions");
-const handleTopUp = require("./handleTopUp");
+const handleTopUp = require("../handleTopUp");
 
 module.exports = async function handleCallbackQuery(bot, query) {
   const data = query.data;
