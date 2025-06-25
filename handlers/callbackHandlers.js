@@ -29,4 +29,5 @@ module.exports = async function handleCallbackQuery(bot, query) {
         "💠 لطفاً مبلغ مورد نظر را برای پرداخت با تون وارد کنید (بین ۵۰,۰۰۰ تا ۵,۰۰۰,۰۰۰ تومان):",
     });
   }
+  
 };

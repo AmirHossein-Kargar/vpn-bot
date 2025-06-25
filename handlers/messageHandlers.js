@@ -5,7 +5,7 @@ module.exports = async function handleMessage(bot, message) {
     const chatId = message.chat.id
     const session = sessions[chatId]
 
-    if(session === "waiting_for_ton_amount") {
+    if(session?.step === "waiting_for_ton_amount") {
         return handleTonAmount(bot, message)
     }
 }
