@@ -7,6 +7,7 @@ const handleGuide = require("./handleGuide");
 const User = require("./models/User");
 const keyboard = require("./keyBoard");
 const handleCallbackQuery = require("./handlers/callbackHandlers")
+const handleMessage = require("./handlers/messageHandlers")
 
 const connectDB = require("./db");
 connectDB();
@@ -51,6 +52,8 @@ bot.on("message", async (msg) => {
   if (msg.text === "📖 راهنما") {
     handleGuide(bot, chatId);
   }
+
+  handleMessage(bot, msg)
 });
 
 bot.on("contact", async (msg) => {

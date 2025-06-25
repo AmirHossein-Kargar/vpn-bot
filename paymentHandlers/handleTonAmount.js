@@ -13,4 +13,4 @@ module.exports = async function handleTonAmount(bot, msg) {
     chatId,
     `✅ مبلغ ${amount.toLocaleString()} تومان ثبت شد و فاکتور در حال ساخت است.`
   );
-};
+}; 
