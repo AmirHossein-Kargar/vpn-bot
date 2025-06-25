@@ -1,12 +1,11 @@
-// plans.js
-
+// * Define a list of config plans
 const plans = [
   {
-    id: "plan15",
-    name: "☁️ 15 گیگ - 30 روزه",
-    days: 30,
-    gig: 15,
-    price: 48000,
+    id: "plan15", // ? Unique identifier for the plan
+    name: "☁️ 15 گیگ - 30 روزه",  //? Name of the plan
+    days: 30, // ? Duration of the plan in days
+    gig: 15, // ? Data limit in gigabytes
+    price: 48000, // ? Price of the plan in Toman
   },
   {
     id: "plan30",
