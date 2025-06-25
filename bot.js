@@ -20,6 +20,11 @@ const bot = new TelegramBot(TOKEN, { polling: true });
 
 bot.on("message", async (msg) => {
   const chatId = msg.chat.id;
+
+if (session && session.step === "waiting_for_ton_amount") {
+    return handleMessage(bot, msg);
+  }
+
   if (msg.text === "/start") {
     const welcomeMessage = `🤖 به ربات سویفت خوش آمدید...
 
@@ -53,7 +58,6 @@ bot.on("message", async (msg) => {
     handleGuide(bot, chatId);
   }
 
-  handleMessage(bot, msg)
 });
 
 bot.on("contact", async (msg) => {
