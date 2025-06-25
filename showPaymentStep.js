@@ -1,5 +1,5 @@
 const sessions = require("./sessions")
-const handleTopUp = require("./handleTopUp")
+// const handleTopUp = require("./handleTopUp")
 
 async function showPaymentStep(bot, chatId, messageId, {stepKey, message}) {
     await bot.deleteMessage(chatId, messageId)
