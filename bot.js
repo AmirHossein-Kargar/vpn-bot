@@ -8,6 +8,7 @@ const User = require("./models/User");
 const keyboard = require("./keyBoard");
 const handleCallbackQuery = require("./handlers/callbackHandlers")
 const handleMessage = require("./handlers/messageHandlers")
+const session = require("./sessions")
 
 const connectDB = require("./db");
 connectDB();
