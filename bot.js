@@ -8,7 +8,6 @@ const User = require("./models/User");
 const keyboard = require("./keyBoard");
 const handleCallbackQuery = require("./handlers/callbackHandlers")
 const handleMessage = require("./handlers/messageHandlers")
-const session = require("./sessions")
 
 const connectDB = require("./db");
 connectDB();
@@ -22,9 +21,6 @@ const bot = new TelegramBot(TOKEN, { polling: true });
 bot.on("message", async (msg) => {
   const chatId = msg.chat.id;
 
-if (session && session.step === "waiting_for_ton_amount") {
-    return handleMessage(bot, msg);
-  }
 
   if (msg.text === "/start") {
     const welcomeMessage = `🤖 به ربات سویفت خوش آمدید...
@@ -59,6 +55,8 @@ if (session && session.step === "waiting_for_ton_amount") {
     handleGuide(bot, chatId);
   }
 
+
+  await handleMessage(bot, msg);
 });
 
 bot.on("contact", async (msg) => {

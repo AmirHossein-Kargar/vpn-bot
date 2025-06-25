@@ -1,19 +1,20 @@
-const sessions = require("./sessions")
-// const handleTopUp = require("./handleTopUp")
+const sessions = require("./sessions");
 
-async function showPaymentStep(bot, chatId, messageId, {stepKey, message}) {
-    await bot.deleteMessage(chatId, messageId)
+async function showPaymentStep(bot, chatId, messageId, { stepKey, message }) {
+  await bot.deleteMessage(chatId, messageId);
 
-    sessions[chatId] = {step: stepKey}
+  const sent = await bot.sendMessage(chatId, message, {
+    reply_markup: {
+      inline_keyboard: [
+        [{ text: "🔙 بازگشت به روش‌های پرداخت", callback_data: "back_to_topup" }],
+      ],
+    },
+  });
 
-    await bot.sendMessage(chatId, message, {
-        reply_markup: {
-            inline_keyboard: [
-               [{ text: "🔙 بازگشت به روش‌های پرداخت", callback_data: "back_to_topup" }]
-            ]
-        }
-    }) 
+  sessions[chatId] = {
+    step: stepKey,
+    messageId: sent.message_id,
+  };
 }
-
 
 module.exports = showPaymentStep;

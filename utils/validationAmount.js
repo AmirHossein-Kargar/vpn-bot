@@ -4,8 +4,7 @@ module.exports = function validateWithCommas(text, min = 50000, max = 500000) {
   if (!commaPattern.test(text)) {
     return {
       valid: false,
-      message:
-        "❌ لطفاً مبلغ را **به‌صورت عدد و با کاما** وارد کنید. مثال: 50,000 یا 120,000",
+      message: "❌ لطفاً مبلغ را با کاما وارد کنید. مثال: 50,000 یا 120,000",
     };
   }
 

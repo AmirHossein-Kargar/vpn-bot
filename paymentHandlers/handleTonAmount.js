@@ -2,8 +2,8 @@ const validationAmount = require("../utils/validationAmount");
 const sessions = require("../sessions");
 
 module.exports = async function handleTonAmount(bot, msg) {
-  const text = msg.text.trim();
   const chatId = msg.chat.id;
+  const text = msg.text.trim();
 
   await bot.deleteMessage(chatId, msg.message_id);
 
@@ -12,7 +12,7 @@ module.exports = async function handleTonAmount(bot, msg) {
 
   if (!botMessageId) return;
 
-  const { valid, amount, message } = validationAmount(text, 50000, 5000000);
+  const { valid, amount, message } = validationAmount(text);
 
   if (!valid) {
     return bot.editMessageText(message, {
@@ -20,12 +20,7 @@ module.exports = async function handleTonAmount(bot, msg) {
       message_id: botMessageId,
       reply_markup: {
         inline_keyboard: [
-          [
-            {
-              text: "🔙 بازگشت به روش‌های پرداخت",
-              callback_data: "back_to_topup",
-            },
-          ],
+          [{ text: "🔙 بازگشت به روش‌های پرداخت", callback_data: "back_to_topup" }],
         ],
       },
     });
@@ -38,4 +33,5 @@ module.exports = async function handleTonAmount(bot, msg) {
       message_id: botMessageId,
     }
   );
+
 };
