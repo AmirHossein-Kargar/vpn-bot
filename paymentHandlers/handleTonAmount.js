@@ -31,14 +31,10 @@ module.exports = async function handleTonAmount(bot, msg) {
       message_id: botMessageId,
       reply_markup: {
         inline_keyboard: [
-          [
-            {
-              text: "🔙 بازگشت به روش‌های پرداخت",
-              callback_data: "back_to_topup",
-            },
-          ],
+          [{ text: "🔙 بازگشت به روش‌های پرداخت", callback_data: "back_to_topup" }],
         ],
       },
+      parse_mode: "HTML",
     });
   }
 
@@ -48,6 +44,7 @@ module.exports = async function handleTonAmount(bot, msg) {
     {
       chat_id: chatId,
       message_id: botMessageId,
+      parse_mode: "HTML",
     }
   );
 };
