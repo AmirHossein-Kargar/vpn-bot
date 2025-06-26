@@ -1,5 +1,5 @@
 module.exports = function validateWithCommas(text, min = 50000, max = 500000) {
- const commaPattern = /^(\d{1,3})(,\d{3})*$/;
+ const commaPattern = /^\d{1,3}(,\d{3})*$/;
 
   if (!commaPattern.test(text)) {
     return {
@@ -8,9 +8,9 @@ module.exports = function validateWithCommas(text, min = 50000, max = 500000) {
     };
   }
 
-  const amount = parseInt(text.replace(/,/g, ""), 10);
+  const amount = parseInt(text.replace(/,/g, ""));
 
-  if (isNaN(amount) || amount < min || amount > max) {
+  if (!Number.isInteger(amount) || amount < min || amount > max) {
     return {
       valid: false,
       message: `❌ مبلغ باید بین ${min.toLocaleString()} تا ${max.toLocaleString()} تومان باشد.`,
