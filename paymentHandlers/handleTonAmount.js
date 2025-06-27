@@ -1,8 +1,5 @@
-// * Import validation utlity for checking amount format and range
 const validationAmount = require("../utils/validationAmount");
-
-// * Import sessions to track user-specific interactions state
-const sessions = require("../sessions");
+const { getSession } = require("../sessionStore")
 
 module.exports = async function handleTonAmount(bot, msg) {
   // * Extract the chat ID from the message
@@ -13,8 +10,7 @@ module.exports = async function handleTonAmount(bot, msg) {
   // * Delete the user's message to keep the chat clean
   await bot.deleteMessage(chatId, msg.message_id).catch(() => {});
 
-  // * Retrive the user's current session
-  const session = sessions[chatId];
+  const session = getSession(chatId)
 
   const botMessageId = session?.messageId;
 
