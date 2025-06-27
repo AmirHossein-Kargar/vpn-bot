@@ -1,4 +1,4 @@
-const { setSession } = require("../sessionStore");
+const { setSession } = require("./sessionStore");
 
 async function showPaymentStep(bot, chatId, messageId, { stepKey, message }) {
   await bot.deleteMessage(chatId, messageId); // * Delete previous bot message

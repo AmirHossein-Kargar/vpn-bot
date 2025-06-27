@@ -1,6 +1,6 @@
 const showPaymentStep = require("../showPaymentStep");
-const sessions = require("../sessions");
 const handleTopUp = require("../handleTopUp");
+const { deleteSession } = require("../sessionStore");
 
 module.exports = async function handleCallbackQuery(bot, query) {
   const data = query.data;
@@ -10,7 +10,7 @@ module.exports = async function handleCallbackQuery(bot, query) {
   // * back to payment options
   if (data === "back_to_topup") {
     await bot.deleteMessage(chatId, messageId);
-    sessions[chatId] = null;
+    deleteSession(chatId); // * Clear session data
     return handleTopUp(bot, chatId);
   }
 
