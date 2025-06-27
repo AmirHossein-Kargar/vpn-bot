@@ -12,13 +12,12 @@ async function getRedisClient() {
         port: 14166,
       },
     });
-  }
-  client.on("error", (err) => console.error("❌ Redis Error:", err));
 
-  await client
-    .connect()
-    .then(() => console.log("✅ Redis connected"))
-    .catch(console.error);
+    client.on("error", (err) => console.error("❌ Redis Error:", err));
+
+    await client.connect();
+    console.log("✅ Redis connected");
+  }
 
   return client;
 }
