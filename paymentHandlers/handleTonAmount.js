@@ -10,7 +10,7 @@ module.exports = async function handleTonAmount(bot, msg) {
   // * Delete the user's message to keep the chat clean
   await bot.deleteMessage(chatId, msg.message_id).catch(() => {});
 
-  const session = getSession(chatId)
+  const session = await getSession(chatId)
 
   const botMessageId = session?.messageId;
 
