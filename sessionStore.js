@@ -1,4 +1,4 @@
-import redis from "./redisClient";
+const redis = require("./redisClient")
 
 const prefix = "session:";
 
