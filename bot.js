@@ -3,6 +3,7 @@ const handleBuyService = require("./buyService");
 const handleTopUp = require("./handleTopUp");
 const handleProfile = require("./handleProfile");
 const handleGuide = require("./handleGuide");
+const {initSessionStore} = require("./sessionStore") 
 
 // * User model for MongoDB
 const User = require("./models/User");
@@ -17,6 +18,8 @@ const handleMessage = require("./handlers/messageHandlers");
 // * Connect to MongoDB Database
 const connectDB = require("./db");
 connectDB();
+
+await initSessionStore()
 
 // * Load environment variables
 require("dotenv").config();

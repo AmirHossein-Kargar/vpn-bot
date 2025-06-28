@@ -1,24 +1,32 @@
-const getRedisClient = require("./redisClient");
+const storage = require("node-persist");
 
-const prefix = "session:";
+async function initSessionStore() {
+  await storage.init({
+    dir: "sessions",
+    stringify: JSON.stringify,
+    parse: JSON.parse,
+    encoding: "utf8",
+    logging: false,
+    ttl: false,
+  });
+  console.log("✅ node-persist session store initialized");
+}
 
 async function getSession(chatId) {
-  const client = await getRedisClient();
-  const data = await client.get(prefix + chatId);
-  return data ? JSON.parse(data) : null;
+  const data = await storage.getItem(`session:${chatId}`);
+  return data || {};
 }
 
 async function setSession(chatId, value) {
-  const client = await getRedisClient();
-  await client.set(prefix + chatId, JSON.stringify(value));
+  await storage.setItem(`session:${chatId}`, value);
 }
 
 async function deleteSession(chatId) {
-  const client = await getRedisClient();
-  await client.del(prefix + chatId);
+  await storage.removeItem(`session:${chatId}`);
 }
 
 module.exports = {
+  initSessionStore,
   getSession,
   setSession,
   deleteSession,
