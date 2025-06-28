@@ -3,7 +3,8 @@ const handleBuyService = require("./buyService");
 const handleTopUp = require("./handleTopUp");
 const handleProfile = require("./handleProfile");
 const handleGuide = require("./handleGuide");
-const {initSessionStore} = require("./sessionStore") 
+const connectDB = require("./db")
+const initSessionStore = require("./sessionStore").initSessionStore;
 
 // * User model for MongoDB
 const User = require("./models/User");
@@ -15,11 +16,16 @@ const keyboard = require("./keyBoard");
 const handleCallbackQuery = require("./handlers/callbackHandlers");
 const handleMessage = require("./handlers/messageHandlers");
 
-// * Connect to MongoDB Database
-const connectDB = require("./db");
-connectDB();
-
-await initSessionStore()
+(async () => {
+  try {
+    await connectDB();
+    await initSessionStore();
+    console.log("✅ Database & Session store initialized!");
+  } catch (err) {
+    console.error("❌ Failed to initialize DB or Session Store:", err);
+    process.exit(1);
+  }
+})();
 
 // * Load environment variables
 require("dotenv").config();
@@ -31,11 +37,11 @@ const bot = new TelegramBot(TOKEN, { polling: true });
 
 // * Handle all incoming messages
 bot.on("message", async (msg) => {
-  const chatId = msg.chat.id;
+  try {
+    const chatId = msg.chat.id;
 
-  // * Handle start command
-  if (msg.text === "/start") {
-    const welcomeMessage = `🤖 به ربات سویفت خوش آمدید...
+    if (msg.text === "/start") {
+      const welcomeMessage = `🤖 به ربات سویفت خوش آمدید...
 
 🚀 سویفت سرویسی از نوع شتاب دهنده اینترنت شما با لوکیشن‌های مختلف
 
@@ -45,49 +51,47 @@ bot.on("message", async (msg) => {
 
 🔻 از این پایین یک گزینه رو انتخاب کن.️️`;
 
-    bot.sendMessage(chatId, welcomeMessage, keyboard);
-  }
+      await bot.sendMessage(chatId, welcomeMessage, keyboard);
+    }
 
-  // * Handle "Test Service"
-  if (msg.text === "🎁 سرویس تست") {
-    const userId = msg.from.id;
-    createTest(bot, chatId, userId, process.env.VPN_API_KEY);
-  }
+    if (msg.text === "🎁 سرویس تست") {
+      const userId = msg.from.id;
+      await createTest(bot, chatId, userId, process.env.VPN_API_KEY);
+    }
 
-  // * Handle "Buy Service"
-  if (msg.text === "🛒 خرید سرویس") {
-    handleBuyService(bot, chatId);
-  }
+    if (msg.text === "🛒 خرید سرویس") {
+      await handleBuyService(bot, chatId);
+    }
 
-  // * Handle "Top Up Balance"
-  if (msg.text === "💰 افزایش موجودی") {
-    handleTopUp(bot, chatId);
-  }
+    if (msg.text === "💰 افزایش موجودی") {
+      await handleTopUp(bot, chatId);
+    }
 
-  // * Handle "My Profile"
-  if (msg.text === "👤 پروفایل من") {
-    const userId = msg.from.id;
-    handleProfile(bot, chatId, userId);
-  }
+    if (msg.text === "👤 پروفایل من") {
+      const userId = msg.from.id;
+      await handleProfile(bot, chatId, userId);
+    }
 
-  // * Handle "Guide"
-  if (msg.text === "📖 راهنما") {
-    handleGuide(bot, chatId);
-  }
+    if (msg.text === "📖 راهنما") {
+      await handleGuide(bot, chatId);
+    }
 
-  await handleMessage(bot, msg);
+    await handleMessage(bot, msg);
+  } catch (err) {
+    console.error("❌ Error in bot.on('message'):", err);
+  }
 });
+
 
 // * Handle phoneNumber contact sharing
 bot.on("contact", async (msg) => {
-  const chatId = msg.chat.id;
-  const userId = msg.from.id;
-  const phoneNumber = msg.contact.phone_number;
-
   try {
+    const chatId = msg.chat.id;
+    const userId = msg.from.id;
+    const phoneNumber = msg.contact.phone_number;
+
     let user = await User.findOne({ telegramId: userId });
 
-    // * Create new user if not exists
     if (!user) {
       await User.create({
         telegramId: userId,
@@ -96,20 +100,25 @@ bot.on("contact", async (msg) => {
         totalServices: 0,
         phoneNumber: phoneNumber,
       });
-      // * Update PhoneNumber if missing
     } else if (!user.phoneNumber) {
-      (user.phoneNumber = phoneNumber), await user.save();
+      user.phoneNumber = phoneNumber;
+      await user.save();
     }
-    bot.sendMessage(chatId, "✅ شماره تلفن شما با موفقیت ثبت شد.", keyboard);
-    // await bot.sendMessage(chatId, keyboard);
-    const handleProfile = require("./handleProfile");
-    handleProfile(bot, chatId, userId);
-  } catch (error) {
-    bot.sendMessage(chatId, "❌ مشکلی در ذخیره شماره تلفن رخ داد.");
+
+    await bot.sendMessage(chatId, "✅ شماره تلفن شما با موفقیت ثبت شد.", keyboard);
+    await handleProfile(bot, chatId, userId);
+
+  } catch (err) {
+    console.error("❌ Error in bot.on('contact'):", err);
+    await bot.sendMessage(chatId, "❌ مشکلی در ذخیره شماره تلفن رخ داد.");
   }
 });
 
 // * Handle inline button (callback_query)
 bot.on("callback_query", async (query) => {
-  await handleCallbackQuery(bot, query);
+  try {
+    await handleCallbackQuery(bot, query);
+  } catch (err) {
+    console.error("❌ Error in bot.on('callback_query'):", err);
+  }
 });
