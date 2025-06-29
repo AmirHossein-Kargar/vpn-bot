@@ -1,5 +1,5 @@
 const validationAmount = require("../utils/validationAmount");
-const { getSession } = require("../sessionStore")
+const { getSession } = require("../config/sessionStore");
 
 module.exports = async function handleTonAmount(bot, msg) {
   // * Extract the chat ID from the message
@@ -10,7 +10,7 @@ module.exports = async function handleTonAmount(bot, msg) {
   // * Delete the user's message to keep the chat clean
   await bot.deleteMessage(chatId, msg.message_id).catch(() => {});
 
-  const session = await getSession(chatId)
+  const session = await getSession(chatId);
 
   const botMessageId = session?.messageId;
 

@@ -1,16 +1,16 @@
-const createTest = require("./createTest");
-const handleBuyService = require("./buyService");
+const createTest = require("./services/createTest");
+const handleBuyService = require("./services/buyService");
 const handleTopUp = require("./handleTopUp");
 const handleProfile = require("./handleProfile");
 const handleGuide = require("./handleGuide");
-const connectDB = require("./db")
-const initSessionStore = require("./sessionStore").initSessionStore;
+const connectDB = require("./config/db");
+const initSessionStore = require("./config/sessionStore").initSessionStore;
 
 // * User model for MongoDB
 const User = require("./models/User");
 
 // * Main Keyboard markup
-const keyboard = require("./keyBoard");
+const keyboard = require("./keyboards/mainKeyboard");
 
 // * Handlers for callback queries and messages
 const handleCallbackQuery = require("./handlers/callbackHandlers");
@@ -82,7 +82,6 @@ bot.on("message", async (msg) => {
   }
 });
 
-
 // * Handle phoneNumber contact sharing
 bot.on("contact", async (msg) => {
   try {
@@ -105,9 +104,12 @@ bot.on("contact", async (msg) => {
       await user.save();
     }
 
-    await bot.sendMessage(chatId, "✅ شماره تلفن شما با موفقیت ثبت شد.", keyboard);
+    await bot.sendMessage(
+      chatId,
+      "✅ شماره تلفن شما با موفقیت ثبت شد.",
+      keyboard
+    );
     await handleProfile(bot, chatId, userId);
-
   } catch (err) {
     console.error("❌ Error in bot.on('contact'):", err);
     await bot.sendMessage(chatId, "❌ مشکلی در ذخیره شماره تلفن رخ داد.");
