@@ -1,8 +1,8 @@
 const createTest = require("./services/createTest");
 const handleBuyService = require("./services/buyService");
-const handleTopUp = require("./handleTopUp");
-const handleProfile = require("./handleProfile");
-const handleGuide = require("./handleGuide");
+const handleTopUp = require("./handlers/message/handleTopUp");
+const handleProfile = require("./handlers/message/handleProfile");
+const handleGuide = require("./handlers/message/handleGuide");
 const connectDB = require("./config/db");
 const initSessionStore = require("./config/sessionStore").initSessionStore;
 
@@ -39,9 +39,11 @@ const bot = new TelegramBot(TOKEN, { polling: true });
 bot.on("message", async (msg) => {
   try {
     const chatId = msg.chat.id;
+    const userId = msg.from.id;
 
-    if (msg.text === "/start") {
-      const welcomeMessage = `🤖 به ربات سویفت خوش آمدید...
+    switch (msg.text) {
+      case "/start": {
+        const welcomeMessage = `🤖 به ربات سویفت خوش آمدید...
 
 🚀 سویفت سرویسی از نوع شتاب دهنده اینترنت شما با لوکیشن‌های مختلف
 
@@ -50,30 +52,24 @@ bot.on("message", async (msg) => {
 🌐 قابل استفاده بر روی تمام اینترنت‌ها
 
 🔻 از این پایین یک گزینه رو انتخاب کن.️️`;
-
-      await bot.sendMessage(chatId, welcomeMessage, keyboard);
-    }
-
-    if (msg.text === "🎁 سرویس تست") {
-      const userId = msg.from.id;
-      await createTest(bot, chatId, userId, process.env.VPN_API_KEY);
-    }
-
-    if (msg.text === "🛒 خرید سرویس") {
-      await handleBuyService(bot, chatId);
-    }
-
-    if (msg.text === "💰 افزایش موجودی") {
-      await handleTopUp(bot, chatId);
-    }
-
-    if (msg.text === "👤 پروفایل من") {
-      const userId = msg.from.id;
-      await handleProfile(bot, chatId, userId);
-    }
-
-    if (msg.text === "📖 راهنما") {
-      await handleGuide(bot, chatId);
+        await bot.sendMessage(chatId, welcomeMessage, keyboard);
+        break;
+      }
+      case "🎁 سرویس تست":
+        await createTest(bot, chatId, userId, process.env.VPN_API_KEY);
+        break;
+      case "🛒 خرید سرویس":
+        await handleBuyService(bot, chatId);
+        break;
+      case "💰 افزایش موجودی":
+        await handleTopUp(bot, chatId);
+        break;
+      case "👤 پروفایل من":
+        await handleProfile(bot, chatId, userId);
+        break;
+      case "📖 راهنما":
+        await handleGuide(bot, chatId);
+        break;
     }
 
     await handleMessage(bot, msg);
