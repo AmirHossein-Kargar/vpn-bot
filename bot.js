@@ -13,8 +13,8 @@ const User = require("./models/User");
 const keyboard = require("./keyboards/mainKeyboard");
 
 // * Handlers for callback queries and messages
-const handleCallbackQuery = require("./handlers/callbackHandlers");
-const handleMessage = require("./handlers/messageHandlers");
+const handleCallbackQuery = require("./listeners/callbackQuery");
+const handleMessage = require("./listeners/onMessage");
 
 (async () => {
   try {
