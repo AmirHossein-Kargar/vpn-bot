@@ -1,6 +1,6 @@
 // spell-checker: disable
 const moment = require("moment-jalaali");
-const User = require("../models/User");
+const User = require("../../models/User");
 
 moment.loadPersian({ usePersianDigits: false, dialect: "persian-modern" });
 

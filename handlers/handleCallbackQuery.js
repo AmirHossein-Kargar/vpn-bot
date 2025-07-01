@@ -1,10 +1,10 @@
 const showPaymentStep = require("../services/showPaymentStep");
-const handleTopUp = require("../handlers/handleTopUp");
+const handleTopUp = require("./message/handleTopUp");
 const { deleteSession } = require("../config/sessionStore");
 const keyboard = require("../keyboards/mainKeyboard");
 const welcomeMessage = require("../messages/welcomeMessage");
 
-module.exports = async function handleCallBackQuery(bot, query) {
+module.exports = async function handleCallbackQuery(bot, query) {
   const data = query.data;
   const chatId = query.message.chat.id;
   const messageId = query.message.message_id;

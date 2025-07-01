@@ -1,8 +1,8 @@
 const createTest = require("./services/createTest");
 const handleBuyService = require("./services/buyService");
-const handleTopUp = require("./handlers/handleTopUp");
-const handleProfile = require("./handlers/handleProfile");
-const handleGuide = require("./handlers/handleGuide");
+const handleTopUp = require("./handlers/message/handleTopUp");
+const handleProfile = require("./handlers/message/handleProfile");
+const handleGuide = require("./handlers/message/handleGuide");
 const connectDB = require("./config/db");
 const initSessionStore = require("./config/sessionStore").initSessionStore;
 const welcomeMessage = require("./messages/welcomeMessage");
@@ -14,8 +14,8 @@ const User = require("./models/User");
 const keyboard = require("./keyboards/mainKeyboard");
 
 // * Handlers for callback queries and messages
-const handleCallBackQuery = require("./listeners/callBackQuery");
-const handleMessage = require("./listeners/onMessage");
+const handleCallbackQuery = require("./handlers/handleCallbackQuery");
+const handleMessage = require("./handlers/onMessage");
 
 (async () => {
   try {
@@ -44,7 +44,6 @@ bot.on("message", async (msg) => {
 
     switch (msg.text) {
       case "/start": {
-        
         await bot.sendMessage(chatId, welcomeMessage, keyboard);
         break;
       }
@@ -111,7 +110,7 @@ bot.on("contact", async (msg) => {
 // * Handle inline button (callback_query)
 bot.on("callback_query", async (query) => {
   try {
-    await handleCallBackQuery(bot, query);
+    await handleCallbackQuery(bot, query);
   } catch (err) {
     console.error("❌ Error in bot.on('callback_query'):", err);
   }
