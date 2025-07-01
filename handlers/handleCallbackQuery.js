@@ -1,6 +1,6 @@
 const showPaymentStep = require("../services/showPaymentStep");
 const handleTopUp = require("./message/handleTopUp");
-const { deleteSession } = require("../config/sessionStore");
+const { deleteSession, getSession } = require("../config/sessionStore");
 const keyboard = require("../keyboards/mainKeyboard");
 const welcomeMessage = require("../messages/welcomeMessage");
 
@@ -18,6 +18,11 @@ module.exports = async function handleCallbackQuery(bot, query) {
 
     case "back_to_home":
       await bot.deleteMessage(chatId, messageId);
+      const session = await getSession(chatId);
+      if (session?.supportMessageId) {
+        await bot.deleteMessage(chatId, session.supportMessageId);
+      }
+      await deleteSession(chatId)
       await bot.sendMessage(chatId, welcomeMessage, keyboard);
 
     case "pay_bank":

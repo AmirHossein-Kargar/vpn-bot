@@ -9,6 +9,7 @@ module.exports = async function handleSupport(bot, chatId) {
 
   const supportKeyboard = {
     reply_markup: {
+      remove_keybaord: true,
       inline_keyboard: [
         [{ text: "🏠 بازگشت به منوی اصلی", callback_data: "back_to_home" }],
       ],
