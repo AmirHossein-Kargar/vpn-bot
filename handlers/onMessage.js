@@ -14,6 +14,5 @@ module.exports = async function handleMessage(bot, msg) {
     await setSession(chatId, {
       supportMessageId: userSupportMessageId,
     });
-  await handleSupport(bot, chatId)
   }
 };
