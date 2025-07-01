@@ -1,10 +1,11 @@
 const createTest = require("./services/createTest");
 const handleBuyService = require("./services/buyService");
-const handleTopUp = require("./handlers/message/handleTopUp");
-const handleProfile = require("./handlers/message/handleProfile");
-const handleGuide = require("./handlers/message/handleGuide");
+const handleTopUp = require("./handlers/handleTopUp");
+const handleProfile = require("./handlers/handleProfile");
+const handleGuide = require("./handlers/handleGuide");
 const connectDB = require("./config/db");
 const initSessionStore = require("./config/sessionStore").initSessionStore;
+const welcomeMessage = require("./messages/welcomeMessage");
 
 // * User model for MongoDB
 const User = require("./models/User");
@@ -13,7 +14,7 @@ const User = require("./models/User");
 const keyboard = require("./keyboards/mainKeyboard");
 
 // * Handlers for callback queries and messages
-const handleCallbackQuery = require("./listeners/callbackQuery");
+const handleCallBackQuery = require("./listeners/callBackQuery");
 const handleMessage = require("./listeners/onMessage");
 
 (async () => {
@@ -43,15 +44,7 @@ bot.on("message", async (msg) => {
 
     switch (msg.text) {
       case "/start": {
-        const welcomeMessage = `🤖 به ربات سویفت خوش آمدید...
-
-🚀 سویفت سرویسی از نوع شتاب دهنده اینترنت شما با لوکیشن‌های مختلف
-
-📱 امکان اتصال در اندروید، ویندوز، آیفون و...
-
-🌐 قابل استفاده بر روی تمام اینترنت‌ها
-
-🔻 از این پایین یک گزینه رو انتخاب کن.️️`;
+        
         await bot.sendMessage(chatId, welcomeMessage, keyboard);
         break;
       }
@@ -69,6 +62,9 @@ bot.on("message", async (msg) => {
         break;
       case "📖 راهنما":
         await handleGuide(bot, chatId);
+        break;
+      case "🛠 پشتیبانی":
+        await handleSupport(bot, chatId);
         break;
     }
 
@@ -115,7 +111,7 @@ bot.on("contact", async (msg) => {
 // * Handle inline button (callback_query)
 bot.on("callback_query", async (query) => {
   try {
-    await handleCallbackQuery(bot, query);
+    await handleCallBackQuery(bot, query);
   } catch (err) {
     console.error("❌ Error in bot.on('callback_query'):", err);
   }
