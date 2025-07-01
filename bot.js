@@ -3,6 +3,7 @@ const handleBuyService = require("./services/buyService");
 const handleTopUp = require("./handlers/message/handleTopUp");
 const handleProfile = require("./handlers/message/handleProfile");
 const handleGuide = require("./handlers/message/handleGuide");
+const handleSupport = require("./handlers/message/handleSupport")
 const connectDB = require("./config/db");
 const initSessionStore = require("./config/sessionStore").initSessionStore;
 const welcomeMessage = require("./messages/welcomeMessage");
