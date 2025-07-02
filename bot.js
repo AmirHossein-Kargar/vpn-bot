@@ -6,7 +6,7 @@ const handleGuide = require("./handlers/message/handleGuide");
 const handleSupport = require("./handlers/message/handleSupport");
 const connectDB = require("./config/db");
 const initSessionStore = require("./config/sessionStore").initSessionStore;
-const welcomeMessage = require("./messages/welcomeMessage");
+const {WELCOME_MESSAGE} = require("./messages/staticMessages");
 
 // * User model for MongoDB
 const User = require("./models/User");
@@ -45,7 +45,7 @@ bot.on("message", async (msg) => {
 
     switch (msg.text) {
       case "/start": {
-        await bot.sendMessage(chatId, welcomeMessage, keyboard);
+        await bot.sendMessage(chatId, WELCOME_MESSAGE, keyboard);
         break;
       }
       case "🎁 سرویس تست":

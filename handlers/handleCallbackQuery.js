@@ -2,7 +2,7 @@ const showPaymentStep = require("../services/showPaymentStep");
 const handleTopUp = require("./message/handleTopUp");
 const { deleteSession, getSession } = require("../config/sessionStore");
 const keyboard = require("../keyboards/mainKeyboard");
-const welcomeMessage = require("../messages/welcomeMessage");
+const {CHOOSE_OPTION_MESSAGE} = require("../messages/staticMessages");
 
 module.exports = async function handleCallbackQuery(bot, query) {
   const data = query.data;
@@ -22,8 +22,8 @@ module.exports = async function handleCallbackQuery(bot, query) {
       if (session?.supportMessageId) {
         await bot.deleteMessage(chatId, session.supportMessageId);
       }
-      await deleteSession(chatId)
-      await bot.sendMessage(chatId, welcomeMessage, keyboard);
+      await deleteSession(chatId);
+      await bot.sendMessage(chatId, CHOOSE_OPTION_MESSAGE, keyboard);
 
     case "pay_bank":
       await bot.answerCallbackQuery({
