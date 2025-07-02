@@ -42,6 +42,7 @@ bot.on("message", async (msg) => {
   try {
     const chatId = msg.chat.id;
     const userId = msg.from.id;
+    const userText = msg.text
 
     const commandsToDelete = [
       "/start",
