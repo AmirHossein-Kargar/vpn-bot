@@ -45,6 +45,7 @@ bot.on("message", async (msg) => {
 
     switch (msg.text) {
       case "/start": {
+        await bot.deleteMessage(chatId, msg.message_id)
         await bot.sendMessage(chatId, WELCOME_MESSAGE, keyboard);
         break;
       }
