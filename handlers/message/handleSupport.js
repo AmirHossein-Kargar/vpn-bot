@@ -16,10 +16,15 @@ module.exports = async function handleSupport(bot, chatId) {
       ],
     },
   };
-  await bot.sendMessage(chatId, "", {
-    reply_markup: {
-      remove_keyboard: true,
-    },
-  });
-  await bot.sendMessage(chatId, supportMessage, supportKeyboard);
+    
+const tempMsg = await bot.sendMessage(chatId, "⌛ در حال بارگذاری...", {
+  reply_markup: { remove_keyboard: true },
+});
+
+await bot.sendMessage(chatId, supportMessage, supportKeyboard);
+
+setTimeout(() => {
+  bot.deleteMessage(chatId, tempMsg.message_id);
+}, 1000);
+
 };
