@@ -6,7 +6,7 @@ const handleGuide = require("./handlers/message/handleGuide");
 const handleSupport = require("./handlers/message/handleSupport");
 const connectDB = require("./config/db");
 const initSessionStore = require("./config/sessionStore").initSessionStore;
-const {WELCOME_MESSAGE} = require("./messages/staticMessages");
+const { WELCOME_MESSAGE } = require("./messages/staticMessages");
 
 // * User model for MongoDB
 const User = require("./models/User");
@@ -43,9 +43,22 @@ bot.on("message", async (msg) => {
     const chatId = msg.chat.id;
     const userId = msg.from.id;
 
-    switch (msg.text) {
+    const commandsToDelete = [
+      "/start",
+      "🛠 پشتیبانی",
+      "🎁 سرویس تست",
+      "🛒 خرید سرویس",
+      "💰 افزایش موجودی",
+      "👤 پروفایل من",
+      "📖 راهنما",
+    ];
+
+    if (commandsToDelete.includes(userText)) {
+      await bot.deleteMessage(chatId, msg.message_id);
+    }
+
+    switch (userText) {
       case "/start": {
-        await bot.deleteMessage(chatId, msg.message_id)
         await bot.sendMessage(chatId, WELCOME_MESSAGE, keyboard);
         break;
       }
