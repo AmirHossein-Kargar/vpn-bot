@@ -1,3 +1,5 @@
+const { reply_markup } = require("../../keyboards/mainKeyboard");
+
 module.exports = async function handleSupport(bot, chatId) {
   const supportMessage = `▫️ جهت ارتباط به صورت مستقیم:
 🔰 @AmirKargaar
@@ -9,11 +11,15 @@ module.exports = async function handleSupport(bot, chatId) {
 
   const supportKeyboard = {
     reply_markup: {
-      remove_keyboard: true,
       inline_keyboard: [
         [{ text: "🏠 بازگشت به منوی اصلی", callback_data: "back_to_home" }],
       ],
     },
   };
+  await bot.sendMessage(chatId, "", {
+    reply_markup: {
+      remove_keyboard: true,
+    },
+  });
   await bot.sendMessage(chatId, supportMessage, supportKeyboard);
 };
