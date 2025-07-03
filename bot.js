@@ -1,11 +1,12 @@
+// * 🌍 Load env
+require("dotenv").config();
+
 const handleCallbackQuery = require("./handlers/handleCallbackQuery");
 const handleMessageDispatcher = require("./handlers/dispatcher")
 // * 🔌 Core
 const TelegramBot = require("node-telegram-bot-api");
 // * 🤖 Init Bot
 const bot = new TelegramBot(process.env.BOT_TOKEN, { polling: true });
-// * 🌍 Load env
-require("dotenv").config();
 // * ⚙️ Config
 const connectDB = require("./config/db");
 const { initSessionStore } = require("./config/sessionStore");

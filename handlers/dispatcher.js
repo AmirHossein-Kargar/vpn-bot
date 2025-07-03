@@ -8,7 +8,7 @@ const handleSupport = require("../handlers/message/handleSupport");
 const handleMessage = require("../handlers/onMessage");
 const { WELCOME_MESSAGE } = require("../messages/staticMessages");
 const keyboard = require("../keyboards/mainKeyboard");
-const { getSession, setSession } = require("../config/sessionStore")
+const { getSession, setSession } = require("../config/sessionStore");
 
 const SUPPORT_GROUP_ID = -1002781166798;
 
@@ -17,6 +17,11 @@ module.exports = async function handleMessageDispatcher(bot, msg) {
   const userId = msg.from.id;
   const userText = msg.text;
   const session = await getSession(userId);
+
+  if (!msg.text) {
+    await bot.sendMessage(chatId, "❌ لطفاً یک پیام متنی ارسال کنید.");
+    return;
+  }
 
   if (session.support) {
     await bot.sendMessage(
@@ -42,7 +47,7 @@ module.exports = async function handleMessageDispatcher(bot, msg) {
       "✅ پیام شما به پشتیبانی ارسال شد.",
       keyboard
     );
-    session.support = false
+    session.support = false;
     await setSession(userId, session);
     return;
   }
@@ -71,6 +76,6 @@ module.exports = async function handleMessageDispatcher(bot, msg) {
       await handleSupport(bot, chatId, userId);
       break;
     default:
-     await handleMessage(bot, msg);
+      await handleMessage(bot, msg);
   }
 };

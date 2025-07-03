@@ -1,14 +1,15 @@
-const storage = require("node-persist");
+const NodePersist = require("node-persist");
+const storage = NodePersist.create({
+  dir: "sessions",
+  stringify: JSON.stringify,
+  parse: JSON.parse,
+  encoding: "utf8",
+  logging: false,
+  ttl: false,
+});
 
 async function initSessionStore() {
-  await storage.init({
-    dir: "sessions",
-    stringify: JSON.stringify,
-    parse: JSON.parse,
-    encoding: "utf8",
-    logging: false,
-    ttl: false,
-  });
+  await storage.init();
   console.log("✅ node-persist session store initialized");
 }
 
