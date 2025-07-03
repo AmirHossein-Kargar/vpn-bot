@@ -4,6 +4,7 @@ const handleTopUp = require("./handlers/message/handleTopUp");
 const handleProfile = require("./handlers/message/handleProfile");
 const handleGuide = require("./handlers/message/handleGuide");
 const handleSupport = require("./handlers/message/handleSupport");
+const handleSupportMessage = require('./handlers/message/handleSupportMessage')
 const connectDB = require("./config/db");
 const initSessionStore = require("./config/sessionStore").initSessionStore;
 const { WELCOME_MESSAGE } = require("./messages/staticMessages");
@@ -34,6 +35,7 @@ require("dotenv").config();
 
 // * Initialize Telegram Bot with polling
 const TelegramBot = require("node-telegram-bot-api");
+const handleSupportMessage = require("./handlers/message/handleSupportMessage");
 const TOKEN = process.env.BOT_TOKEN;
 const bot = new TelegramBot(TOKEN, { polling: true });
 
@@ -57,14 +59,6 @@ bot.on("message", async (msg) => {
     // if (commandsToDelete.includes(userText)) {
     //   await bot.deleteMessage(chatId, msg.message_id);
     // }
-    if (await handleSupport.isInSupportSession(userId)) {
-      if (userText.startsWith("/")) {
-        await handleSupport.endSupportSession(userId);
-      } else {
-        await handleSupport.handleSupportMessage(bot, msg);
-        return;
-      }
-    }
 
     switch (userText) {
       case "/start": {
@@ -87,8 +81,11 @@ bot.on("message", async (msg) => {
         await handleGuide(bot, chatId);
         break;
       case "🛠 پشتیبانی":
-        await handleSupport.showSupportMessage(bot, chatId);
-        await handleSupport.startSupportSession(userId);
+        await handleSupport(bot, msg);
+        break;
+
+      default:
+        await handleSupportMessage(bot, msg);
         break;
     }
 
