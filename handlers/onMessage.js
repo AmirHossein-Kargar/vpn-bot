@@ -16,12 +16,4 @@ module.exports = async function handleMessage(bot, msg) {
       supportMessageId: userSupportMessageId,
     });
   }
-
-  const replyTarget = await storage.getItem("reply_target");
-  if (replyTarget) {
-    await bot.sendMessage(replyTarget, `📩 پاسخ پشتیبانی:\n\n${userText}`);
-    await bot.sendMessage(chatId, "✅ پاسخ شما ارسال شد.");
-    await storage.removeItem("reply_target");
-    return;
-  }
 };

@@ -1,4 +1,4 @@
-const { storage } = require("../../config/sessionStore");
+const { getSession, setSession } = require("../../config/sessionStore");
 
 async function handleSupport(bot, chatId, userId) {
   const supportMessage = `▫️ جهت ارتباط به صورت مستقیم:
@@ -22,10 +22,14 @@ async function handleSupport(bot, chatId, userId) {
     reply_markup: { remove_keyboard: true },
   });
 
+  const session = await getSession(userId)
+  session.support = true;
+  await setSession(userId, session);
+  
+
   setTimeout(async () => {
     bot.deleteMessage(chatId, tempMsg.message_id);
     await bot.sendMessage(chatId, supportMessage, supportKeyboard);
-    await storage.setItem(`support_${userId}`, true)
   }, 1000);
 };
 module.exports = handleSupport;

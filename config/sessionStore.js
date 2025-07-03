@@ -26,9 +26,9 @@ async function deleteSession(chatId) {
 }
 
 module.exports = {
+  storage,
   initSessionStore,
   getSession,
   setSession,
   deleteSession,
-  storage,
 };
