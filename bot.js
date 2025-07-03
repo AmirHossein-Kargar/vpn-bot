@@ -44,8 +44,6 @@ bot.on("message", async (msg) => {
     const userId = msg.from.id;
     const userText = msg.text;
 
-    if (chatId !== -1002781166798) return;
-
     // const commandsToDelete = [
     //   "/start",
     //   "🛠 پشتیبانی",
@@ -60,8 +58,12 @@ bot.on("message", async (msg) => {
     //   await bot.deleteMessage(chatId, msg.message_id);
     // }
     if (await handleSupport.isInSupportSession(userId)) {
-      await handleSupport.handleSupportMessage(bot, msg);
-      return
+      if (userText.startsWith("/")) {
+        await handleSupport.endSupportSession(userId);
+      } else {
+        await handleSupport.handleSupportMessage(bot, msg);
+        return;
+      }
     }
 
     switch (userText) {

@@ -57,4 +57,5 @@ module.exports = {
   startSupportSession,
   isInSupportSession,
   handleSupportMessage,
+  endSupportSession
 };
