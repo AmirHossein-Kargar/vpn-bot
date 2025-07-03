@@ -30,4 +30,5 @@ module.exports = {
   getSession,
   setSession,
   deleteSession,
+  storage,
 };

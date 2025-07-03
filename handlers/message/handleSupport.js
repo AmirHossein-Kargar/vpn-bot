@@ -1,8 +1,6 @@
-const { reply_markup } = require("../../keyboards/mainKeyboard");
-const storage = require("node-persist")
+const { storage } = require("../../config/sessionStore");
 
-
-module.exports = async function handleSupport(bot, chatId, userId) {
+async function handleSupport(bot, chatId, userId) {
   const supportMessage = `▫️ جهت ارتباط به صورت مستقیم:
 🔰 @AmirKargaar
 
@@ -19,7 +17,6 @@ module.exports = async function handleSupport(bot, chatId, userId) {
     },
   };
 
-await storage.setItem(`support_${chatId}`, true);
 
   const tempMsg = await bot.sendMessage(chatId, "⌛ در حال بارگذاری...", {
     reply_markup: { remove_keyboard: true },
@@ -28,5 +25,7 @@ await storage.setItem(`support_${chatId}`, true);
   setTimeout(async () => {
     bot.deleteMessage(chatId, tempMsg.message_id);
     await bot.sendMessage(chatId, supportMessage, supportKeyboard);
+    await storage.setItem(`support_${userId}`, true)
   }, 1000);
 };
+module.exports = handleSupport;

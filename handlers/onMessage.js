@@ -1,10 +1,11 @@
 const { getSession, setSession } = require("../config/sessionStore");
 const handleTonAmount = require("../paymentHandlers/handleTonAmount");
-const storage = require("node-persist");
+const { storage } = require("../config/sessionStore");
 
 module.exports = async function handleMessage(bot, msg) {
   const chatId = msg.chat.id;
   const session = await getSession(chatId);
+  const userText = msg.text;
 
   if (session?.step === "waiting_for_ton_amount") {
     return handleTonAmount(bot, msg);
