@@ -42,20 +42,26 @@ bot.on("message", async (msg) => {
   try {
     const chatId = msg.chat.id;
     const userId = msg.from.id;
-    const userText = msg.text
+    const userText = msg.text;
 
-    const commandsToDelete = [
-      "/start",
-      "🛠 پشتیبانی",
-      "🎁 سرویس تست",
-      "🛒 خرید سرویس",
-      "💰 افزایش موجودی",
-      "👤 پروفایل من",
-      "📖 راهنما",
-    ];
+    if (chatId !== -1002781166798) return;
 
-    if (commandsToDelete.includes(userText)) {
-      await bot.deleteMessage(chatId, msg.message_id);
+    // const commandsToDelete = [
+    //   "/start",
+    //   "🛠 پشتیبانی",
+    //   "🎁 سرویس تست",
+    //   "🛒 خرید سرویس",
+    //   "💰 افزایش موجودی",
+    //   "👤 پروفایل من",
+    //   "📖 راهنما",
+    // ];
+
+    // if (commandsToDelete.includes(userText)) {
+    //   await bot.deleteMessage(chatId, msg.message_id);
+    // }
+    if (await handleSupport.isInSupportSession(userId)) {
+      await handleSupport.handleSupportMessage(bot, msg);
+      return
     }
 
     switch (userText) {
@@ -79,7 +85,8 @@ bot.on("message", async (msg) => {
         await handleGuide(bot, chatId);
         break;
       case "🛠 پشتیبانی":
-        await handleSupport(bot, chatId);
+        await handleSupport.showSupportMessage(bot, chatId);
+        await handleSupport.startSupportSession(userId);
         break;
     }
 
