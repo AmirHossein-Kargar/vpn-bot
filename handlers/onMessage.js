@@ -1,6 +1,5 @@
 const { getSession, setSession } = require("../config/sessionStore");
 const handleTonAmount = require("../paymentHandlers/handleTonAmount");
-// const handleSupport = require("./message/handleSupport");
 const storage = require("node-persist");
 
 module.exports = async function handleMessage(bot, msg) {

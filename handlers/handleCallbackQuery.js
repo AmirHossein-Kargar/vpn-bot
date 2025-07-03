@@ -10,11 +10,56 @@ module.exports = async function handleCallbackQuery(bot, query) {
   const chatId = query.message.chat.id;
   const messageId = query.message.message_id;
 
-  if (data.startWith("reply_")) {
-    const targetUserId = data.split("_"[1]);
+  if (data.startsWith("reply_")) {
+    const targetUserId = data.split("_")[1];
     await storage.setItem("reply_target", targetUserId);
-    await bot.sendMessage(chatId, `✏️ لطفاً پاسخ خود را تایپ کنید...`);
-    return
+    await storage.setItem("original_support_message", query.message.text);
+
+    const newText =
+      "✏️ لطفاً پاسخ خود را تایپ کنید و سپس روی «ارسال پاسخ» بزنید.";
+    const newMarkup = {
+      reply_markup: {
+        inline_keyboard: [
+          [{ text: "✅ ارسال پاسخ", callback_data: "send_reply" }],
+          [{ text: "❌ انصراف", callback_data: "cancel_reply" }],
+        ],
+      },
+    };
+    await bot.editMessageText(newText, {
+      chat_id: chatId,
+      message_id: messageId,
+      reply_markup: newMarkup.reply_markup,
+    });
+    await bot.answerCallbackQuery({ callback_query_id: query.id });
+
+    return;
+  }
+
+  if (data === "canecl_reply") {
+    const original_support_message = await storage.getItem(
+      "original_support_message"
+    );
+    const targetUserId = await storage.getItem("reply_target");
+
+    const newMarkup = {
+      reply_markup: {
+        inline_keyboard: [
+          [{ text: "✏️ پاسخ", callback_data: `reply_${targetUserId}` }],
+        ],
+
+      }
+    };
+    await bot.editMessageText(original_support_message, {
+      chat_id: chatId,
+      message_id: messageId,
+      reply_markup: newMarkup.reply_markup,
+    });
+
+    await storage.removeItem("reply_target");
+    await storage.removeItem("original_support_message");
+
+    await bot.answerCallbackQuery({ callback_query_id: query.id });
+    return;
   }
 
   switch (data) {
