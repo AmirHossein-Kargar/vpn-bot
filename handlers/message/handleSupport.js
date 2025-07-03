@@ -1,9 +1,8 @@
-const storage = require("node-persist");
+const { reply_markup } = require("../../keyboards/mainKeyboard");
+const storage = require("node-persist")
 
-module.exports = async function handleSupport(bot, msg) {
-  const chatId = msg.chat.id;
-  const userId = msg.chat.id;
-  
+
+module.exports = async function handleSupport(bot, chatId, userId) {
   const supportMessage = `▫️ جهت ارتباط به صورت مستقیم:
 🔰 @AmirKargaar
 
@@ -12,8 +11,6 @@ module.exports = async function handleSupport(bot, msg) {
 📝 لطفاً پیام پشتیبانی خود را در همین چت تایپ و ارسال کنید.
 `;
 
-  await storage.setItem(`support_${userId}`, true);
-
   const supportKeyboard = {
     reply_markup: {
       inline_keyboard: [
@@ -21,6 +18,8 @@ module.exports = async function handleSupport(bot, msg) {
       ],
     },
   };
+
+await storage.setItem(`support_${chatId}`, true);
 
   const tempMsg = await bot.sendMessage(chatId, "⌛ در حال بارگذاری...", {
     reply_markup: { remove_keyboard: true },

@@ -2,12 +2,20 @@ const showPaymentStep = require("../services/showPaymentStep");
 const handleTopUp = require("./message/handleTopUp");
 const { deleteSession, getSession } = require("../config/sessionStore");
 const keyboard = require("../keyboards/mainKeyboard");
-const {CHOOSE_OPTION_MESSAGE} = require("../messages/staticMessages");
+const { CHOOSE_OPTION_MESSAGE } = require("../messages/staticMessages");
+const storage = require("node-persist");
 
 module.exports = async function handleCallbackQuery(bot, query) {
   const data = query.data;
   const chatId = query.message.chat.id;
   const messageId = query.message.message_id;
+
+  if (data.startWith("reply_")) {
+    const targetUserId = data.split("_"[1]);
+    await storage.setItem("reply_target", targetUserId);
+    await bot.sendMessage(chatId, `✏️ لطفاً پاسخ خود را تایپ کنید...`);
+    return
+  }
 
   switch (data) {
     case "back_to_topup":
@@ -24,6 +32,7 @@ module.exports = async function handleCallbackQuery(bot, query) {
       }
       await deleteSession(chatId);
       await bot.sendMessage(chatId, CHOOSE_OPTION_MESSAGE, keyboard);
+      break;
 
     case "pay_bank":
       await bot.answerCallbackQuery({

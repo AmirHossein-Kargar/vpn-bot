@@ -2,7 +2,7 @@
 const mongoose = require("mongoose");
 
 // * Get the MongoDB connection URL from environment variables
-const mongoURI = process.env.mongo_URL;
+const mongoURI = process.env.MONGO_URL;
 
 // * Asynchronously connects to MongoDB using Mongoose.
 // * if the connection is successful, it logs a success meessage.

@@ -1,23 +1,25 @@
+// * Load environment variables
+require("dotenv").config();
+// * ✅ THEN require other stuff
 const createTest = require("./services/createTest");
 const handleBuyService = require("./services/buyService");
 const handleTopUp = require("./handlers/message/handleTopUp");
 const handleProfile = require("./handlers/message/handleProfile");
 const handleGuide = require("./handlers/message/handleGuide");
 const handleSupport = require("./handlers/message/handleSupport");
-const handleSupportMessage = require('./handlers/message/handleSupportMessage')
 const connectDB = require("./config/db");
 const initSessionStore = require("./config/sessionStore").initSessionStore;
 const { WELCOME_MESSAGE } = require("./messages/staticMessages");
-
-// * User model for MongoDB
 const User = require("./models/User");
-
-// * Main Keyboard markup
 const keyboard = require("./keyboards/mainKeyboard");
-
-// * Handlers for callback queries and messages
 const handleCallbackQuery = require("./handlers/handleCallbackQuery");
 const handleMessage = require("./handlers/onMessage");
+const storage = require("node-persist");
+
+// * Initialize Telegram Bot with polling
+const TelegramBot = require("node-telegram-bot-api");
+const TOKEN = process.env.BOT_TOKEN;
+const bot = new TelegramBot(TOKEN, { polling: true });
 
 (async () => {
   try {
@@ -30,22 +32,12 @@ const handleMessage = require("./handlers/onMessage");
   }
 })();
 
-// * Load environment variables
-require("dotenv").config();
-
-// * Initialize Telegram Bot with polling
-const TelegramBot = require("node-telegram-bot-api");
-const handleSupportMessage = require("./handlers/message/handleSupportMessage");
-const TOKEN = process.env.BOT_TOKEN;
-const bot = new TelegramBot(TOKEN, { polling: true });
-
 // * Handle all incoming messages
 bot.on("message", async (msg) => {
   try {
     const chatId = msg.chat.id;
     const userId = msg.from.id;
     const userText = msg.text;
-
     // const commandsToDelete = [
     //   "/start",
     //   "🛠 پشتیبانی",
@@ -59,6 +51,38 @@ bot.on("message", async (msg) => {
     // if (commandsToDelete.includes(userText)) {
     //   await bot.deleteMessage(chatId, msg.message_id);
     // }
+
+    const supportGroupId = -1002781166798;
+
+    if (await storage.getItem(`support_${userId}`)) {
+      
+      await bot.sendMessage(
+        supportGroupId,
+        `📩 پیام پشتیبانی از کاربر <a href="tg://user?id=${userId}">${msg.from.first_name}</a>:\n\n${userText}`,
+        {
+          parse_mode: "HTML",
+          reply_markup: {
+            inline_keyboard: [
+              [
+                {
+                  text: "✉️ پاسخ به کاربر",
+                  callback_data: `reply_${userId}`,
+                },
+              ],
+            ],
+          },
+        }
+      );
+
+
+      await bot.sendMessage(
+        chatId,
+        "✅ پیام شما به پشتیبانی ارسال شد.",
+        keyboard
+      );
+      await storage.removeItem(`support_${userId}`);
+      return;
+    }
 
     switch (userText) {
       case "/start": {
@@ -81,11 +105,7 @@ bot.on("message", async (msg) => {
         await handleGuide(bot, chatId);
         break;
       case "🛠 پشتیبانی":
-        await handleSupport(bot, msg);
-        break;
-
-      default:
-        await handleSupportMessage(bot, msg);
+        await handleSupport(bot, chatId, userId);
         break;
     }
 
