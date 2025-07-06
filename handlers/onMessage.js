@@ -1,6 +1,5 @@
 const { getSession, setSession } = require("../config/sessionStore");
 const handleTonAmount = require("../paymentHandlers/handleTonAmount");
-const { storage } = require("../config/sessionStore");
 
 module.exports = async function handleMessage(bot, msg) {
   const chatId = msg.chat.id;
