@@ -9,7 +9,6 @@ module.exports = async function handleCallbackQuery(bot, query) {
   const chatId = query.message.chat.id;
   const messageId = query.message.message_id;
 
-
   switch (data) {
     case "back_to_topup":
       await bot.deleteMessage(chatId, messageId);

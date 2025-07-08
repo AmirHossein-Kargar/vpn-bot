@@ -1,9 +1,9 @@
 const validationAmount = require("../utils/validationAmount");
 const { getSession, setSession } = require("../config/sessionStore");
-const getTetherRate = require("../services/getTetherRate");
 const createNowPaymentsInvoice = require("../services/nowpayments/createInvoice");
 const getNowPaymentsEstimate = require("../services/nowpayments/getNowPaymentsEstimate");
 const buildPaymentInvoice = require("../utils/buildPaymentInvoice");
+const getUsdtRate = require("../services/nowpayments/getUsdtRate");
 
 module.exports = async function handleTonAmount(bot, msg) {
   // * Extract the chat ID from the message
@@ -51,16 +51,20 @@ module.exports = async function handleTonAmount(bot, msg) {
     }
   );
 
-  const tetherPrice = await getTetherRate();
-  const usdAmount = amount / tetherPrice;
+  const dollarRate = await getUsdtRate();
+  if (!dollarRate)
+    throw new Error("❌ USDT rate is null! Cannot calculate invoice.");
+
+  const usdAmount = amount / dollarRate;
+  console.log(`💵 USD Amount: ${usdAmount}`);
+
   const realTonAmount = await getNowPaymentsEstimate({
     amount: usdAmount,
     currency_from: "usd",
     currency_to: "ton",
   });
 
-  // console.log(`💸 Amount saved: ${amount} Toman`);
-  // console.log(`💵 Equivalent in USD: $${usdAmount.toFixed(2)}`);
+if(!realTonAmount) throw new Error("❌ TON estimate failed! Check NowPayments API.")
 
   const invoice = await createNowPaymentsInvoice({
     amountUsd: usdAmount,
@@ -68,14 +72,14 @@ module.exports = async function handleTonAmount(bot, msg) {
     orderId: `ton-topup-${chatId}`,
     description: `Top-up for user ${chatId}`,
   });
-  console.dir(invoice, { depth: null });
+  // console.dir(invoice, { depth: null });
 
   await setSession(chatId, {
     ton_payment: {
       amount,
       usdAmount,
       tonAmount: realTonAmount,
-      tetherPrice,
+      dollarRate,
       invoiceUrl: invoice.invoice_url,
     },
   });
