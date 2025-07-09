@@ -1,1 +1,1 @@
-{"key":"session:619276813","value":{"ton_payment":{"amount":100000,"usdAmount":1.1428571428571428,"tonAmount":"0.40902463","dollarRate":87500,"invoiceUrl":"https://nowpayments.io/payment/?iid=5879062643"}}}
+{"key":"session:619276813","value":{"step":"waiting_for_ton_amount","messageId":1270}}

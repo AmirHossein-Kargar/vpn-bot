@@ -1,9 +1,10 @@
 const validationAmount = require("../utils/validationAmount");
-const { getSession, setSession } = require("../config/sessionStore");
+const { getSession } = require("../config/sessionStore");
 const createNowPaymentsInvoice = require("../services/nowpayments/createInvoice");
 const getNowPaymentsEstimate = require("../services/nowpayments/getNowPaymentsEstimate");
 const buildPaymentInvoice = require("../utils/buildPaymentInvoice");
 const getUsdtRate = require("../services/nowpayments/getUsdtRate");
+const Payment = require('../models/Payemnts')
 
 module.exports = async function handleTonAmount(bot, msg) {
   // * Extract the chat ID from the message
@@ -74,15 +75,26 @@ if(!realTonAmount) throw new Error("❌ TON estimate failed! Check NowPayments A
   });
   // console.dir(invoice, { depth: null });
 
-  await setSession(chatId, {
-    ton_payment: {
-      amount,
-      usdAmount,
-      tonAmount: realTonAmount,
-      dollarRate,
-      invoiceUrl: invoice.invoice_url,
-    },
-  });
+  // await setSession(chatId, {
+  //   ton_payment: {
+  //     amount,
+  //     usdAmount,
+  //     tonAmount: realTonAmount,
+  //     dollarRate,
+  //     invoiceUrl: invoice.invoice_url,
+  //   },
+  // });
+  
+await Payment.create({
+  invoiceId: invoice.id,
+  userId: chatId,
+  amount: amount,
+  usdAmount: usdAmount,
+  cryptoAmount: realTonAmount,
+  currency: 'TON',
+  invoiceUrl: invoice.invoice_url,
+  status: 'pending'
+})
 
   setTimeout(async () => {
     const invoiceText = buildPaymentInvoice({
