@@ -1,6 +1,10 @@
 const showPaymentStep = require("../services/showPaymentStep");
 const handleTopUp = require("./message/handleTopUp");
-const { deleteSession, getSession } = require("../config/sessionStore");
+const {
+  deleteSession,
+  getSession,
+  storage,
+} = require("../config/sessionStore");
 const keyboard = require("../keyboards/mainKeyboard");
 const { CHOOSE_OPTION_MESSAGE } = require("../messages/staticMessages");
 
@@ -27,11 +31,13 @@ module.exports = async function handleCallbackQuery(bot, query) {
       break;
 
     case "pay_bank":
-      await bot.answerCallbackQuery({
-        callback_query_id: query.id,
-        text: "❌ امکان کارت‌ به‌ کارت در حال حاضر وجود ندارد.",
-        show_alert: false,
-      });
+      await bot.answerCallbackQuery({ callback_query_id: query.id });
+      await bot.sendMessage(
+        chatId,
+        "💰 لطفاً مبلغ مورد نظر را با کاما وارد کنید.\nمثال: 50,000"
+      );
+
+      await setSession(chatId, { paymentStep: "awaiting_bank_amount" });
       break;
 
     case "pay_ton":

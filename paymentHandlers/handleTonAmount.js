@@ -73,17 +73,6 @@ if(!realTonAmount) throw new Error("❌ TON estimate failed! Check NowPayments A
     orderId: `ton-topup-${chatId}`,
     description: `Top-up for user ${chatId}`,
   });
-  // console.dir(invoice, { depth: null });
-
-  // await setSession(chatId, {
-  //   ton_payment: {
-  //     amount,
-  //     usdAmount,
-  //     tonAmount: realTonAmount,
-  //     dollarRate,
-  //     invoiceUrl: invoice.invoice_url,
-  //   },
-  // });
   
 await Payment.create({
   invoiceId: invoice.id,
