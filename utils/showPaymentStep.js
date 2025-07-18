@@ -1,11 +1,11 @@
-const { setSession } = require("../config/sessionManager");
+import { setSession } from "../config/sessionStore.js";
 
-module.exports = async function showPaymentStep(
+const showPaymentStep = async (
   bot,
   chatId,
   messageId,
   { stepkey, message, keyboard }
-) {
+) => {
   try {
     await bot.deleteMessage(chatId, messageId).catch(() => {});
 
@@ -28,6 +28,9 @@ module.exports = async function showPaymentStep(
       step: stepkey,
       messageId: sent.message_id,
     });
-  } catch (error) {}
-  console.log("❌ showPaymentStep error:", err);
+  } catch (error) {
+    console.log("❌ showPaymentStep error:", error);
+  }
 };
+
+export default showPaymentStep;
