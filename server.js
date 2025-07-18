@@ -1,8 +1,8 @@
-const express = require("express");
-const app = express();
-const Payment = require("./models/Payemnts");
-const bot = require("./bot");
+import express from "express";
+import Payment from "./models/Payemnts.js";
+import bot from "./bot.js";
 
+const app = express();
 app.use(express.json());
 
 const PORT = process.env.PORT || 3000;
@@ -25,6 +25,4 @@ app.use(`/api/nowpayments/webhook`, async (req, res) => {
   // * find user and increse user balance =>
 });
 
-app.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}`);
-});
+export default app;

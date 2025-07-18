@@ -1,14 +1,15 @@
-const validationAmount = require("../utils/validationAmount");
-const { getSession } = require("../config/sessionStore");
-const createNowPaymentsInvoice = require("../services/nowpayments/createInvoice");
-const getNowPaymentsEstimate = require("../services/nowpayments/getNowPaymentsEstimate");
-const buildPaymentInvoice = require("../utils/buildPaymentInvoice");
-const getUsdtRate = require("../services/nowpayments/getUsdtRate");
-const Payment = require('../models/Payemnts')
+import validationAmount from "../utils/validationAmount.js";
+import { getSession, setSession } from "../config/sessionStore.js";
+import createNowPaymentsInvoice from "../services/nowpayments/createInvoice.js";
+import getNowPaymentsEstimate from "../services/nowpayments/getNowPaymentsEstimate.js";
+import buildPaymentInvoice from "../utils/buildPaymentInvoice.js";
+import getUsdtRate from "../services/nowpayments/getUsdtRate.js";
+import Payment from "../models/Payemnts.js";
 
-module.exports = async function handleTonAmount(bot, msg) {
+const handleTonAmount = async (bot, msg) => {
   // * Extract the chat ID from the message
   const chatId = msg.chat.id;
+
   // * Remove any leading/trailing whitespace
   const text = msg.text.trim();
 
@@ -65,7 +66,8 @@ module.exports = async function handleTonAmount(bot, msg) {
     currency_to: "ton",
   });
 
-if(!realTonAmount) throw new Error("❌ TON estimate failed! Check NowPayments API.")
+  if (!realTonAmount)
+    throw new Error("❌ TON estimate failed! Check NowPayments API.");
 
   const invoice = await createNowPaymentsInvoice({
     amountUsd: usdAmount,
@@ -73,17 +75,17 @@ if(!realTonAmount) throw new Error("❌ TON estimate failed! Check NowPayments A
     orderId: `ton-topup-${chatId}`,
     description: `Top-up for user ${chatId}`,
   });
-  
-await Payment.create({
-  invoiceId: invoice.id,
-  userId: chatId,
-  amount: amount,
-  usdAmount: usdAmount,
-  cryptoAmount: realTonAmount,
-  currency: 'TON',
-  invoiceUrl: invoice.invoice_url,
-  status: 'pending'
-})
+
+  await Payment.create({
+    invoiceId: invoice.id,
+    userId: chatId,
+    amount: amount,
+    usdAmount: usdAmount,
+    cryptoAmount: realTonAmount,
+    currency: "TON",
+    invoiceUrl: invoice.invoice_url,
+    status: "pending",
+  });
 
   setTimeout(async () => {
     const invoiceText = buildPaymentInvoice({
@@ -116,5 +118,9 @@ await Payment.create({
         ],
       },
     });
+
+    await setSession(chatId, { ...session, step: null });
   }, 1000);
 };
+
+export default handleTonAmount;

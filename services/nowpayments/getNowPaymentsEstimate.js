@@ -1,10 +1,10 @@
-const axios = require("axios");
+import axios from "axios";
 
-module.exports = async function getNowPaymentsEstimate({
+const getNowPaymentsEstimate = async ({
   amount,
   currency_from = "USD",
   currency_to,
-}) {
+}) => {
   if (!amount || !currency_to || !currency_from) {
     throw new Error("Amount, currency_from, and currency_to are required!");
   }
@@ -22,3 +22,5 @@ module.exports = async function getNowPaymentsEstimate({
 
   return data.estimated_amount;
 };
+
+export default getNowPaymentsEstimate;

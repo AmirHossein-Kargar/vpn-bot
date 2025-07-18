@@ -1,6 +1,11 @@
-const { setSession } = require("../config/sessionStore");
+import { setSession } from "../config/sessionStore.js";
 
-async function showPaymentStep(bot, chatId, messageId, { stepKey, message }) {
+const showPaymentStep = async (
+  bot,
+  chatId,
+  messageId,
+  { stepKey, message }
+) => {
   await bot.deleteMessage(chatId, messageId); // * Delete previous bot message
 
   const sent = await bot.sendMessage(chatId, message, {
@@ -19,10 +24,9 @@ async function showPaymentStep(bot, chatId, messageId, { stepKey, message }) {
   });
 
   await setSession(chatId, {
-    // * Save User's step in Redis
     step: stepKey,
     messageId: sent.message_id,
   });
-}
+};
 
-module.exports = showPaymentStep;
+export default showPaymentStep;

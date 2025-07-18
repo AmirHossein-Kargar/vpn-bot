@@ -1,9 +1,9 @@
 // * 🗂️ Models
-const User = require("../models/User");
-const keyboard = require("../keyboards/mainKeyboard");
-const handleProfile = require("./message/handleProfile");
+import User from "../models/User.js";
+import keyboard from "../keyboards/mainKeyboard.js";
+import handleProfile from "./message/handleProfile.js";
 
-async function handleContact(bot, msg) {
+const handleContact = async (bot, msg) => {
   const chatId = msg.chat.id;
   const userId = msg.from.id;
   const phoneNumber = msg.contact.phone_number;
@@ -40,6 +40,6 @@ async function handleContact(bot, msg) {
   }
 
   await handleProfile(bot, chatId, userId);
-}
+};
 
-module.exports = handleContact;
+export default handleContact;

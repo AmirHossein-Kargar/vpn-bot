@@ -1,4 +1,4 @@
-const mongoose = require("mongoose");
+import mongoose from "mongoose";
 
 const paymentSchema = new mongoose.Schema({
   invoiceId: { type: String, required: true, unique: true },
@@ -13,4 +13,4 @@ const paymentSchema = new mongoose.Schema({
   paidAt: {type: Date, default: null}
 });
 
-module.exports = mongoose.model('payment', paymentSchema);
+export default mongoose.model('payment', paymentSchema);
