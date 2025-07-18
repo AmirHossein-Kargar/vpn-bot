@@ -1,10 +1,10 @@
 // spell-checker: disable
-const moment = require("moment-jalaali");
-const User = require("../../models/User");
+import moment from "moment-jalaali";
+import User from "../../models/User.js";
 
 moment.loadPersian({ usePersianDigits: false, dialect: "persian-modern" });
 
-module.exports = async function handleProfile(bot, chatId, userId) {
+const handleProfile = async (bot, chatId, userId) => {
   try {
     const user = await User.findOne({ telegramId: userId });
 
@@ -51,3 +51,5 @@ module.exports = async function handleProfile(bot, chatId, userId) {
     bot.sendMessage(chatId, "❌ خطایی رخ داده است. لطفاً دوباره تلاش کنید.");
   }
 };
+
+export default handleProfile;

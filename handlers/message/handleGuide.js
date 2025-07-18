@@ -1,6 +1,6 @@
-// * This function handels the "guide" section of the bot
+// * This function handles the "guide" section of the bot
 
-module.exports = function handleGuide(bot, chatId) {
+const handleGuide = (bot, chatId) => {
   // * Main message shown to the user
   const guideMessage = `📕 به بخش راهنمای ربات خوش آمدید
 
@@ -33,3 +33,5 @@ module.exports = function handleGuide(bot, chatId) {
   // * Send the message and the inline keyboard to the user
   bot.sendMessage(chatId, guideMessage, guideButtons);
 };
+
+export default handleGuide;

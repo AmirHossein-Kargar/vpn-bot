@@ -11,4 +11,4 @@ const keyboard = {
   },
 };
 
-module.exports = keyboard;
+export default keyboard;

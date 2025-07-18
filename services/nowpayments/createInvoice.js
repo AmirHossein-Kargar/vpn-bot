@@ -1,23 +1,27 @@
-const axios = require("axios");
+import axios from "axios";
 
-async function createNowPaymentsInvoice({amountUsd, payCurrency, orderId, description = "Top-up"}) {
-    const API_KEY = process.env.NOW_PAYMENTS_API_KEY;
+const createNowPaymentsInvoice = async (params) => {
+  const API_KEY = process.env.NOW_PAYMENTS_API_KEY;
 
-    const payload = {
-        price_amount: Number(amountUsd.toFixed(2)),
-        price_currency: "USD",
-        pay_currency: payCurrency,
-        order_id: orderId,
-        order_description: description,
-    }
+  const payload = {
+    price_amount: Number(params.amountUsd.toFixed(2)),
+    price_currency: "USD",
+    pay_currency: params.payCurrency,
+    order_id: params.orderId,
+    order_description: params.description,
+  };
 
-    const headers = {
-        "x-api-key": API_KEY,
-        "content-type": "application/json",
-    }
-    
-    const {data} = await axios.post("https://api.nowpayments.io/v1/invoice", payload, {headers});
-    return data
-}
+  const headers = {
+    "x-api-key": API_KEY,
+    "content-type": "application/json",
+  };
 
-module.exports = createNowPaymentsInvoice;
+  const { data } = await axios.post(
+    "https://api.nowpayments.io/v1/invoice",
+    payload,
+    { headers }
+  );
+  return data;
+};
+
+export default createNowPaymentsInvoice;

@@ -1,6 +1,6 @@
-const axios = require("axios");
+import axios from "axios";
 
-async function getUsdtRate() {
+const getUsdtRate = async () => {
   try {
     const response = await axios.get("https://api.tetherland.com/currencies");
     const usdtPrice = response?.data?.data?.currencies?.USDT?.price;
@@ -14,5 +14,6 @@ async function getUsdtRate() {
   } catch (error) {
     console.log("❌ Error fetching USDT rate:", error);
   }
-}
-module.exports = getUsdtRate;
+};
+
+export default getUsdtRate;

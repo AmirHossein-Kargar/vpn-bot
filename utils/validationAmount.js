@@ -1,5 +1,5 @@
-module.exports = function validateWithCommas(text, min = 50000, max = 500000) {
- const commaPattern = /^\d{1,3}(,\d{3})*$/;
+const validateWithCommas = (text, min = 50000, max = 500000) => {
+  const commaPattern = /^\d{1,3}(,\d{3})*$/;
 
   if (!commaPattern.test(text)) {
     return {
@@ -19,3 +19,5 @@ module.exports = function validateWithCommas(text, min = 50000, max = 500000) {
 
   return { valid: true, amount };
 };
+
+export default validateWithCommas;

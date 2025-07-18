@@ -44,4 +44,4 @@ const plans = [
   },
 ];
 
-module.exports = plans;
+export default plans

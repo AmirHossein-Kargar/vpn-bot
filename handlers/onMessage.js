@@ -1,19 +1,13 @@
-const { getSession, setSession } = require("../config/sessionStore");
-const handleBankTransferAccount = require("../paymentHandlers/handleBankTransferAccount");
-const handleTonAmount = require("../paymentHandlers/handleTonAmount");
+import { getSession, setSession } from "../config/sessionStore.js";
+import handleTonAmount from "../paymentHandlers/handleTonAmount.js";
 
-module.exports = async function handleMessage(bot, msg) {
+const handleMessage = async (bot, msg) => {
   const chatId = msg.chat.id;
   const session = await getSession(chatId);
   const userText = msg.text;
 
   if (session?.step === "waiting_for_ton_amount") {
     return handleTonAmount(bot, msg);
-  }
-  if(session?.paymentStep === "awaiting_bank_amount") {
-    await handleBankTransferAccount(bot, msg)
-    await setSession(chatId, {...session, paymentStep: null})
-    return
   }
   if (msg.text === "🛠 پشتیبانی") {
     const userSupportMessageId = msg.message_id;
@@ -22,3 +16,5 @@ module.exports = async function handleMessage(bot, msg) {
     });
   }
 };
+
+export default handleMessage;

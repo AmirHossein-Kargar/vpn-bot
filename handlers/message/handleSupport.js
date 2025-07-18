@@ -1,6 +1,6 @@
-const { getSession, setSession } = require("../../config/sessionStore");
+import { getSession, setSession } from "../../config/sessionStore.js";
 
-async function handleSupport(bot, chatId, userId) {
+const handleSupport = async (bot, chatId, userId) => {
   const supportMessage = `▫️ جهت ارتباط به صورت مستقیم:
 🔰 @AmirKargaar
 
@@ -17,19 +17,18 @@ async function handleSupport(bot, chatId, userId) {
     },
   };
 
-
   const tempMsg = await bot.sendMessage(chatId, "⌛ در حال بارگذاری...", {
     reply_markup: { remove_keyboard: true },
   });
 
-  const session = await getSession(userId)
+  const session = await getSession(userId);
   session.support = true;
   await setSession(userId, session);
-  
 
   setTimeout(async () => {
     bot.deleteMessage(chatId, tempMsg.message_id);
     await bot.sendMessage(chatId, supportMessage, supportKeyboard);
   }, 1000);
 };
-module.exports = handleSupport;
+
+export default handleSupport;
