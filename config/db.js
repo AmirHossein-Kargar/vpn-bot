@@ -1,3 +1,5 @@
+// * This module sets up a connection to MongoDB using Mongoose.
+// * It exports an async function that connects to the database and handles errors.
 import mongoose from "mongoose";
 
 const mongoURI = process.env.MONGO_URL;

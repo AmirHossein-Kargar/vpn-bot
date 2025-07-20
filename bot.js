@@ -76,3 +76,14 @@ bot.on("callback_query", async (query) => {
     console.error("❌ Error in bot.on('callback_query'):", err);
   }
 });
+
+bot.on("photo", async (msg) => {
+  const chatId = msg.chat.id;
+  const session = await getSession(chatId);
+
+
+  if(session?.step === "waiting_for_receipt_image") {
+    const handleBankRecipt = (await import("./paymentHandlers/handleBankRecipt.js")).default;
+    await handleBankRecipt(bot, msg, session);
+  }
+});

@@ -16,7 +16,7 @@ const validateWithCommas = (text, min = 50000, max = 500000) => {
       message: `❌ مبلغ باید بین ${min.toLocaleString()} تا ${max.toLocaleString()} تومان باشد.`,
     };
   }
-
+console.log(amount)
   return { valid: true, amount };
 };
 
