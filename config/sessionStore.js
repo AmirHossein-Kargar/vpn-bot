@@ -12,4 +12,4 @@ export const setSession = async (userId, sessionData) => {
 
 export const clearSession = async (userId) => {
   await client.del(prefix + userId);
-}; 
+};

@@ -16,8 +16,7 @@ import handleMessage from "./handlers/onMessage.js";
 import { WELCOME_MESSAGE } from "./messages/staticMessages.js";
 import keyboard from "./keyboards/mainKeyboard.js";
 import { getSession, setSession } from "./config/sessionStore.js";
-import Message from "./models/Message.js";
-const SUPPORT_GROUP_ID = -1002781166798;
+import hideKeyboard from "./utils/hideKeyboard.js";
 
 const bot = await startBot();
 
@@ -42,6 +41,7 @@ bot.on("message", async (msg) => {
       await handleBuyService(bot, chatId);
       break;
     case "💰 افزایش موجودی":
+      await hideKeyboard(bot, chatId);
       await showPaymentMethods(bot, chatId);
       break;
     case "👤 پروفایل من":
@@ -74,5 +74,16 @@ bot.on("callback_query", async (query) => {
     await handleCallbackQuery(bot, query);
   } catch (err) {
     console.error("❌ Error in bot.on('callback_query'):", err);
+  }
+});
+
+bot.on("photo", async (msg) => {
+  const chatId = msg.chat.id;
+  const session = await getSession(chatId);
+
+
+  if(session?.step === "waiting_for_receipt_image") {
+    const handleBankRecipt = (await import("./paymentHandlers/handleBankRecipt.js")).default;
+    await handleBankRecipt(bot, msg, session);
   }
 });

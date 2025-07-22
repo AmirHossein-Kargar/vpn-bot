@@ -32,23 +32,17 @@ const handleCallbackQuery = async (bot, query) => {
       break;
 
     case "pay_bank":
-      await bot.answerCallbackQuery({ callback_query_id: query.id });
-
-      if (session?.messageId) {
-        await bot.deleteMessage(chatId, session.messageId).catch(() => {});
-      }
-
-      const sentMsg = await bot.sendMessage(
-        chatId,
-        "💠 لطفاً مبلغ مورد نظر را برای پرداخت کارت به کارت وارد کنید (بین 50,000 تا 500,000 تومان):"
-      );
-      await setSession(chatId, {
-        ...session,
-        step: "payment_bank_amount",
-        messageId: sentMsg.message_id,
-      });
+      const payBank = (await import("./../paymentHandlers/payBank.js")).default;
+      await payBank(bot, query, session);
       break;
 
+    // case "upload_receipt":
+    //   await bot.sendMessage(chatId, "💳 لطفاً رسید واریزی خود را ارسال کنید.");
+    //   await setSession(chatId, {
+    //     ...session,
+    //     step: "waiting_for_receipt_image",
+    //   });
+    //   break;
     // case "pay_ton":
     //   await showPaymentStep(bot, chatId, messageId, {
     //     stepKey: "waiting_for_ton_amount",
