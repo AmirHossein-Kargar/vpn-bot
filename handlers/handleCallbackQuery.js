@@ -36,13 +36,19 @@ const handleCallbackQuery = async (bot, query) => {
       await payBank(bot, query, session);
       break;
 
-    // case "upload_receipt":
-    //   await bot.sendMessage(chatId, "💳 لطفاً رسید واریزی خود را ارسال کنید.");
-    //   await setSession(chatId, {
-    //     ...session,
-    //     step: "waiting_for_receipt_image",
-    //   });
-    //   break;
+    case "upload_receipt":
+      await bot.editMessageText(
+        "💳 لطفاً رسید واریزی خود را ارسال کنید.",
+        {
+          chat_id: chatId,
+          message_id: session.messageId,
+        }
+      );
+      await setSession(chatId, {
+        ...session,
+        step: "waiting_for_receipt_image",
+      });
+      break;
     // case "pay_ton":
     //   await showPaymentStep(bot, chatId, messageId, {
     //     stepKey: "waiting_for_ton_amount",

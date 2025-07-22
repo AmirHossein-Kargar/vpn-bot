@@ -55,8 +55,12 @@ const payBank = async (bot, msg, session) => {
       });
     } catch (error) {
       if (
-        !error?.response?.body?.description?.includes("message is not modified") &&
-        !error?.response?.body?.description?.includes("message to edit not found")
+        !error?.response?.body?.description?.includes(
+          "message is not modified"
+        ) &&
+        !error?.response?.body?.description?.includes(
+          "message to edit not found"
+        )
       ) {
         console.error("Error editting message", error.message);
       }
@@ -70,32 +74,33 @@ const payBank = async (bot, msg, session) => {
     return;
   }
 
+  const paymentId = Math.random().toString(36).substr(2, 8).toUpperCase();
   const CARD_NUMBER = process.env.CARD_NUMBER;
   const ltrCardNumber = `\u200E${CARD_NUMBER}`;
-  const confirmationText =
-    (() => {
-      // Generate a unique payment ID (شناسه پرداخت)
-      const paymentId = Math.random().toString(36).substr(2, 8).toUpperCase();
-      // Save paymentId to session for later verification if needed
-      setSession(chatId, {
-        ...session,
-        paymentId,
-      });
+ 
+    // Generate a unique payment ID (شناسه پرداخت)
+    // Save paymentId to session for later verification if needed
 
-      // Compose the confirmation text with payment ID
-      const rtl = s => `\u202B${s}\u202C`;
-      const ltr = s => `\u202A${s}\u202C`;
-      
-      const confirmationText =
-        rtl(`💳 لطفاً مبلغ ${text} تومان را به شماره کارت زیر واریز کنید:\n\n`) +
-        `🔢 شماره کارت: <code>${ltr(ltrCardNumber)}</code>\n` +
-        rtl(`🆔 شناسه پرداخت: <code>${ltr(paymentId)}</code>\n\n`) +
-        rtl(`سپس روی دکمه زیر کلیک کرده و رسید واریزی را ارسال نمایید.`);
-      
-      // Set a timeout to edit the message after 2 minutes (120000 ms)
-      setTimeout(async () => {
-        try {
-          await bot.editMessageText("⏰ مهلت پرداخت تموم شد. لطفاً دوباره تلاش کنید.", {
+    // Compose the confirmation text with payment ID
+    const rtl = (s) => `\u202B${s}\u202C`;
+    const ltr = (s) => `\u202A${s}\u202C`;
+
+    const confirmationText =
+      rtl("🧾 فاکتور پرداخت") +
+      "\n" +
+      rtl(`🔖 شماره فاکتور: <code>${ltr(paymentId)}</code>`) +
+      "\n\n" +
+      rtl(`💳 مبلغ: ${text} تومان را به شماره کارت زیر واریز کنید:`) +
+      "\n\n" +
+      `🔢 شماره کارت: <code>${ltr(ltrCardNumber)}</code>\n\n` +
+      rtl("سپس روی دکمه زیر کلیک کرده و رسید واریزی را ارسال نمایید.");
+
+    // Set a timeout to edit the message after 2 minutes (120000 ms)
+    setTimeout(async () => {
+      try {
+        await bot.editMessageText(
+          "⏰ مهلت پرداخت تموم شد. لطفاً دوباره تلاش کنید.",
+          {
             chat_id: chatId,
             message_id: messageId,
             parse_mode: "HTML",
@@ -109,13 +114,10 @@ const payBank = async (bot, msg, session) => {
                 ],
               ],
             },
-          });
-        } catch (error) {
-        }
-      }, 120000);
-
-      return confirmationText;
-    })()
+          }
+        );
+      } catch (error) {}
+    }, 120000);
 
   try {
     await bot.editMessageText(confirmationText, {
@@ -140,11 +142,11 @@ const payBank = async (bot, msg, session) => {
 
   await setSession(chatId, {
     ...session,
+    paymentId,
     step: "waiting_for_receipt_image",
     rawAmount: text,
-    messageId: messageId,
+    messageId,
   });
-  
 };
 
 export default payBank;
