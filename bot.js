@@ -16,8 +16,7 @@ import handleMessage from "./handlers/onMessage.js";
 import { WELCOME_MESSAGE } from "./messages/staticMessages.js";
 import keyboard from "./keyboards/mainKeyboard.js";
 import { getSession, setSession } from "./config/sessionStore.js";
-import Message from "./models/Message.js";
-const SUPPORT_GROUP_ID = -1002781166798;
+import hideKeyboard from "./utils/hideKeyboard.js";
 
 const bot = await startBot();
 
@@ -42,6 +41,7 @@ bot.on("message", async (msg) => {
       await handleBuyService(bot, chatId);
       break;
     case "💰 افزایش موجودی":
+      await hideKeyboard(bot, chatId);
       await showPaymentMethods(bot, chatId);
       break;
     case "👤 پروفایل من":

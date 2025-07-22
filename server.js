@@ -1,6 +1,5 @@
 import express from "express";
 import Payment from "./models/Payemnts.js";
-import bot from "./bot.js";
 
 const app = express();
 app.use(express.json());

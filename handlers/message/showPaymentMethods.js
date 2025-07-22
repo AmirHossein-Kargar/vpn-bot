@@ -1,3 +1,5 @@
+import { setSession } from "../../config/sessionStore.js";
+
 // * This function sends payment method options to the user
 const showPaymentMethods = async (bot, chatId) => {
   // * Main message shown to the user
@@ -20,8 +22,15 @@ const showPaymentMethods = async (bot, chatId) => {
     },
   };
 
-  // * Send the message with the inline keyboard
-  bot.sendMessage(chatId, message, topUpButtons);
+  // * Send the message with the inline keyboard and disable the main keyboard
+  const sentMessage = await bot.sendMessage(chatId, message, topUpButtons);
+
+  await setSession(chatId, {
+    step: "waiting_for_payment_method",
+    messageId: sentMessage.message_id,
+  })
+
+  return sentMessage;
 };
 
 export default showPaymentMethods;
