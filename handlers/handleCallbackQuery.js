@@ -1,4 +1,4 @@
-import showPaymentStep from "../services/showPaymentStep.js";
+import handleAddBalance from "./admin/handleAddBalance.js";
 import showPaymentMethods from "./message/showPaymentMethods.js";
 import {
   clearSession,
@@ -8,6 +8,7 @@ import {
 import keyboard from "../keyboards/mainKeyboard.js";
 import { CHOOSE_OPTION_MESSAGE } from "../messages/staticMessages.js";
 import promptForReceipt from "../paymentHandlers/promptForReceipt.js";
+import sendAdminPanels from "./admin/sendAdminPanels.js";
 
 const handleCallbackQuery = async (bot, query) => {
   const data = query.data;
@@ -39,7 +40,14 @@ const handleCallbackQuery = async (bot, query) => {
 
     case "upload_receipt":
       await promptForReceipt(bot, chatId, session);
-    break;
+      break;
+    case "admin_add_balance":
+      await handleAddBalance(bot, query, session);
+      break;
+    case "admin_back_to_main":
+      // await bot.deleteMessage(chatId, messageId)
+      await sendAdminPanels(bot, chatId, messageId);
+      break;
     // case "pay_ton":
     //   await showPaymentStep(bot, chatId, messageId, {
     //     stepKey: "waiting_for_ton_amount",

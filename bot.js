@@ -40,7 +40,7 @@ bot.on("message", async (msg) => {
     }
     case "/panel" || "پنل": {
       if (adminIds.includes(userId)) {
-        const sendAdminPanels = (await import("./handlers/sendAdminPanels.js")).default;
+        const sendAdminPanels = (await import("./handlers/admin/sendAdminPanels.js")).default;
         await sendAdminPanels(bot, chatId);
       } else {
         await bot.sendMessage(chatId, "⛔️ شما دسترسی به این بخش را ندارید.");

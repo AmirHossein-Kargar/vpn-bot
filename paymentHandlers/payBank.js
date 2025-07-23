@@ -101,7 +101,7 @@ const payBank = async (bot, msg, session) => {
     await invoice.create({
       paymentId,
       userId: chatId,
-      amount: Number(validation.cleaned),
+      amount: Number(validation.amount) || 0,
     });
   } catch (error) {
     console.error("Error to save invoice", error.message);
