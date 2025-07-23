@@ -1,5 +1,6 @@
 import { setSession } from "../config/sessionStore.js";
 import validateWithCommas from "../utils/validationAmount.js";
+import invoice from "../models/invoice.js";
 
 const payBank = async (bot, msg, session) => {
   const chatId = msg?.chat?.id || msg?.from?.id;
@@ -77,47 +78,58 @@ const payBank = async (bot, msg, session) => {
   const paymentId = Math.random().toString(36).substr(2, 8).toUpperCase();
   const CARD_NUMBER = process.env.CARD_NUMBER;
   const ltrCardNumber = `\u200E${CARD_NUMBER}`;
- 
-    // Generate a unique payment ID (شناسه پرداخت)
-    // Save paymentId to session for later verification if needed
 
-    // Compose the confirmation text with payment ID
-    const rtl = (s) => `\u202B${s}\u202C`;
-    const ltr = (s) => `\u202A${s}\u202C`;
+  // Generate a unique payment ID (شناسه پرداخت)
+  // Save paymentId to session for later verification if needed
 
-    const confirmationText =
-      rtl("🧾 فاکتور پرداخت") +
-      "\n" +
-      rtl(`🔖 شماره فاکتور: <code>${ltr(paymentId)}</code>`) +
-      "\n\n" +
-      rtl(`💳 مبلغ: ${text} تومان را به شماره کارت زیر واریز کنید:`) +
-      "\n\n" +
-      `🔢 شماره کارت: <code>${ltr(ltrCardNumber)}</code>\n\n` +
-      rtl("سپس روی دکمه زیر کلیک کرده و رسید واریزی را ارسال نمایید.");
+  // Compose the confirmation text with payment ID
+  const rtl = (s) => `\u202B${s}\u202C`;
+  const ltr = (s) => `\u202A${s}\u202C`;
 
-    // Set a timeout to edit the message after 2 minutes (120000 ms)
-    // setTimeout(async () => {
-    //   try {
-    //     await bot.editMessageText(
-    //       "⏰ مهلت پرداخت تموم شد. لطفاً دوباره تلاش کنید.",
-    //       {
-    //         chat_id: chatId,
-    //         message_id: messageId,
-    //         parse_mode: "HTML",
-    //         reply_markup: {
-    //           inline_keyboard: [
-    //             [
-    //               {
-    //                 text: "🔙 بازگشت به روش‌ های پرداخت",
-    //                 callback_data: "back_to_topup",
-    //               },
-    //             ],
-    //           ],
-    //         },
-    //       }
-    //     );
-    //   } catch (error) {}
-    // }, 120000);
+  const confirmationText =
+    rtl("🧾 فاکتور پرداخت") +
+    "\n" +
+    rtl(`🔖 شماره فاکتور: <code>${ltr(paymentId)}</code>`) +
+    "\n\n" +
+    rtl(`💳 مبلغ: ${text} تومان را به شماره کارت زیر واریز کنید:`) +
+    "\n\n" +
+    `🔢 شماره کارت: <code>${ltr(ltrCardNumber)}</code>\n\n` +
+    rtl("سپس روی دکمه زیر کلیک کرده و رسید واریزی را ارسال نمایید.");
+
+  // * save invoice to database
+  try {
+    await invoice.create({
+      paymentId,
+      userId: chatId,
+      amount: Number(validation.cleaned),
+    });
+  } catch (error) {
+    console.error("Error to save invoice", error.message);
+  }
+
+  // Set a timeout to edit the message after 2 minutes (120000 ms)
+  // setTimeout(async () => {
+  //   try {
+  //     await bot.editMessageText(
+  //       "⏰ مهلت پرداخت تموم شد. لطفاً دوباره تلاش کنید.",
+  //       {
+  //         chat_id: chatId,
+  //         message_id: messageId,
+  //         parse_mode: "HTML",
+  //         reply_markup: {
+  //           inline_keyboard: [
+  //             [
+  //               {
+  //                 text: "🔙 بازگشت به روش‌ های پرداخت",
+  //                 callback_data: "back_to_topup",
+  //               },
+  //             ],
+  //           ],
+  //         },
+  //       }
+  //     );
+  //   } catch (error) {}
+  // }, 120000);
 
   try {
     await bot.editMessageText(confirmationText, {

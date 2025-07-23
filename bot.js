@@ -18,6 +18,10 @@ import keyboard from "./keyboards/mainKeyboard.js";
 import { getSession, setSession } from "./config/sessionStore.js";
 import hideKeyboard from "./utils/hideKeyboard.js";
 
+
+
+let adminIds = process.env.ADMINS.split(",").map(id => Number(id.trim()));
+
 const bot = await startBot();
 
 // * Handle all incoming messages
@@ -32,6 +36,15 @@ bot.on("message", async (msg) => {
   switch (userText) {
     case "/start": {
       await bot.sendMessage(chatId, WELCOME_MESSAGE, keyboard);
+      break;
+    }
+    case "/panel" || "پنل": {
+      if (adminIds.includes(userId)) {
+        const sendAdminPanels = (await import("./handlers/sendAdminPanels.js")).default;
+        await sendAdminPanels(bot, chatId);
+      } else {
+        await bot.sendMessage(chatId, "⛔️ شما دسترسی به این بخش را ندارید.");
+      }
       break;
     }
     case "🎁 سرویس تست":
