@@ -16,6 +16,8 @@ const handleBankRecipt = async (bot, msg, session) => {
     🔖 شماره فاکتور: ${session.paymentId || "نامشخص"}`,
   });
 
+  await bot.deleteMessage(chatId, msg.message_id);
+
   await setSession(chatId, {
     ...session,
     step: "recipt_sent",

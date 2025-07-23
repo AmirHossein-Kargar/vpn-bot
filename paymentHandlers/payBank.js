@@ -96,28 +96,28 @@ const payBank = async (bot, msg, session) => {
       rtl("سپس روی دکمه زیر کلیک کرده و رسید واریزی را ارسال نمایید.");
 
     // Set a timeout to edit the message after 2 minutes (120000 ms)
-    setTimeout(async () => {
-      try {
-        await bot.editMessageText(
-          "⏰ مهلت پرداخت تموم شد. لطفاً دوباره تلاش کنید.",
-          {
-            chat_id: chatId,
-            message_id: messageId,
-            parse_mode: "HTML",
-            reply_markup: {
-              inline_keyboard: [
-                [
-                  {
-                    text: "🔙 بازگشت به روش‌ های پرداخت",
-                    callback_data: "back_to_topup",
-                  },
-                ],
-              ],
-            },
-          }
-        );
-      } catch (error) {}
-    }, 120000);
+    // setTimeout(async () => {
+    //   try {
+    //     await bot.editMessageText(
+    //       "⏰ مهلت پرداخت تموم شد. لطفاً دوباره تلاش کنید.",
+    //       {
+    //         chat_id: chatId,
+    //         message_id: messageId,
+    //         parse_mode: "HTML",
+    //         reply_markup: {
+    //           inline_keyboard: [
+    //             [
+    //               {
+    //                 text: "🔙 بازگشت به روش‌ های پرداخت",
+    //                 callback_data: "back_to_topup",
+    //               },
+    //             ],
+    //           ],
+    //         },
+    //       }
+    //     );
+    //   } catch (error) {}
+    // }, 120000);
 
   try {
     await bot.editMessageText(confirmationText, {

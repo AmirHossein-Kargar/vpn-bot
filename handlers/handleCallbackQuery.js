@@ -7,6 +7,7 @@ import {
 } from "../config/sessionStore.js";
 import keyboard from "../keyboards/mainKeyboard.js";
 import { CHOOSE_OPTION_MESSAGE } from "../messages/staticMessages.js";
+import promptForReceipt from "../paymentHandlers/promptForReceipt.js";
 
 const handleCallbackQuery = async (bot, query) => {
   const data = query.data;
@@ -37,18 +38,8 @@ const handleCallbackQuery = async (bot, query) => {
       break;
 
     case "upload_receipt":
-      await bot.editMessageText(
-        "💳 لطفاً رسید واریزی خود را ارسال کنید.",
-        {
-          chat_id: chatId,
-          message_id: session.messageId,
-        }
-      );
-      await setSession(chatId, {
-        ...session,
-        step: "waiting_for_receipt_image",
-      });
-      break;
+      await promptForReceipt(bot, chatId, session);
+    break;
     // case "pay_ton":
     //   await showPaymentStep(bot, chatId, messageId, {
     //     stepKey: "waiting_for_ton_amount",
