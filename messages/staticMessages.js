@@ -17,7 +17,7 @@ export function getTestServiceMessage({
     singleLink,
     username,
   }) {
-    return `🎉 <b>سرویس تست یک‌روزه شما فعال شد!</b>
+    return `🎉 <b>سرویس تست یک‌ روزه شما فعال شد!</b>
   
   🆔 <b>شناسه سرویس:</b> <code>${username}</code>
   👤 <b>حداکثر اتصال:</b> ${maxUser} کاربر

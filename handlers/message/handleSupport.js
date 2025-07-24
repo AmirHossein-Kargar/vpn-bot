@@ -2,7 +2,7 @@ import { getSession, setSession } from "../../config/sessionStore.js";
 
 const handleSupport = async (bot, chatId, userId) => {
   const supportMessage = `▫️ جهت ارتباط به صورت مستقیم:
-🔰 @AmirKargaar
+🔰 @Swift_servicebot
 
 ‼️ قبل از ارسال پیام به پشتیبانی، قوانین و مقررات سرویس‌دهی را مطالعه کنید.
 
