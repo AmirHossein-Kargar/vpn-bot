@@ -1,6 +1,9 @@
 import axios from "axios";
 import User from "../models/User.js";
-import { getTestServiceMessage } from "../messages/staticMessages.js";
+import {
+  getTestServiceMessage,
+  guideButtons,
+} from "../messages/staticMessages.js";
 
 const createTestService = async (bot, msg) => {
   const chatId = msg.chat.id;
@@ -12,7 +15,7 @@ const createTestService = async (bot, msg) => {
     user = await User.create({ telegramId: userId });
   }
 
-  if (user.hasReceivedTest) {
+  if (user.hasReceivedTest == true) {
     await bot.sendMessage(chatId, "شما قبلاً این سرویس را دریافت کرده‌اید.");
     return;
   }
@@ -37,23 +40,31 @@ const createTestService = async (bot, msg) => {
 
       // Prepare dynamic message
       const result = data.result;
+
       const maxUser = 1;
       const maxUsageMB = 2;
-      // Build smartLink as required
+      
       const smartLink = result.hash
         ? `https://iranisystem.com/bot/sub/?hash=${result.hash}`
         : result.sub_link || "";
+      
       const singleLink =
         result.tak_links && result.tak_links.length > 0
           ? result.tak_links[0]
           : "";
+      
+      const username = result.username || "نامشخص";
+      
       const message = getTestServiceMessage({
         maxUser,
         maxUsageMB,
         smartLink,
         singleLink,
+        username,
       });
+      
       await bot.sendMessage(chatId, message, {
+        parse_mode: "HTML",
         disable_web_page_preview: true,
         reply_markup: guideButtons.reply_markup,
       });
