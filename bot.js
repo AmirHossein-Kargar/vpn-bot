@@ -17,10 +17,9 @@ import { WELCOME_MESSAGE } from "./messages/staticMessages.js";
 import keyboard from "./keyboards/mainKeyboard.js";
 import { getSession, setSession } from "./config/sessionStore.js";
 import hideKeyboard from "./utils/hideKeyboard.js";
+import createTestService from "./services/createTestService.js";
 
-
-
-let adminIds = process.env.ADMINS.split(",").map(id => Number(id.trim()));
+let adminIds = process.env.ADMINS.split(",").map((id) => Number(id.trim()));
 
 const bot = await startBot();
 
@@ -40,7 +39,9 @@ bot.on("message", async (msg) => {
     }
     case "/panel" || "پنل": {
       if (adminIds.includes(userId)) {
-        const sendAdminPanels = (await import("./handlers/admin/sendAdminPanels.js")).default;
+        const sendAdminPanels = (
+          await import("./handlers/admin/sendAdminPanels.js")
+        ).default;
         await sendAdminPanels(bot, chatId);
       } else {
         await bot.sendMessage(chatId, "⛔️ شما دسترسی به این بخش را ندارید.");
@@ -48,7 +49,7 @@ bot.on("message", async (msg) => {
       break;
     }
     case "🎁 سرویس تست":
-      console.log("Test is not Active");
+      await createTestService(bot, msg);
       break;
     case "🛒 خرید سرویس":
       await handleBuyService(bot, chatId);
@@ -94,9 +95,10 @@ bot.on("photo", async (msg) => {
   const chatId = msg.chat.id;
   const session = await getSession(chatId);
 
-
-  if(session?.step === "waiting_for_receipt_image") {
-    const handleBankRecipt = (await import("./paymentHandlers/handleBankRecipt.js")).default;
+  if (session?.step === "waiting_for_receipt_image") {
+    const handleBankRecipt = (
+      await import("./paymentHandlers/handleBankRecipt.js")
+    ).default;
     await handleBankRecipt(bot, msg, session);
   }
 });

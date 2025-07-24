@@ -1,6 +1,7 @@
 import { getSession, setSession } from "../config/sessionStore.js";
 import handleTonAmount from "../paymentHandlers/handleTonAmount.js";
 import payBank from "../paymentHandlers/payBank.js";
+import handleAddBalance from "./admin/handleAddBalance.js";
 
 const handleMessage = async (bot, msg) => {
   const chatId = msg.chat.id;
@@ -20,6 +21,12 @@ const handleMessage = async (bot, msg) => {
   if (session?.step === "waiting_for_bank_amount" && msg.text) {
     await payBank(bot, msg, session);
   }
-};
 
+  if (
+    session?.step === "waiting_for_user_id" ||
+    session?.step === "waiting_for_amount"
+  ) {
+    await handleAddBalance(bot, msg, session);
+  }
+}
 export default handleMessage;
