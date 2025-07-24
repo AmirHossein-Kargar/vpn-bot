@@ -1,9 +1,6 @@
 import axios from "axios";
 import User from "../models/User.js";
-import {
-  getTestServiceMessage,
-  guideButtons,
-} from "../messages/staticMessages.js";
+import { getTestServiceMessage } from "../messages/staticMessages.js";
 
 const createTestService = async (bot, msg) => {
   const chatId = msg.chat.id;
