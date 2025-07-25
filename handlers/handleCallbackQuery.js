@@ -1,10 +1,6 @@
 import handleAddBalance from "./admin/handleAddBalance.js";
 import showPaymentMethods from "./message/showPaymentMethods.js";
-import {
-  clearSession,
-  getSession,
-  setSession,
-} from "../config/sessionStore.js";
+import { clearSession, getSession } from "../config/sessionStore.js";
 import keyboard from "../keyboards/mainKeyboard.js";
 import { CHOOSE_OPTION_MESSAGE } from "../messages/staticMessages.js";
 import promptForReceipt from "../paymentHandlers/promptForReceipt.js";
@@ -25,12 +21,24 @@ const handleCallbackQuery = async (bot, query) => {
       break;
 
     case "back_to_home":
-      await bot.deleteMessage(chatId, messageId);
-      if (session?.supportMessageId) {
-        await bot.deleteMessage(chatId, session.supportMessageId);
+      const session = await getSession(chatId);
+
+      try {
+        await bot.deleteMessage(chatId, messageId);
+      } catch (error) {
+        console.log("❗️خطا در حذف پیام اصلی:", error.message);
       }
+      try {
+        if (session?.supportMessageId) {
+          await bot.deleteMessage(chatId, session.supportMessageId);
+        }
+      } catch (error) {
+        console.log("❗️خطا در حذف پیام پشتیبانی:", error.message);
+      }
+
       await clearSession(chatId);
       await bot.sendMessage(chatId, CHOOSE_OPTION_MESSAGE, keyboard);
+
       break;
 
     case "pay_bank":
@@ -45,7 +53,6 @@ const handleCallbackQuery = async (bot, query) => {
       await handleAddBalance(bot, query, session);
       break;
     case "admin_back_to_main":
-      // await bot.deleteMessage(chatId, messageId)
       await sendAdminPanels(bot, chatId, messageId);
       break;
     // case "pay_ton":

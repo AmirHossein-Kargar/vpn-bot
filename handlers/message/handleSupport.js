@@ -4,7 +4,7 @@ const handleSupport = async (bot, chatId, userId) => {
   const supportMessage = `▫️ جهت ارتباط به صورت مستقیم:
 🔰 @Swift_servicebot
 
-‼️ قبل از ارسال پیام به پشتیبانی، قوانین و مقررات سرویس‌دهی را مطالعه کنید.
+‼️ قبل از ارسال پیام به پشتیبانی، قوانین و مقررات سرویس‌ دهی را مطالعه کنید.
 
 📝 لطفاً پیام پشتیبانی خود را در همین چت تایپ و ارسال کنید.
 `;
@@ -21,12 +21,13 @@ const handleSupport = async (bot, chatId, userId) => {
     reply_markup: { remove_keyboard: true },
   });
 
-  const session = await getSession(userId);
+  const session = (await getSession(userId)) || {};
   session.support = true;
+  session.supportMessageId = tempMsg.message_id;
   await setSession(userId, session);
 
   setTimeout(async () => {
-    bot.deleteMessage(chatId, tempMsg.message_id);
+    await bot.deleteMessage(chatId, tempMsg.message_id);
     await bot.sendMessage(chatId, supportMessage, supportKeyboard);
   }, 1000);
 };
