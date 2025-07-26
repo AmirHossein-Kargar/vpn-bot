@@ -1,22 +1,94 @@
-const plans = {
-  days30: [
-    { id: "plan15", name: "☁️ 15 گیگ - 30 روزه", days: 30, gig: 15, price: 48000 },
-    { id: "plan30", name: "🚀 30 گیگ - 30 روزه", days: 30, gig: 30, price: 84000 },
-    { id: "plan50", name: "🔥 50 گیگ - 30 روزه", days: 30, gig: 50, price: 130000 },
-    { id: "plan100", name: "🧠 100 گیگ - 30 روزه", days: 30, gig: 100, price: 250000 },
-    { id: "plan150", name: "💎 150 گیگ - 30 روزه", days: 30, gig: 150, price: 370000 },
-    { id: "plan200", name: "💎 200 گیگ - 30 روزه", days: 30, gig: 200, price: 490000 },
-  ],
-  days60: [
-    { id: "plan100x", name: "🚀 100 گیگ - 60 روزه", days: 60, gig: 100, price: 270000 },
-    { id: "plan200x", name: "🔥 200 گیگ - 60 روزه", days: 60, gig: 200, price: 510000 },
-    { id: "plan300x", name: "💎 300 گیگ - 60 روزه", days: 60, gig: 300, price: 730000 },
-  ],
-  days90: [
-    { id: "plan200z", name: "🚀 200 گیگ - 90 روزه", days: 90, gig: 200, price: 550000 },
-    { id: "plan300z", name: "🔥 300 گیگ - 90 روزه", days: 90, gig: 300, price: 780000 },
-    { id: "plan500z", name: "💎 500 گیگ - 90 روزه", days: 90, gig: 500, price: 980000 },
-  ],
-};
+// * Define separate arrays for different plan durations
 
-export default plans;
+export const plans30 = [
+  {
+    id: "plan30_10",
+    name: "🔹 10 گیگ - 30 روزه",
+    days: 30,
+    gig: 10,
+    price: 15300,
+  },
+  {
+    id: "plan30_50",
+    name: "🔹 50 گیگ - 30 روزه",
+    days: 30,
+    gig: 50,
+    price: 35700,
+  },
+  {
+    id: "plan30_100",
+    name: "🔹 100 گیگ - 30 روزه",
+    days: 30,
+    gig: 100,
+    price: 61200,
+  },
+  {
+    id: "plan30_200",
+    name: "🔹 200 گیگ - 30 روزه",
+    days: 30,
+    gig: 200,
+    price: 112200,
+  },
+];
+
+export const plans60 = [
+  {
+    id: "plan60_50",
+    name: "🔸 50 گیگ - 60 روزه",
+    days: 60,
+    gig: 50,
+    price: 45900,
+  },
+  {
+    id: "plan60_100",
+    name: "🔸 100 گیگ - 60 روزه",
+    days: 60,
+    gig: 100,
+    price: 71400,
+  },
+  {
+    id: "plan60_200",
+    name: "🔸 200 گیگ - 60 روزه",
+    days: 60,
+    gig: 200,
+    price: 122400,
+  },
+  {
+    id: "plan60_300",
+    name: "🔸 300 گیگ - 60 روزه",
+    days: 60,
+    gig: 300,
+    price: 173400,
+  },
+];
+
+export const plans90 = [
+  {
+    id: "plan90_100",
+    name: "🔷 100 گیگ - 90 روزه",
+    days: 90,
+    gig: 100,
+    price: 81600,
+  },
+  {
+    id: "plan90_200",
+    name: "🔷 200 گیگ - 90 روزه",
+    days: 90,
+    gig: 200,
+    price: 132600,
+  },
+  {
+    id: "plan90_300",
+    name: "🔷 300 گیگ - 90 روزه",
+    days: 90,
+    gig: 300,
+    price: 183600,
+  },
+  {
+    id: "plan90_500",
+    name: "🔷 500 گیگ - 90 روزه",
+    days: 90,
+    gig: 500,
+    price: 285600,
+  },
+];
