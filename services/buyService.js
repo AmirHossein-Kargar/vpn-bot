@@ -5,28 +5,21 @@ import plans from "./plans.js";
 // * each shown as an inline button the user can tap to select.
 
 const handleBuyService = async (bot, chatId) => {
-  // * Define the introductory message
   const message = `🛒 در 2 مرحله سرویس اختصاصی بگیرید ..
 
-🔻 یکی از پلن‌های موجود را انتخاب کنید :`;
+🔻 ابتدا مدت زمان سرویس را انتخاب کنید:`;
 
-  const inlineKeyboard = plans.map((plan) => {
-    return [
-      {
-        // * Combine the plan name and price into a readable format
-        text: `${plan.name} - ${plan.price.toLocaleString()} تومان`,
-        // * Set a unique identifier for each button to handle later
-        callback_data: `plan_${plan.id}`,
-      },
-    ];
-  });
-
-  // * Send the mssage and the inline keyboard to the user
-  bot.sendMessage(chatId, message, {
+  const durationButtons = {
     reply_markup: {
-      inline_keyboard: inlineKeyboard,
+      inline_keyboard: [
+        [{ text: "🔹 30 روزه", callback_data: "duration_30" }],
+        [{ text: "🔸 60 روزه", callback_data: "duration_60" }],
+        [{ text: "🔷 90 روزه", callback_data: "duration_90" }],
+      ],
     },
-  });
-};
+  };
+
+  await bot.sendMessage(chatId, message, durationButtons);
+}
 
 export default handleBuyService;
