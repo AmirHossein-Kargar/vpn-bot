@@ -18,6 +18,7 @@ import keyboard from "./keyboards/mainKeyboard.js";
 import { getSession, setSession } from "./config/sessionStore.js";
 import hideKeyboard from "./utils/hideKeyboard.js";
 import createTestService from "./services/createTestService.js";
+import User from "./models/User.js";
 
 let adminIds = process.env.ADMINS.split(",").map((id) => Number(id.trim()));
 
@@ -54,10 +55,18 @@ bot.on("message", async (msg) => {
     case "🛒 خرید سرویس":
       await handleBuyService(bot, chatId);
       break;
-    case "💰 افزایش موجودی":
+    case "💰 افزایش موجودی": {
       await hideKeyboard(bot, chatId);
-      await showPaymentMethods(bot, chatId);
+      const user = await User.findOne({ telegramId: userId });
+      if (!user || !user.phoneNumber) {
+        await handleContact(bot, msg, async () => {
+          await showPaymentMethods(bot, chatId);
+        });
+      } else {
+        await showPaymentMethods(bot, chatId);
+      }
       break;
+    }
     case "👤 پروفایل من":
       await handleProfile(bot, chatId, userId);
       break;

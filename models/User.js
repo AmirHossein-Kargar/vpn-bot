@@ -1,7 +1,7 @@
 import mongoose from "mongoose";
 const userSchema = new mongoose.Schema({
   telegramId: { type: String, required: true, unique: true },
-  phoneNumber: { type: String },
+  phoneNumber: { type: String, default: null },
   balance: { type: Number, default: 0 },
   successfulPayments: { type: Number, default: 0 },
   totalServices: { type: Number, default: 0 },

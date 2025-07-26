@@ -21,8 +21,6 @@ const handleCallbackQuery = async (bot, query) => {
       break;
 
     case "back_to_home":
-      const session = await getSession(chatId);
-
       try {
         await bot.deleteMessage(chatId, messageId);
       } catch (error) {
@@ -38,7 +36,6 @@ const handleCallbackQuery = async (bot, query) => {
 
       await clearSession(chatId);
       await bot.sendMessage(chatId, CHOOSE_OPTION_MESSAGE, keyboard);
-
       break;
 
     case "pay_bank":

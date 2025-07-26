@@ -13,20 +13,25 @@ const supportMessageHandler = async (bot, msg) => {
   const user = await User.findOne({ telegramId: String(userId) });
   const groupId = process.env.GROUP_ID;
 
-  let userInfo = `👤 کاربر: ${msg.from.first_name || "نامشخص"} (@${
-    msg.from.username || "ندارد"
-  })\n🆔 آیدی عددی: ${userId}`;
-  // if (user && user.phoneNumber) userInfo += `\n📞 تلفن: ${user.phoneNumber}`;
-  if (user && user.balance !== undefined)
-    userInfo += `\n💰 موجودی: ${user.balance}`;
+  const userInfo =
+  `👤 کاربر: ${msg.from.first_name || "نامشخص"}\n` +
+  `🔗 یوزرنیم: @${msg.from.username || "ندارد"}\n` +
+  `🆔 آیدی عددی: <code>${userId}</code>` +
+  (user?.balance !== undefined
+    ? `\n💰 موجودی: <code>${user.balance.toLocaleString()}</code> تومان`
+    : "");
 
-  // * FORWARD THE SUPPORT MESSAGE TO THE ADMIN GROUP
+await bot.sendMessage(
+  groupId,
+  `📩 <b>پیام جدید پشتیبانی</b>\n\n${userInfo}\n\n📝 <b>متن پیام:</b>\n${text}`,
+  { parse_mode: "HTML" }
+);
+
   await bot.sendMessage(
-    groupId,
-    `📩 پیام پشتیبانی جدید:\n${userInfo}\n\nپیام:\n${text}`
+    chatId,
+    "✅ پیام شما با موفقیت برای پشتیبانی ارسال شد",
+    keyboard
   );
-
-  await bot.sendMessage(chatId, "✅ پیام شما با موفقیت برای پشتیبانی ارسال شد", keyboard);
 
   // * CLEAR THE SUPPORT SESSION
   session.support = false;
