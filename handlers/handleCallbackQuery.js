@@ -6,6 +6,7 @@ import { CHOOSE_OPTION_MESSAGE } from "../messages/staticMessages.js";
 import promptForReceipt from "../paymentHandlers/promptForReceipt.js";
 import sendAdminPanels from "./admin/sendAdminPanels.js";
 import { plans30, plans60, plans90 } from "../services/plans.js";
+import handleBuyService from "../services/buyService.js";
 
 const handleCallbackQuery = async (bot, query) => {
   const data = query.data;
@@ -90,6 +91,10 @@ const handleCallbackQuery = async (bot, query) => {
     case "buy_service_back_to_main":
       await bot.deleteMessage(chatId, messageId);
       await bot.sendMessage(chatId, CHOOSE_OPTION_MESSAGE);
+      break
+      case "buy_service_back":
+        await bot.deleteMessage(chatId, messageId);
+        await handleBuyService(bot, chatId);
     // case "pay_ton":
     //   await showPaymentStep(bot, chatId, messageId, {
     //     stepKey: "waiting_for_ton_amount",
