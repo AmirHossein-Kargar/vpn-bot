@@ -92,3 +92,9 @@ export const plans90 = [
     price: 285600,
   },
 ];
+
+export default {
+  plans30,
+  plans60,
+  plans90,
+};

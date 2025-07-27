@@ -15,6 +15,7 @@ const handleBuyService = async (bot, chatId) => {
         [{ text: "🔹 30 روزه", callback_data: "duration_30" }],
         [{ text: "🔸 60 روزه", callback_data: "duration_60" }],
         [{ text: "🔷 90 روزه", callback_data: "duration_90" }],
+        [{ text: "🔙 بازگشت", callback_data: "buy_service_back_to_main" }],
       ],
     },
   };
