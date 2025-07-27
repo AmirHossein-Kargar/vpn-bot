@@ -1,4 +1,4 @@
-import plans from "./plans.js";
+import plans from "../plans.js";
 
 // * This function handles the "Buy Service" feature.
 // * It sends a message with a list of available plans,
@@ -21,6 +21,6 @@ const handleBuyService = async (bot, chatId) => {
   };
 
   await bot.sendMessage(chatId, message, durationButtons);
-}
+};
 
 export default handleBuyService;

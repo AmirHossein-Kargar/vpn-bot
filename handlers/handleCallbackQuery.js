@@ -6,7 +6,7 @@ import { CHOOSE_OPTION_MESSAGE } from "../messages/staticMessages.js";
 import promptForReceipt from "../paymentHandlers/promptForReceipt.js";
 import sendAdminPanels from "./admin/sendAdminPanels.js";
 import { plans30, plans60, plans90 } from "../services/plans.js";
-import handleBuyService from "../services/buyService.js";
+import handleBuyService from "../services/buyService/buyService.js";
 
 const handleCallbackQuery = async (bot, query) => {
   const data = query.data;
@@ -87,14 +87,14 @@ const handleCallbackQuery = async (bot, query) => {
       );
       break;
 
-      // * back to main menu when user choose "بازگشت" in buy-service menu
+    // * back to main menu when user choose "بازگشت" in buy-service menu
     case "buy_service_back_to_main":
       await bot.deleteMessage(chatId, messageId);
       await bot.sendMessage(chatId, CHOOSE_OPTION_MESSAGE);
-      break
-      case "buy_service_back":
-        await bot.deleteMessage(chatId, messageId);
-        await handleBuyService(bot, chatId);
+      break;
+    case "buy_service_back":
+      await bot.deleteMessage(chatId, messageId);
+      await handleBuyService(bot, chatId);
     // case "pay_ton":
     //   await showPaymentStep(bot, chatId, messageId, {
     //     stepKey: "waiting_for_ton_amount",
@@ -105,7 +105,6 @@ const handleCallbackQuery = async (bot, query) => {
   }
 };
 
-export default handleCallbackQuery;
 
 const generatePlanButtons = (plans) => {
   const buttons = plans.map((plan) => [
@@ -114,18 +113,20 @@ const generatePlanButtons = (plans) => {
       callback_data: `plan_${plan.id}`,
     },
   ]);
-
-  // Add the "بازگشت" (Back) button at the end
+  
+  // * Add the "بازگشت" (Back) button at the end
   buttons.push([
     {
       text: "🔙 بازگشت",
       callback_data: "buy_service_back",
     },
   ]);
-
+  
   return {
     reply_markup: {
       inline_keyboard: buttons,
     },
   };
 };
+
+  export default handleCallbackQuery;
