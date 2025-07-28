@@ -1,4 +1,4 @@
-import User from "../../models/User";
+import User from "../../models/User.js";
 
 export const checkUserBalance = async (userId, price) => {
     const user = await User.findOne({ telegramId: userId });

@@ -1,5 +1,8 @@
 import mongoose from "mongoose";
 const userSchema = new mongoose.Schema({
+  firstName: { type: String, default: null },
+  lastName: { type: String, default: null },
+  username: { type: String, default: null },
   telegramId: { type: String, required: true, unique: true },
   phoneNumber: { type: String, default: null },
   balance: { type: Number, default: 0 },

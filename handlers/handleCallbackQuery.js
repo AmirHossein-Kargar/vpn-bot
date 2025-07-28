@@ -5,14 +5,17 @@ import keyboard from "../keyboards/mainKeyboard.js";
 import { CHOOSE_OPTION_MESSAGE } from "../messages/staticMessages.js";
 import promptForReceipt from "../paymentHandlers/promptForReceipt.js";
 import sendAdminPanels from "./admin/sendAdminPanels.js";
-import { plans30, plans60, plans90 } from "../services/plans.js";
+import plans, { plans30, plans60, plans90 } from "../services/plans.js";
 import handleBuyService from "../services/buyService/buyService.js";
+import generatePlanButtons from "../keyboards/generatePlanButtons.js";
+import confirmOrder from "../services/buyService/confirmOrder.js";
+import orderService from "../services/buyService/orderService.js";
 
 const handleCallbackQuery = async (bot, query) => {
   const data = query.data;
   const chatId = query.message.chat.id;
   const messageId = query.message.message_id;
-
+  const userId = query.from.id;
   const session = await getSession(chatId);
 
   switch (data) {
@@ -95,6 +98,8 @@ const handleCallbackQuery = async (bot, query) => {
     case "buy_service_back":
       await bot.deleteMessage(chatId, messageId);
       await handleBuyService(bot, chatId);
+      break
+  
     // case "pay_ton":
     //   await showPaymentStep(bot, chatId, messageId, {
     //     stepKey: "waiting_for_ton_amount",
@@ -103,30 +108,41 @@ const handleCallbackQuery = async (bot, query) => {
     //   });
     //   break;
   }
+  if (data.startsWith("plan_")) {
+    const planId = data.replace("plan_", "");
+  
+    const allPlans = [...plans30, ...plans60, ...plans90];
+    const selectedPlan = allPlans.find((plan) => plan.id === planId);
+  
+    if (!selectedPlan) {
+      await bot.sendMessage(chatId, "❌ پلن مورد نظر یافت نشد.");
+      return;
+    }
+  
+    const { message, replyMarkup } = confirmOrder(selectedPlan);
+  
+    await bot.editMessageText(message, {
+      chat_id: chatId,
+      message_id: messageId,
+      reply_markup: replyMarkup,
+      parse_mode: "HTML",
+    });
+  
+    return;
+  }
+  if (data.startsWith("confirm_order_")) {
+    const planId = data.split("confirm_order_")[1];
+    const allPlans = [...plans30, ...plans60, ...plans90];
+    const selectedPlan = allPlans.find((p) => p.id.toString() === planId);
+
+    if (!selectedPlan) {
+      return bot.sendMessage(chatId, "❌ پلن مورد نظر یافت نشد.");
+    }
+    await bot.deleteMessage(chatId, messageId);
+    await orderService(bot, chatId, userId, selectedPlan);
+    return;
+  }
 };
 
 
-const generatePlanButtons = (plans) => {
-  const buttons = plans.map((plan) => [
-    {
-      text: `${plan.name} | ${plan.price.toLocaleString("en-US")} تومان`,
-      callback_data: `plan_${plan.id}`,
-    },
-  ]);
-  
-  // * Add the "بازگشت" (Back) button at the end
-  buttons.push([
-    {
-      text: "🔙 بازگشت",
-      callback_data: "buy_service_back",
-    },
-  ]);
-  
-  return {
-    reply_markup: {
-      inline_keyboard: buttons,
-    },
-  };
-};
-
-  export default handleCallbackQuery;
+export default handleCallbackQuery;

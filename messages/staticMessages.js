@@ -36,3 +36,20 @@ export function getTestServiceMessage({
   
 
 export { guideButtons } from "../handlers/message/handleGuide.js";
+
+
+export function getSuccessServiceMessage({username, smartLink, singleLink} ) {
+  `✅ <b>سرویس شما با موفقیت ساخته شد.</b>
+
+🆔 <b>آیدی سرویس:</b> <code>${username}</code>
+
+🔗 <b>لینک اتصال (Subscription):</b>
+<code>${smartLink}</code>
+
+👈 <b>لینک تکی از لوکیشن پیشنهادی:</b>
+<code>${singleLink}</code>
+
+📌 برای کپی لینک، روی آن لمس طولانی کنید یا راست‌کلیک کنید.
+
+⚠️ این سرویس از نوع <b>Subscription</b> است. برای اتصال، از راهنمای زیر استفاده کنید.`;
+}

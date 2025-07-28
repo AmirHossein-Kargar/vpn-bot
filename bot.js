@@ -7,7 +7,7 @@ import handleContact from "./handlers/contactHandler.js";
 import handleCallbackQuery from "./handlers/handleCallbackQuery.js";
 
 // * 📦 Services
-import handleBuyService from "./services/buyService.js";
+import handleBuyService from "./services/buyService/buyService.js";
 import showPaymentMethods from "./handlers/message/showPaymentMethods.js";
 import handleProfile from "./handlers/message/handleProfile.js";
 import handleGuide from "./handlers/message/handleGuide.js";
