@@ -1,11 +1,15 @@
 import { setSession } from "../config/sessionStore.js";
 import invoice from "../models/invoice.js";
+import User from "../models/User.js";
 
 const handleBankRecipt = async (bot, msg, session) => {
   const chatId = msg.chat.id;
   const fileId = msg.photo[msg.photo.length - 1].file_id;
   const user = msg.from;
   const groupId = process.env.GROUP_ID;
+
+  const phoneNumber =
+    (await User.findOne({ telegramId: user.id })?.phoneNumber) || "نامشخص";
 
   // * 1. Find the invoice by paymentId and update status to "waiting_for_approval"
   if (session.paymentId) {
@@ -19,15 +23,22 @@ const handleBankRecipt = async (bot, msg, session) => {
     }
   }
 
-  // * 2. Send receipt photo to admin group
-  await bot.sendPhoto(groupId, fileId, {
-    caption: `🧾 رسید جدید پرداخت
+  const RLM = "\u200F"; // Right-to-Left Mark
 
-    👤 نام کاربر: ${user.first_name || "نامشخص"}
-    🆔 آیدی عددی: ${user.id}
-    📎 یوزرنیم: @${user.username || "ندارد"}
-    💰 مبلغ: ${session.rawAmount} تومان
-    🔖 شماره فاکتور: ${session.paymentId || "نامشخص"}`,
+  await bot.sendPhoto(groupId, fileId, {
+    caption:
+      `🧾 <b>رسید جدید پرداخت</b>\n\n` +
+      `👤 <b>نام کاربر:</b> <code>${user.first_name || "نامشخص"}</code>\n` +
+      ` <b>آیدی عددی:</b> <code>${RLM}${user.id}</code>\n` +
+      `📎 <b>یوزرنیم:</b> @${user.username || "ندارد"}\n` +
+      `📞 <b>شماره تلفن:</b> <code>${phoneNumber}</code>\n` +
+      `💰 <b>مبلغ:</b> <code>${session.rawAmount.toLocaleString(
+        "en-US"
+      )} تومان</code>\n` +
+      `📌 <b>شماره فاکتور:</b> <code>${
+        session.paymentId ? RLM + session.paymentId : "نامشخص"
+      }</code>`,
+    parse_mode: "HTML",
   });
 
   // * 3. Delete the user's photo message

@@ -40,11 +40,11 @@ const handleProfile = async (bot, chatId, userId) => {
 
     const message = `👤 شناسه کاربری: <code>${user.telegramId}</code>
     
-💰 موجودی: <code>${user.balance.toLocaleString()}</code> تومان
+💰 موجودی: <code>${user.balance.toLocaleString()} تومان</code>
 🟢 پرداخت های موفق: <code>${user.successfulPayments} عدد</code>
 📦 کل سرویس ها: <code>${user.totalServices} عدد</code>
 📞 شماره تلفن: <code>${phone}</code>
-🕒 تاریخ عضویت: ${formattedDate}`;
+🕒 تاریخ عضویت: <code>${formattedDate}</code>`;
 
     bot.sendMessage(chatId, message, { parse_mode: "HTML" });
   } catch (err) {

@@ -37,6 +37,9 @@ const handleContact = async (bot, msg, afterVerify) => {
 
   if (!user) {
     await User.create({
+      firstName: msg.from.first_name,
+      lastName: msg.from.last_name,
+      username: msg.from.username,
       telegramId: userId,
       balance: 0,
       successfulPayments: 0,
