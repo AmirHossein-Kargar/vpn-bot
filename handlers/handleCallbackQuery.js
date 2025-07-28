@@ -10,6 +10,8 @@ import handleBuyService from "../services/buyService/buyService.js";
 import generatePlanButtons from "../keyboards/generatePlanButtons.js";
 import confirmOrder from "../services/buyService/confirmOrder.js";
 import orderService from "../services/buyService/orderService.js";
+import User from "../models/User.js";
+import invoice from "../models/invoice.js";
 
 const handleCallbackQuery = async (bot, query) => {
   const data = query.data;
@@ -57,6 +59,8 @@ const handleCallbackQuery = async (bot, query) => {
     case "admin_back_to_main":
       await sendAdminPanels(bot, chatId, messageId);
       break;
+    case "confirm_payment": {
+    }
     case "duration_30":
       await bot.editMessageText(
         "💡 لطفاً یکی از پلن‌های 30 روزه را انتخاب کنید:",
@@ -98,8 +102,8 @@ const handleCallbackQuery = async (bot, query) => {
     case "buy_service_back":
       await bot.deleteMessage(chatId, messageId);
       await handleBuyService(bot, chatId);
-      break
-  
+      break;
+
     // case "pay_ton":
     //   await showPaymentStep(bot, chatId, messageId, {
     //     stepKey: "waiting_for_ton_amount",
@@ -108,26 +112,133 @@ const handleCallbackQuery = async (bot, query) => {
     //   });
     //   break;
   }
+
+  // Handle confirm payment callback
+  if (data.startsWith("confirm_payment_")) {
+    const parts = data.split("_");
+    if (parts.length >= 4) {
+      const userId = parts[2];
+      const amount = parseInt(parts[3].replace(/,/g, ""));
+      const paymentId = parts[4];
+
+      try {
+        // Update user balance
+        const user = await User.findOneAndUpdate(
+          { telegramId: userId },
+          { $inc: { balance: amount } },
+          { new: true }
+        );
+
+        if (!user) {
+          await bot.answerCallbackQuery(query.id, {
+            text: "❌ کاربر یافت نشد",
+            show_alert: true,
+          });
+          return;
+        }
+
+        // Update invoice status to approved
+        await invoice.findOneAndUpdate(
+          { paymentId: paymentId },
+          { status: "confirmed" }
+        );
+
+        // Remove buttons from the original receipt message
+        await bot.editMessageReplyMarkup(
+          { inline_keyboard: [] },
+          {
+            chat_id: chatId,
+            message_id: messageId,
+          }
+        );
+
+        // Send confirmation message to admin group
+        await bot.sendMessage(
+          chatId,
+          "✅ پرداخت تایید شد و موجودی کاربر افزایش یافت."
+        );
+
+        // Send notification to user
+        await bot.sendMessage(
+          userId,
+          `✅ پرداخت شما تایید شد!\n💰 مبلغ ${amount.toLocaleString(
+            "en-US"
+          )} تومان به کیف پول شما اضافه شد.\n💳 موجودی فعلی: ${user.balance.toLocaleString(
+            "en-US"
+          )} تومان`
+        );
+
+        await bot.answerCallbackQuery(query.id, {
+          text: "✅ پرداخت تایید شد و موجودی کاربر افزایش یافت",
+        });
+      } catch (error) {
+        console.error("Error confirming payment:", error);
+        await bot.answerCallbackQuery(query.id, {
+          text: "❌ خطا در تایید پرداخت",
+          show_alert: true,
+        });
+      }
+      return;
+    }
+  }
+
+  // Handle reject payment callback
+  if (data.startsWith("reject_payment_")) {
+    const paymentId = data.split("reject_payment_")[1];
+
+    try {
+      // Update invoice status to rejected
+      await invoice.findOneAndUpdate(
+        { paymentId: paymentId },
+        { status: "rejected" }
+      );
+
+      // Remove buttons from the original receipt message
+      await bot.editMessageReplyMarkup(
+        { inline_keyboard: [] },
+        {
+          chat_id: chatId,
+          message_id: messageId,
+        }
+      );
+
+      // Send rejection message to admin group
+      await bot.sendMessage(chatId, "❌ پرداخت رد شد.");
+
+      await bot.answerCallbackQuery(query.id, {
+        text: "❌ پرداخت رد شد",
+        show_alert: true,
+      });
+    } catch (error) {
+      console.error("Error rejecting payment:", error);
+      await bot.answerCallbackQuery(query.id, {
+        text: "❌ خطا در رد پرداخت",
+        show_alert: true,
+      });
+    }
+    return;
+  }
+
   if (data.startsWith("plan_")) {
     const planId = data.replace("plan_", "");
-  
+
     const allPlans = [...plans30, ...plans60, ...plans90];
     const selectedPlan = allPlans.find((plan) => plan.id === planId);
-  
+
     if (!selectedPlan) {
       await bot.sendMessage(chatId, "❌ پلن مورد نظر یافت نشد.");
       return;
     }
-  
+
     const { message, replyMarkup } = confirmOrder(selectedPlan);
-  
+
     await bot.editMessageText(message, {
       chat_id: chatId,
       message_id: messageId,
       reply_markup: replyMarkup,
       parse_mode: "HTML",
     });
-  
+
     return;
   }
   if (data.startsWith("confirm_order_")) {
@@ -143,6 +254,5 @@ const handleCallbackQuery = async (bot, query) => {
     return;
   }
 };
-
 
 export default handleCallbackQuery;
