@@ -1,4 +1,4 @@
-const validateWithCommas = (text, min = 50000, max = 500000) => {
+const validateWithCommas = (text, min = 10000, max = 500000) => {
   const commaPattern = /^\d{1,3}(,\d{3})*$/;
 
   if (!commaPattern.test(text)) {
@@ -16,7 +16,7 @@ const validateWithCommas = (text, min = 50000, max = 500000) => {
       message: `❌ مبلغ باید بین ${min.toLocaleString()} تا ${max.toLocaleString()} تومان باشد.`,
     };
   }
-console.log(amount)
+  console.log(amount);
   return { valid: true, amount };
 };
 
