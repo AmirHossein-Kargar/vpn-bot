@@ -30,5 +30,36 @@ const handleMessage = async (bot, msg) => {
   ) {
     await handleAddBalance(bot, msg, session);
   }
+
+  if (session?.step === "waiting_for_config_details") {
+    await handleSendConfig(bot, msg, session);
+  }
+};
+
+// Handle sending config to user
+const handleSendConfig = async (bot, msg, session) => {
+  const chatId = msg.chat.id;
+  const configText = msg.text;
+  const targetUserId = session.targetUserId;
+
+  if (!targetUserId) {
+    await bot.sendMessage(chatId, "❌ خطا: کاربر مورد نظر یافت نشد.");
+    return;
+  }
+
+  try {
+    // Send config to the target user
+    await bot.sendMessage(targetUserId, configText);
+    
+    // Confirm to admin
+    await bot.sendMessage(chatId, "✅ کانفیگ با موفقیت به کاربر ارسال شد.");
+    
+    // Clear session
+    await setSession(chatId, { step: null });
+    
+  } catch (error) {
+    console.error("Error sending config to user:", error);
+    await bot.sendMessage(chatId, "❌ خطا در ارسال کانفیگ به کاربر.");
+  }
 };
 export default handleMessage;

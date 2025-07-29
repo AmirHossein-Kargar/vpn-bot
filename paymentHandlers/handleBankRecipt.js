@@ -56,7 +56,7 @@ const handleBankRecipt = async (bot, msg, session) => {
           },
           {
             text: "❌ رد",
-            callback_data: `reject_payment_${session.paymentId}`,
+            callback_data: `reject_payment_${session.paymentId}_${user.id}`,
           },
         ],
       ],

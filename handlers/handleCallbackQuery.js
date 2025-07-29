@@ -1,11 +1,15 @@
 import handleAddBalance from "./admin/handleAddBalance.js";
 import showPaymentMethods from "./message/showPaymentMethods.js";
-import { clearSession, getSession } from "../config/sessionStore.js";
+import {
+  clearSession,
+  getSession,
+  setSession,
+} from "../config/sessionStore.js";
 import keyboard from "../keyboards/mainKeyboard.js";
 import { CHOOSE_OPTION_MESSAGE } from "../messages/staticMessages.js";
 import promptForReceipt from "../paymentHandlers/promptForReceipt.js";
 import sendAdminPanels from "./admin/sendAdminPanels.js";
-import plans, { plans30, plans60, plans90 } from "../services/plans.js";
+import { plans30, plans60, plans90 } from "../services/plans.js";
 import handleBuyService from "../services/buyService/buyService.js";
 import generatePlanButtons from "../keyboards/generatePlanButtons.js";
 import confirmOrder from "../services/buyService/confirmOrder.js";
@@ -103,7 +107,9 @@ const handleCallbackQuery = async (bot, query) => {
       await bot.deleteMessage(chatId, messageId);
       await handleBuyService(bot, chatId);
       break;
-
+    case "send_config_to_user":
+      // This case is handled below with startsWith check
+      break;
     // case "pay_ton":
     //   await showPaymentStep(bot, chatId, messageId, {
     //     stepKey: "waiting_for_ton_amount",
@@ -181,10 +187,14 @@ const handleCallbackQuery = async (bot, query) => {
       return;
     }
   }
-
-  // Handle reject payment callback
   if (data.startsWith("reject_payment_")) {
-    const paymentId = data.split("reject_payment_")[1];
+    // const paymentId = data.split("reject_payment_")[1];
+    const [paymentId, userId] = data.split("reject_payment_")[1].split("_");
+    if (!userId) {
+      console.error("❗ userId is missing in callback_data");
+      return;
+    }
+  
 
     try {
       // Update invoice status to rejected
@@ -205,9 +215,14 @@ const handleCallbackQuery = async (bot, query) => {
       // Send rejection message to admin group
       await bot.sendMessage(chatId, "❌ پرداخت رد شد.");
 
+    // ✅ Send message to user
+    await bot.sendMessage(
+      userId,
+      "❌ پرداخت شما توسط ادمین رد شد. در صورت نیاز با پشتیبانی تماس بگیرید."
+    );
+
       await bot.answerCallbackQuery(query.id, {
         text: "❌ پرداخت رد شد",
-        show_alert: true,
       });
     } catch (error) {
       console.error("Error rejecting payment:", error);
@@ -218,6 +233,34 @@ const handleCallbackQuery = async (bot, query) => {
     }
     return;
   }
+
+  // Handle send config to user callback
+  if (data.startsWith("send_config_to_user_")) {
+    const userId = data.split("send_config_to_user_")[1];
+
+    // Set session to wait for config details with user ID
+    await setSession(chatId, {
+      step: "waiting_for_config_details",
+      targetUserId: userId,
+    });
+
+    await bot.sendMessage(chatId, "📝 لطفاً کانفیگ سرویس را ارسال کنید:", {
+      reply_markup: {
+        inline_keyboard: [
+          [
+            {
+              text: "🔄 بازگشت به پنل مدیریت",
+              callback_data: "admin_back_to_main",
+            },
+          ],
+        ],
+      },
+    });
+    return;
+  }
+
+ 
+  // Handle reject payment callback
 
   if (data.startsWith("plan_")) {
     const planId = data.replace("plan_", "");

@@ -1,6 +1,7 @@
 // spell-checker: disable
 import moment from "moment-jalaali";
 import User from "../../models/User.js";
+import formatDate from "../../utils/formatDate.js";
 
 moment.loadPersian({ usePersianDigits: false, dialect: "persian-modern" });
 
@@ -36,7 +37,7 @@ const handleProfile = async (bot, chatId, userId) => {
       ? user.phoneNumber.replace("+98", "0")
       : user.phoneNumber;
 
-    const formattedDate = moment(user.createdAt).format("jYYYY/jM/jD");
+    const formattedDate = formatDate(user.createdAt);
 
     const message = `👤 شناسه کاربری: <code>${user.telegramId}</code>
     

@@ -4,6 +4,7 @@ import {
   guideButtons,
 } from "../../messages/staticMessages.js";
 import User from "../../models/User.js";
+import formatDate from "../../utils/formatDate.js";
 import { checkUserBalance } from "./checkUserBalance.js";
 
 async function handlePlanOrder(bot, chatId, userId, plan) {
@@ -51,26 +52,35 @@ async function handlePlanOrder(bot, chatId, userId, plan) {
 
       const ADMIN_GROUP_ID = process.env.GROUP_ID;
 
-      const messageToAdmin = `
-📩 <b>سفارش جدید نیازمند ساخت دستی</b>
+      const msg = `📩 <b>سفارش جدید نیازمند ساخت دستی</b>
+      
+    👤 <b>نام:</b> <code>${user.firstName || "نامشخص"}</code>
+     <b>آیدی عددی:</b> <code>${user.telegramId}</code>
+     📞 <b>شماره:</b> <code>${user.phoneNumber || "نامشخص"}</code>
+    🧾 <b>تاریخ عضویت:</b> <code>${formatDate(user.createdAt)}</code>
+      
+    💰 <b>موجودی فعلی:</b> <code>${user.balance}</code> تومان
+      
+    🛒 <b>پلن انتخابی:</b> <code>${plan.name}</code>
+    📦 <b>حجم:</b> <code>${plan.gig}</code> گیگ
+    📆 <b>مدت:</b> <code>${plan.days}</code> روز
+    💳 <b>قیمت:</b> <code>${plan.price}</code> تومان
+      
+    🧑‍💼 لطفاً این سفارش را به صورت دستی در پنل ایجاد کرده و سپس ارسال نمایید.
+      `;
 
-👤 <b>نام:</b> ${user.firstName || "-"}
-🆔 <b>Telegram ID:</b> <code>${user.telegramId}</code>
-📞 <b>شماره:</b> <code>${user.phoneNumber || "نامشخص"}</code>
-🧾 <b>تاریخ عضویت:</b> ${new Date(user.joinDate).toLocaleDateString("fa-IR")}
-
-💰 <b>موجودی فعلی:</b> ${user.balance} تومان
-
-🛒 <b>پلن انتخابی:</b> ${plan.name}
-📦 <b>حجم:</b> ${plan.gig} گیگ
-📆 <b>مدت:</b> ${plan.days} روز
-💳 <b>قیمت:</b> ${plan.price} تومان
-
-🧑‍💼 لطفاً این سفارش را به صورت دستی در پنل ایجاد کنید.
-`;
-
-      await bot.sendMessage(ADMIN_GROUP_ID, messageToAdmin, {
+      await bot.sendMessage(ADMIN_GROUP_ID, msg, {
         parse_mode: "HTML",
+        reply_markup: {
+          inline_keyboard: [
+            [
+              {
+                text: "ارسال کانفیگ به کاربر",
+                callback_data: `send_config_to_user_${user.telegramId}`,
+              },
+            ],
+          ],
+        },
       });
     }
   } catch (error) {
