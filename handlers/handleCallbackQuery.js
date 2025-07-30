@@ -27,6 +27,19 @@ const handleCallbackQuery = async (bot, query) => {
   switch (data) {
     case "back_to_topup":
       await bot.deleteMessage(chatId, messageId);
+
+      // Remove invoice from database if paymentId exists in session
+      if (session?.paymentId) {
+        try {
+          await invoice.findOneAndDelete({ paymentId: session.paymentId });
+          console.log(
+            `🗑️ Invoice with paymentId ${session.paymentId} removed from database`
+          );
+        } catch (error) {
+          console.error("Error removing invoice:", error.message);
+        }
+      }
+
       await clearSession(chatId); // * Clear session
       await showPaymentMethods(bot, chatId);
       break;

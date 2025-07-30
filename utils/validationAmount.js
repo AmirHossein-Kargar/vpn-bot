@@ -4,7 +4,7 @@ const validateWithCommas = (text, min = 10000, max = 500000) => {
   if (!commaPattern.test(text)) {
     return {
       valid: false,
-      message: "❌ لطفاً مبلغ را با کاما وارد کنید. مثال: 50,000 یا 120,000",
+      message: "❌ لطفاً مبلغ را با کاما وارد کنید. مثال: <code>50,000</code> یا <code>120,000</code>",
     };
   }
 

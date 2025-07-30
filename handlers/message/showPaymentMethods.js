@@ -3,13 +3,19 @@ import { setSession } from "../../config/sessionStore.js";
 // * This function sends payment method options to the user
 const showPaymentMethods = async (bot, chatId) => {
   // * Main message shown to the user
-  const message = "🔍 یکی از روش‌ های پرداخت را انتخاب کنید";
+  const message = `
+<b>💰 افزایش موجودی کیف پول</b>
+
+لطفاً روش پرداخت را انتخاب کنید.
+  `;
 
   // * Inline keyboard with different payment options
   const topUpButtons = {
+    parse_mode: "HTML",
     reply_markup: {
       inline_keyboard: [
         [{ text: "💳 کارت‌ به‌ کارت", callback_data: "pay_bank" }],
+        [{ text: "🔙 بازگشت", callback_data: "back_to_home" }],
 
         // [{ text: "🪙 پرداخت ارز دیجیتال", callback_data: "pay_crypto" }],
 

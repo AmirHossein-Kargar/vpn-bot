@@ -19,10 +19,22 @@ const payBank = async (bot, msg, session) => {
   if (!text) {
     try {
       await bot.editMessageText(
-        "💳 لطفاً مبلغ مورد نظر را به تومان و با کاما وارد کنید.\n\n───────────────\nحداقل: 50,000 تومان\nحداکثر: 500,000 تومان",
+        `💸 <b>وارد کردن مبلغ واریز</b>
+
+
+🔹 <b>لطفاً مبلغ مورد نظر را به تومان و با کاما وارد کنید.</b>
+مثال: <code>50,000</code> | <code>120,000</code>
+
+🔻 <b>محدودیت مبلغ:</b>
+▫️ حداقل: <code>10,000 تومان</code>
+▫️ حداکثر: <code>500,000 تومان</code>
+
+✍️ <i>برای ادامه، مبلغ را به صورت صحیح ارسال کنید.</i>
+        `,
         {
           chat_id: chatId,
           message_id: messageId,
+          parse_mode: "HTML",
           reply_markup: {
             inline_keyboard: backButton,
           },
@@ -91,7 +103,7 @@ const payBank = async (bot, msg, session) => {
     "\n" +
     rtl(`🔖 شماره فاکتور: <code>${ltr(paymentId)}</code>`) +
     "\n\n" +
-    rtl(`💳 مبلغ: ${text} تومان را به شماره کارت زیر واریز کنید:`) +
+    rtl(`💳 مبلغ: <code>${text}</code> تومان را به شماره کارت زیر واریز کنید:`) +
     "\n\n" +
     `🔢 شماره کارت: <code>${ltr(ltrCardNumber)}</code>\n\n` +
     rtl("سپس روی دکمه زیر کلیک کرده و رسید واریزی را ارسال نمایید.");
@@ -141,7 +153,7 @@ const payBank = async (bot, msg, session) => {
           [{ text: "📤 ارسال رسید واریزی", callback_data: "upload_receipt" }],
           [
             {
-              text: "🔙 بازگشت به روش‌ های پرداخت",
+              text: "❌ کنسل کردن پرداخت و بازگشت",
               callback_data: "back_to_topup",
             },
           ],
