@@ -120,9 +120,6 @@ const handleCallbackQuery = async (bot, query) => {
       await bot.deleteMessage(chatId, messageId);
       await handleBuyService(bot, chatId);
       break;
-    case "send_config_to_user":
-      // This case is handled below with startsWith check
-      break;
     // case "pay_ton":
     //   await showPaymentStep(bot, chatId, messageId, {
     //     stepKey: "waiting_for_ton_amount",
@@ -176,15 +173,17 @@ const handleCallbackQuery = async (bot, query) => {
           chatId,
           "✅ پرداخت تایید شد و موجودی کاربر افزایش یافت."
         );
-
-        // Send notification to user
+        // Send notification to user with main keyboard
         await bot.sendMessage(
           userId,
           `✅ پرداخت شما تایید شد!\n💰 مبلغ ${amount.toLocaleString(
             "en-US"
-          )} تومان به کیف پول شما اضافه شد.\n💳 موجودی فعلی: ${user.balance.toLocaleString(
+          )} تومان به کیف پول شما اضافه شد.\n💳 موجودی فعلی: ${(user.balance + amount).toLocaleString(
             "en-US"
-          )} تومان`
+          )} تومان`,
+          {
+            reply_markup: keyboard.reply_markup,
+          }
         );
 
         await bot.answerCallbackQuery(query.id, {
@@ -194,7 +193,6 @@ const handleCallbackQuery = async (bot, query) => {
         console.error("Error confirming payment:", error);
         await bot.answerCallbackQuery(query.id, {
           text: "❌ خطا در تایید پرداخت",
-          show_alert: true,
         });
       }
       return;
@@ -251,13 +249,8 @@ const handleCallbackQuery = async (bot, query) => {
   if (data.startsWith("send_config_to_user_")) {
     const userId = data.split("send_config_to_user_")[1];
 
-    // Set session to wait for config details with user ID
-    await setSession(chatId, {
-      step: "waiting_for_config_details",
-      targetUserId: userId,
-    });
-
-    await bot.sendMessage(chatId, "📝 لطفاً کانفیگ سرویس را ارسال کنید:", {
+    // Send prompt and store its message id in session for later editing
+    const sentMsg = await bot.sendMessage(chatId, "📝 لطفاً کانفیگ سرویس را ارسال کنید:", {
       reply_markup: {
         inline_keyboard: [
           [
@@ -269,10 +262,16 @@ const handleCallbackQuery = async (bot, query) => {
         ],
       },
     });
+
+    // Set session to wait for config details with user ID and store prompt message id
+    await setSession(chatId, {
+      step: "waiting_for_config_details",
+      targetUserId: userId,
+      messageId: sentMsg.message_id, // Store the prompt message id for editing in onMessage
+    });
+
     return;
   }
-
- 
   // Handle reject payment callback
 
   if (data.startsWith("plan_")) {

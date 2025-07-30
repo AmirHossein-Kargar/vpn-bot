@@ -32,14 +32,23 @@ const handleMessage = async (bot, msg) => {
   }
 
   if (session?.step === "waiting_for_config_details") {
-    await handleSendConfig(bot, msg, session);
+    // Only proceed if this message is a reply to the prompt message
+    if (
+      msg.reply_to_message &&
+      session.messageId &&
+      msg.reply_to_message.message_id === session.messageId
+    ) {
+      await handleSendConfig(bot, msg, session);
+    }
+    // else: ignore message, do not send config
   }
 };
 
 // Handle sending config to user
 const handleSendConfig = async (bot, msg, session) => {
+  const messageId = session.messageId;
   const chatId = msg.chat.id;
-  const configText = msg.text;
+  let configText = msg.text;
   const targetUserId = session.targetUserId;
 
   if (!targetUserId) {
@@ -50,13 +59,15 @@ const handleSendConfig = async (bot, msg, session) => {
   try {
     // Send config to the target user
     await bot.sendMessage(targetUserId, configText);
-    
+
     // Confirm to admin
-    await bot.sendMessage(chatId, "✅ کانفیگ با موفقیت به کاربر ارسال شد.");
-    
+    await bot.editMessageText("✅ کانفیگ با موفقیت به کاربر ارسال شد.", {
+      chat_id: chatId,
+      message_id: messageId,
+    });
+
     // Clear session
     await setSession(chatId, { step: null });
-    
   } catch (error) {
     console.error("Error sending config to user:", error);
     await bot.sendMessage(chatId, "❌ خطا در ارسال کانفیگ به کاربر.");
