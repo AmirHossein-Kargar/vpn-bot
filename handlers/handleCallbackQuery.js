@@ -292,6 +292,7 @@ const handleCallbackQuery = async (bot, query) => {
       chat_id: chatId,
       message_id: messageId,
       reply_markup: replyMarkup,
+      disable_web_page_preview: true,
       parse_mode: "HTML",
     });
 

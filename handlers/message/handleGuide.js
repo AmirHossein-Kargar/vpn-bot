@@ -15,7 +15,7 @@ export const guideButtons = {
       ],
       [
         // * Guide for purchasing from the bot
-        { text: "🛒 آموزش خرید از ربات", url: "https://example.com/buy" },
+        { text: "🛒 آموزش خرید از ربات", url: "https://t.me/swift_shield/6" },
       ],
     ],
   },

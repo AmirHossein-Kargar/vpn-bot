@@ -8,10 +8,11 @@ const confirmOrder = (plan) => {
 
 💸 <b>قیمت نهایی: </b> <code>${plan.price.toLocaleString("en-US")} تومان</code>
 
-‼️ <a href="https://b2n.ir/x100000">خرید شما به معنای تایید قوانین و مقررات ماست.</a>
+‼️ <a href="https://t.me/swift_shield/4">خرید شما به معنای تایید قوانین و مقررات ماست.</a>
   `.trim();
 
   const replyMarkup = {
+    disable_web_page_preview: true,
     inline_keyboard: [
       [{ text: "✅ تایید سفارش", callback_data: `confirm_order_${plan.id}` }],
       [{ text: "🔙 بازگشت", callback_data: "buy_service_back" }],

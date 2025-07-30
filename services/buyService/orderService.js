@@ -56,15 +56,15 @@ async function handlePlanOrder(bot, chatId, userId, plan) {
       
     👤 <b>نام:</b> <code>${user.firstName || "نامشخص"}</code>
      <b>آیدی عددی:</b> <code>${user.telegramId}</code>
-     📞 <b>شماره:</b> <code>${user.phoneNumber || "نامشخص"}</code>
+      <b>شماره:</b> <code>${user.phoneNumber ? user.phoneNumber.replace(/^\+98/, "0") : "نامشخص"}</code>
     🧾 <b>تاریخ عضویت:</b> <code>${formatDate(user.createdAt)}</code>
       
-    💰 <b>موجودی فعلی:</b> <code>${user.balance}</code> تومان
+    💰 <b>موجودی فعلی:</b> <code>${user.balance} تومان</code>
       
     🛒 <b>پلن انتخابی:</b> <code>${plan.name}</code>
-    📦 <b>حجم:</b> <code>${plan.gig}</code> گیگ
-    📆 <b>مدت:</b> <code>${plan.days}</code> روز
-    💳 <b>قیمت:</b> <code>${plan.price}</code> تومان
+    📦 <b>حجم:</b> <code>${plan.gig} گیگ</code>
+    📆 <b>مدت:</b> <code>${plan.days} روز</code>
+    💳 <b>قیمت:</b> <code>${plan.price} تومان</code>
       
     🧑‍💼 لطفاً این سفارش را به صورت دستی در پنل ایجاد کرده و سپس ارسال نمایید.
       `;
