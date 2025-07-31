@@ -17,6 +17,7 @@ import confirmOrder from "../services/buyService/confirmOrder.js";
 import orderService from "../services/buyService/orderService.js";
 import User from "../models/User.js";
 import invoice from "../models/invoice.js";
+import { findService } from "../api/wizardApi.js";
 
 const handleCallbackQuery = async (bot, query) => {
   const data = query.data;
@@ -319,7 +320,7 @@ const handleCallbackQuery = async (bot, query) => {
     await setSession(chatId, {
       step: "waiting_for_vpn_id",
       targetTelegramId,
-      messageId: messageId
+      messageId: messageId,
     });
 
     await bot.editMessageText("🔑 لطفاً آیدی سرویس را وارد کنید:", {
@@ -327,6 +328,66 @@ const handleCallbackQuery = async (bot, query) => {
       message_id: messageId,
     });
     return;
+  }
+
+  if (data.startsWith("show_service_")) {
+    const username = data.split("show_service_")[1];
+    console.log("Username extracted:", username);
+
+    try {
+      const apiResponse = await findService(username);
+      console.log("API Response:", JSON.stringify(apiResponse, null, 2));
+
+      if (!apiResponse) {
+        await bot.sendMessage(chatId, "❌ سرویس یافت نشد.");
+        return;
+      }
+
+      if (apiResponse.error) {
+        console.log("API Error:", apiResponse.error);
+        await bot.sendMessage(
+          chatId,
+          `❌ خطا در دریافت اطلاعات سرویس: ${apiResponse.error}`
+        );
+        return;
+      }
+
+      const res = apiResponse.result;
+      if (!res) {
+        console.log("No result in API response");
+        await bot.sendMessage(chatId, "❌ اطلاعات سرویس یافت نشد.");
+        return;
+      }
+
+      const online = res.online_info || {};
+      const latest = res.latest_info || {};
+
+      const expireDatePersian = latest.expire_date;
+      const daysLeft = latest.day;
+
+      // * message
+      const message = `
+      #⃣ کد سرویس : ${res.username}
+
+▫️ وضعیت سرویس : ${online.status === "active" ? "🟢 فعال" : "🔴 غیرفعال"}
+
+📦 حجم سرویس : ${latest.gig || "نامشخص"} گیگابایت
+📥 حجم مصرفی : ${online.usage_converted || 0} گیگابایت
+📅 تاریخ انقضا : ${expireDatePersian} ( ${daysLeft} )
+
+🔗 لینک اتصال(Subscription) :
+${latest.sub_link || online.sub_link || "ندارد"}
+
+⏰ آخرین بروزرسانی اشتراک : 
+${online.updated_at || "نامشخص"}
+
+▫️ یکی از گزینه های زیر را انتخاب کنید.`;
+
+      await bot.sendMessage(chatId, message, { parse_mode: "HTML" });
+    } catch (error) {
+      console.error("Error showing service:", error);
+      await bot.sendMessage(chatId, "❌ خطایی رخ داد، لطفا دوباره تلاش کنید.");
+    }
   }
 };
 
