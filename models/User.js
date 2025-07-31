@@ -9,7 +9,21 @@ const userSchema = new mongoose.Schema({
   successfulPayments: { type: Number, default: 0 },
   totalServices: { type: Number, default: 0 },
   hasReceivedTest: { type: Boolean, default: false },
-  vpnId: { type: [String], default: [] },
+  services: [
+    {
+      username: String,
+      sub_link: String,
+      tak_links: [String],
+      created_at: Date,
+      expire_date: String,
+      expiration_time: Number,
+      usage: Number,
+      gig: Number,
+      day: Number,
+      uid: String,
+      status: { type: String, default: "active" }
+    }
+  ],
   createdAt: { type: Date, default: Date.now },
 });
 

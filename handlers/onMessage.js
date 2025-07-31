@@ -4,8 +4,50 @@ import handleTonAmount from "../paymentHandlers/handleTonAmount.js";
 import payBank from "../paymentHandlers/payBank.js";
 import handleAddBalance from "./admin/handleAddBalance.js";
 import supportMessageHandler from "./supportMessageHandler.js";
+import normalizeServiceData from "../utils/normalizeServiceData.js";
 
-const handleMessage = async (bot, msg) => {
+// Top-level function for sending config to user
+async function handleSendConfig(bot, msg, session) {
+  const messageId = session.messageId;
+  const chatId = msg.chat.id;
+  let configText = msg.text;
+  const targetUserId = session.targetUserId;
+
+  if (!targetUserId) {
+    await bot.sendMessage(chatId, "❌ خطا: کاربر مورد نظر یافت نشد.");
+    return;
+  }
+
+  try {
+    // Send config to the target user
+    await bot.sendMessage(targetUserId, configText);
+
+    // Confirm to admin
+    await bot.editMessageText("✅ کانفیگ با موفقیت به کاربر ارسال شد.", {
+      chat_id: chatId,
+      message_id: messageId,
+      reply_markup: {
+        inline_keyboard: [
+          [
+            {
+              text: "🔗 ثبت آیدی سرویس",
+              callback_data: `register_vpn_id:${targetUserId}`,
+            },
+          ],
+        ],
+      },
+    });
+
+    // Clear session
+    await setSession(chatId, { step: null });
+  } catch (error) {
+    console.error("Error sending config to user:", error);
+    await bot.sendMessage(chatId, "❌ خطا در ارسال کانفیگ به کاربر.");
+  }
+}
+
+// Top-level function for handling message
+async function handleMessage(bot, msg) {
   const chatId = msg.chat.id;
   const session = await getSession(chatId);
 
@@ -51,86 +93,68 @@ const handleMessage = async (bot, msg) => {
     const chatId = msg.chat.id;
     const vpnId = msg.text?.trim();
     const telegramId = currentSession.targetTelegramId;
+    const messageId =
+      currentSession.messageId ||
+      (msg.reply_to_message && msg.reply_to_message.message_id);
 
+    // Only respond if this message is a reply to the prompt message
     if (
-      !vpnId ||
-      typeof vpnId !== "string" ||
-      vpnId.length < 3 ||
-      vpnId.length > 50
+      msg.reply_to_message &&
+      messageId &&
+      msg.reply_to_message.message_id === messageId
     ) {
-      await bot.sendMessage(chatId, "❌ آیدی سرویس معتبر نیست.");
-      await setSession(chatId, { step: null });
-      // Do not return, just stop further processing
-    } else {
-      try {
-        const user = await User.findOne({ telegramId });
-        if (!user) {
-          await bot.sendMessage(chatId, "❌ کاربر مورد نظر یافت نشد.");
-        } else {
-          if (!user.vpnId.includes(vpnId)) {
-            user.vpnId.push(vpnId);
-            await user.save();
+      let editText = "";
+      let editOptions = {
+        chat_id: chatId,
+        message_id: messageId,
+        parse_mode: "HTML",
+      };
 
-            await bot.sendMessage(
-              chatId,
-              `✅ آیدی سرویس با موفقیت برای کاربر ثبت شد.\n\nآیدی عددی کاربر: <code>${telegramId}</code>`,
-              { parse_mode: "HTML" }
-            );
+      if (
+        !vpnId ||
+        typeof vpnId !== "string" ||
+        vpnId.length < 3 ||
+        vpnId.length > 50
+      ) {
+        editText = "❌ آیدی سرویس معتبر نیست.";
+        await bot.editMessageText(editText, editOptions);
+        await setSession(chatId, { step: null });
+      } else {
+        try {
+          const user = await User.findOne({ telegramId: telegramId });
+          if (!user) {
+            editText = "❌ کاربر مورد نظر یافت نشد.";
+            await bot.editMessageText(editText, editOptions);
           } else {
-            await bot.sendMessage(
-              chatId,
-              "❌ این آیدی سرویس قبلاً ثبت شده است."
-            );
+            const exists = user.services.some((s) => s.username === vpnId);
+            if (exists) {
+              editText = "❌ این آیدی سرویس قبلاً ثبت شده است.";
+              await bot.editMessageText(editText, editOptions);
+            } else {
+              const newService = normalizeServiceData({ username: vpnId });
+              user.services.push(newService);
+              await user.save();
+
+              editText = `✅ آیدی سرویس به صورت دستی برای کاربر ثبت شد.\n\nآیدی عددی کاربر: <code>${telegramId}</code>`;
+              await bot.editMessageText(editText, editOptions);
+            }
           }
+        } catch (error) {
+          console.error("❌ خطا در ذخیره سرویس دستی:", error);
+          editText = "❌ خطا در ذخیره سرویس در دیتابیس.";
+          await bot.editMessageText(editText, editOptions);
+        }
+        await setSession(chatId, { step: null });
+      }
+      try {
+        if (msg.message_id) {
+          await bot.deleteMessage(chatId, msg.message_id);
         }
       } catch (error) {
-        console.error("❌ خطا در ذخیره آیدی سرویس:", error);
-        await bot.sendMessage(chatId, "❌ خطا در ذخیره آیدی سرویس در دیتابیس.");
+        console.error("❌ خطا در حذف پیام ادمین:", error);
       }
-      await setSession(chatId, { step: null });
-      // Do not return, just stop further processing
     }
   }
-};
-
-// Handle sending config to user
-const handleSendConfig = async (bot, msg, session) => {
-  const messageId = session.messageId;
-  const chatId = msg.chat.id;
-  let configText = msg.text;
-  const targetUserId = session.targetUserId;
-
-  if (!targetUserId) {
-    await bot.sendMessage(chatId, "❌ خطا: کاربر مورد نظر یافت نشد.");
-    return;
-  }
-
-  try {
-    // Send config to the target user
-    await bot.sendMessage(targetUserId, configText);
-
-    // Confirm to admin
-    await bot.editMessageText("✅ کانفیگ با موفقیت به کاربر ارسال شد.", {
-      chat_id: chatId,
-      message_id: messageId,
-      reply_markup: {
-        inline_keyboard: [
-          [
-            {
-              text: "🔗 ثبت آیدی سرویس",
-              callback_data: `register_vpn_id:${targetUserId}`,
-            },
-          ],
-        ],
-      },
-    });
-
-    // Clear session
-    await setSession(chatId, { step: null });
-  } catch (error) {
-    console.error("Error sending config to user:", error);
-    await bot.sendMessage(chatId, "❌ خطا در ارسال کانفیگ به کاربر.");
-  }
-};
+}
 
 export default handleMessage;

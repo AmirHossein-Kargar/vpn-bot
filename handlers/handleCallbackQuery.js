@@ -322,7 +322,10 @@ const handleCallbackQuery = async (bot, query) => {
       messageId: messageId
     });
 
-    await bot.sendMessage(chatId, "🔑 لطفاً آیدی سرویس را وارد کنید:");
+    await bot.editMessageText("🔑 لطفاً آیدی سرویس را وارد کنید:", {
+      chat_id: chatId,
+      message_id: messageId,
+    });
     return;
   }
 };

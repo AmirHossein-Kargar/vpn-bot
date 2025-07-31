@@ -27,15 +27,15 @@ async function handlePlanOrder(bot, chatId, userId, plan) {
     }
 
     if (apiResponse.ok) {
-      const { username, sub_link, tak_links } = apiResponse.data.result;
-      user.vpnId.push(username);
+      const serviceData = normalizeServiceData(apiResponse.data.result, plan);
+      user.services.push(serviceData);
       user.balance -= plan.price;
       await user.save();
 
       const successMessage = getSuccessServiceMessage({
-        username,
-        smartLink: sub_link,
-        singleLink: tak_links[0],
+        username: serviceData.username,
+        smartLink: serviceData.sub_link,
+        singleLink: serviceData.tak_links[0],
       });
 
       await bot.sendMessage(chatId, successMessage, {
@@ -56,7 +56,9 @@ async function handlePlanOrder(bot, chatId, userId, plan) {
       
     👤 <b>نام:</b> <code>${user.firstName || "نامشخص"}</code>
      <b>آیدی عددی:</b> <code>${user.telegramId}</code>
-      <b>شماره:</b> <code>${user.phoneNumber ? user.phoneNumber.replace(/^\+98/, "0") : "نامشخص"}</code>
+      <b>شماره:</b> <code>${
+        user.phoneNumber ? user.phoneNumber.replace(/^\+98/, "0") : "نامشخص"
+      }</code>
     🧾 <b>تاریخ عضویت:</b> <code>${formatDate(user.createdAt)}</code>
       
     💰 <b>موجودی فعلی:</b> <code>${user.balance} تومان</code>
@@ -68,7 +70,7 @@ async function handlePlanOrder(bot, chatId, userId, plan) {
       
     🧑‍💼 لطفاً این سفارش را به صورت دستی در پنل ایجاد کرده و سپس ارسال نمایید.
       `;
-      
+
       await bot.sendMessage(ADMIN_GROUP_ID, msg, {
         parse_mode: "HTML",
         reply_markup: {
