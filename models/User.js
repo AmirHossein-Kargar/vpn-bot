@@ -8,7 +8,8 @@ const userSchema = new mongoose.Schema({
   balance: { type: Number, default: 0 },
   successfulPayments: { type: Number, default: 0 },
   totalServices: { type: Number, default: 0 },
-  hasReceivedTest: {type: Boolean, default: false},
+  hasReceivedTest: { type: Boolean, default: false },
+  vpnId: { type: [String], default: [] },
   createdAt: { type: Date, default: Date.now },
 });
 

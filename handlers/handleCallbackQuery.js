@@ -1,3 +1,4 @@
+// fuix
 import handleAddBalance from "./admin/handleAddBalance.js";
 import showPaymentMethods from "./message/showPaymentMethods.js";
 import {
@@ -28,7 +29,6 @@ const handleCallbackQuery = async (bot, query) => {
     case "back_to_topup":
       await bot.deleteMessage(chatId, messageId);
 
-      // Remove invoice from database if paymentId exists in session
       if (session?.paymentId) {
         try {
           await invoice.findOneAndDelete({ paymentId: session.paymentId });
@@ -40,7 +40,7 @@ const handleCallbackQuery = async (bot, query) => {
         }
       }
 
-      await clearSession(chatId); // * Clear session
+      await clearSession(chatId);
       await showPaymentMethods(bot, chatId);
       break;
 
@@ -63,8 +63,11 @@ const handleCallbackQuery = async (bot, query) => {
       break;
 
     case "pay_bank":
-      const payBank = (await import("./../paymentHandlers/payBank.js")).default;
-      await payBank(bot, query, session);
+      {
+        const payBank = (await import("./../paymentHandlers/payBank.js"))
+          .default;
+        await payBank(bot, query, session);
+      }
       break;
 
     case "upload_receipt":
@@ -111,7 +114,6 @@ const handleCallbackQuery = async (bot, query) => {
       );
       break;
 
-    // * back to main menu when user choose "بازگشت" in buy-service menu
     case "buy_service_back_to_main":
       await bot.deleteMessage(chatId, messageId);
       await bot.sendMessage(chatId, CHOOSE_OPTION_MESSAGE);
@@ -127,21 +129,22 @@ const handleCallbackQuery = async (bot, query) => {
     //       "💠 لطفاً مبلغ مورد نظر را برای پرداخت با تون وارد کنید (بین 50,000 تا 500,000 تومان):",
     //   });
     //   break;
+    // default:
+    //   break;
   }
 
   // Handle confirm payment callback
   if (data.startsWith("confirm_payment_")) {
     const parts = data.split("_");
-    if (parts.length >= 4) {
+    if (parts.length >= 5) {
       const userId = parts[2];
       const amount = parseInt(parts[3].replace(/,/g, ""));
       const paymentId = parts[4];
 
       try {
-        // Update user balance
         const user = await User.findOneAndUpdate(
           { telegramId: userId },
-          { $inc: { balance: amount } },
+          { $inc: { balance: amount, successfulPayments: 1 } },
           { new: true }
         );
 
@@ -153,13 +156,11 @@ const handleCallbackQuery = async (bot, query) => {
           return;
         }
 
-        // Update invoice status to approved
         await invoice.findOneAndUpdate(
           { paymentId: paymentId },
           { status: "confirmed" }
         );
 
-        // Remove buttons from the original receipt message
         await bot.editMessageReplyMarkup(
           { inline_keyboard: [] },
           {
@@ -168,19 +169,15 @@ const handleCallbackQuery = async (bot, query) => {
           }
         );
 
-        // Send confirmation message to admin group
         await bot.sendMessage(
           chatId,
           "✅ پرداخت تایید شد و موجودی کاربر افزایش یافت."
         );
-        // Send notification to user with main keyboard
         await bot.sendMessage(
           userId,
           `✅ پرداخت شما تایید شد!\n💰 مبلغ ${amount.toLocaleString(
             "en-US"
-          )} تومان به کیف پول شما اضافه شد.\n💳 موجودی فعلی: ${(user.balance + amount).toLocaleString(
-            "en-US"
-          )} تومان`,
+          )} تومان به کیف پول شما اضافه شد.`,
           {
             reply_markup: keyboard.reply_markup,
           }
@@ -195,26 +192,24 @@ const handleCallbackQuery = async (bot, query) => {
           text: "❌ خطا در تایید پرداخت",
         });
       }
+
       return;
     }
   }
+
   if (data.startsWith("reject_payment_")) {
-    // const paymentId = data.split("reject_payment_")[1];
     const [paymentId, userId] = data.split("reject_payment_")[1].split("_");
     if (!userId) {
       console.error("❗ userId is missing in callback_data");
       return;
     }
-  
 
     try {
-      // Update invoice status to rejected
       await invoice.findOneAndUpdate(
         { paymentId: paymentId },
         { status: "rejected" }
       );
 
-      // Remove buttons from the original receipt message
       await bot.editMessageReplyMarkup(
         { inline_keyboard: [] },
         {
@@ -223,14 +218,12 @@ const handleCallbackQuery = async (bot, query) => {
         }
       );
 
-      // Send rejection message to admin group
       await bot.sendMessage(chatId, "❌ پرداخت رد شد.");
 
-    // ✅ Send message to user
-    await bot.sendMessage(
-      userId,
-      "❌ پرداخت شما توسط ادمین رد شد. در صورت نیاز با پشتیبانی تماس بگیرید."
-    );
+      await bot.sendMessage(
+        userId,
+        "❌ پرداخت شما توسط ادمین رد شد. در صورت نیاز با پشتیبانی تماس بگیرید."
+      );
 
       await bot.answerCallbackQuery(query.id, {
         text: "❌ پرداخت رد شد",
@@ -245,34 +238,34 @@ const handleCallbackQuery = async (bot, query) => {
     return;
   }
 
-  // Handle send config to user callback
   if (data.startsWith("send_config_to_user_")) {
     const userId = data.split("send_config_to_user_")[1];
 
-    // Send prompt and store its message id in session for later editing
-    const sentMsg = await bot.sendMessage(chatId, "📝 لطفاً کانفیگ سرویس را ارسال کنید:", {
-      reply_markup: {
-        inline_keyboard: [
-          [
-            {
-              text: "🔄 بازگشت به پنل مدیریت",
-              callback_data: "admin_back_to_main",
-            },
+    const sentMsg = await bot.sendMessage(
+      chatId,
+      "📝 لطفاً کانفیگ سرویس را ارسال کنید:",
+      {
+        reply_markup: {
+          inline_keyboard: [
+            [
+              {
+                text: "🔄 بازگشت به پنل مدیریت",
+                callback_data: "admin_back_to_main",
+              },
+            ],
           ],
-        ],
-      },
-    });
+        },
+      }
+    );
 
-    // Set session to wait for config details with user ID and store prompt message id
     await setSession(chatId, {
       step: "waiting_for_config_details",
       targetUserId: userId,
-      messageId: sentMsg.message_id, // Store the prompt message id for editing in onMessage
+      messageId: sentMsg.message_id,
     });
 
     return;
   }
-  // Handle reject payment callback
 
   if (data.startsWith("plan_")) {
     const planId = data.replace("plan_", "");
@@ -297,6 +290,7 @@ const handleCallbackQuery = async (bot, query) => {
 
     return;
   }
+
   if (data.startsWith("confirm_order_")) {
     const planId = data.split("confirm_order_")[1];
     const allPlans = [...plans30, ...plans60, ...plans90];
@@ -305,8 +299,30 @@ const handleCallbackQuery = async (bot, query) => {
     if (!selectedPlan) {
       return bot.sendMessage(chatId, "❌ پلن مورد نظر یافت نشد.");
     }
+
+    try {
+      await User.findOneAndUpdate(
+        { telegramId: userId },
+        { $inc: { totalServices: 1 } }
+      );
+    } catch (err) {
+      console.error("Error incrementing totalServices for user:", err);
+    }
+
     await bot.deleteMessage(chatId, messageId);
     await orderService(bot, chatId, userId, selectedPlan);
+    return;
+  }
+  if (data.startsWith("register_vpn_id")) {
+    const targetTelegramId = data.split(":")[1];
+
+    await setSession(chatId, {
+      step: "waiting_for_vpn_id",
+      targetTelegramId,
+      messageId: messageId
+    });
+
+    await bot.sendMessage(chatId, "🔑 لطفاً آیدی سرویس را وارد کنید:");
     return;
   }
 };

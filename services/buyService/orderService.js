@@ -27,10 +27,10 @@ async function handlePlanOrder(bot, chatId, userId, plan) {
     }
 
     if (apiResponse.ok) {
+      const { username, sub_link, tak_links } = apiResponse.data.result;
+      user.vpnId.push(username);
       user.balance -= plan.price;
       await user.save();
-
-      const { username, sub_link, tak_links } = apiResponse.data;
 
       const successMessage = getSuccessServiceMessage({
         username,
@@ -68,7 +68,7 @@ async function handlePlanOrder(bot, chatId, userId, plan) {
       
     🧑‍💼 لطفاً این سفارش را به صورت دستی در پنل ایجاد کرده و سپس ارسال نمایید.
       `;
-
+      
       await bot.sendMessage(ADMIN_GROUP_ID, msg, {
         parse_mode: "HTML",
         reply_markup: {
