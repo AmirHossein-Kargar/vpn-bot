@@ -4,6 +4,7 @@ import {
   guideButtons,
 } from "../messages/staticMessages.js";
 import { createTestService as createTestServiceApi } from "../api/wizardApi.js";
+import normalizeServiceData from "../utils/normalizeServiceData.js";
 
 const createTestService = async (bot, msg) => {
   const chatId = msg.chat.id;
@@ -42,11 +43,18 @@ const createTestService = async (bot, msg) => {
 
       const username = result.username || "نامشخص";
 
-      // Save username to user's services array
-      user.services.push({
-        username: username,
-        status: "active",
-      });
+      // Create test plan object for normalizeServiceData
+      const testPlan = {
+        gig: maxUsageMB,
+        day: 1,
+        name: "سرویس تست",
+      };
+
+      // Normalize service data using the same function as orderService
+      const serviceData = normalizeServiceData(result, testPlan);
+
+      // Add service to user's services array
+      user.services.push(serviceData);
       user.hasReceivedTest = true;
       user.totalServices += 1;
 

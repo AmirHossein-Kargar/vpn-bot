@@ -19,7 +19,6 @@ import { getSession, setSession } from "./config/sessionStore.js";
 import hideKeyboard from "./utils/hideKeyboard.js";
 import createTestService from "./services/createTestService.js";
 import User from "./models/User.js";
-import handleServices from "./services/manageServices/handleServices.js";
 import sendServiceSelectionMenu from "./services/manageServices/sendServiceSelectionMenu.js";
 
 let adminIds = process.env.ADMINS.split(",").map((id) => Number(id.trim()));
