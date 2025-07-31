@@ -19,8 +19,25 @@ async function handleSendConfig(bot, msg, session) {
   }
 
   try {
-    // Send config to the target user
-    await bot.sendMessage(targetUserId, configText);
+    // Send config to the target user with selective monospace formatting
+    // Format subscription links and vless links as monospace
+    let formattedConfigText = configText;
+
+    // Format subscription links (https://iranisystem.com/bot/sub/?hash=...)
+    formattedConfigText = formattedConfigText.replace(
+      /(https:\/\/iranisystem\.com\/bot\/sub\/\?hash=[^\s]+)/g,
+      "`$1`"
+    );
+
+    // Format vless links (vless://...)
+    formattedConfigText = formattedConfigText.replace(
+      /(vless:\/\/[^\s]+)/g,
+      "`$1`"
+    );
+
+    await bot.sendMessage(targetUserId, formattedConfigText, {
+      parse_mode: "Markdown",
+    });
 
     // Confirm to admin
     await bot.editMessageText("✅ کانفیگ با موفقیت به کاربر ارسال شد.", {
