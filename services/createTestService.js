@@ -32,6 +32,10 @@ const createTestService = async (bot, msg) => {
         ? `https://iranisystem.com/bot/sub/?hash=${result.hash}`
         : result.sub_link || "";
 
+      const qrcode = `https://api.qrserver.com/v1/create-qr-code/?data=${encodeURIComponent(
+        smartLink
+      )}&size=200x200&margin=20`;
+
       const singleLink =
         result.tak_links && result.tak_links.length > 0
           ? result.tak_links[0]
@@ -45,6 +49,7 @@ const createTestService = async (bot, msg) => {
       user.totalServices += 1;
       await user.save();
 
+      // Send QR code image with all text information in one message
       const message = getTestServiceMessage({
         maxUser,
         maxUsageMB,
@@ -53,7 +58,8 @@ const createTestService = async (bot, msg) => {
         username,
       });
 
-      await bot.sendMessage(chatId, message, {
+      await bot.sendPhoto(chatId, qrcode, {
+        caption: `🎉 <b>سرویس تست یک‌ روزه شما فعال شد!</b>\n\n${message}`,
         parse_mode: "HTML",
         disable_web_page_preview: true,
         reply_markup: guideButtons.reply_markup,
