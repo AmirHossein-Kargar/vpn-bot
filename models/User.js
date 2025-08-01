@@ -12,15 +12,6 @@ const userSchema = new mongoose.Schema({
   services: [
     {
       username: String,
-      sub_link: String,
-      created_at: Date,
-      expire_date: String,
-      expiration_time: Number,
-      usage: Number,
-      gig: Number,
-      day: Number,
-      uid: String,
-      status: { type: String, default: "disabled" },
     },
   ],
   createdAt: { type: Date, default: Date.now },

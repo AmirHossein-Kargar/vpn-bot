@@ -27,14 +27,14 @@ async function handlePlanOrder(bot, chatId, userId, plan) {
     }
 
     if (apiResponse.ok) {
-      const serviceData = normalizeServiceData(apiResponse.data.result, plan);
-      user.services.push(serviceData);
+      const username = apiResponse.data.result.username || "نامشخص";
+      user.services.push({ username });
       user.balance -= plan.price;
       await user.save();
 
       const successMessage = getSuccessServiceMessage({
-        username: serviceData.username,
-        smartLink: serviceData.sub_link,
+        username: username,
+        smartLink: apiResponse.data.result.sub_link || "",
         singleLink: apiResponse.data.result.tak_links[0],
       });
 

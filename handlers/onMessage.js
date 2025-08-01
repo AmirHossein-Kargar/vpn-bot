@@ -4,7 +4,8 @@ import handleTonAmount from "../paymentHandlers/handleTonAmount.js";
 import payBank from "../paymentHandlers/payBank.js";
 import handleAddBalance from "./admin/handleAddBalance.js";
 import supportMessageHandler from "./supportMessageHandler.js";
-import normalizeServiceData from "../utils/normalizeServiceData.js";
+
+import { findService } from "../api/wizardApi.js";
 
 // Top-level function for sending config to user
 async function handleSendConfig(bot, msg, session) {
@@ -121,7 +122,7 @@ async function handleMessage(bot, msg) {
       msg.reply_to_message.message_id === messageId
     ) {
       let editText = "";
-      let editOptions = {
+      const editOptions = {
         chat_id: chatId,
         message_id: messageId,
         parse_mode: "HTML",
@@ -148,12 +149,16 @@ async function handleMessage(bot, msg) {
               editText = "❌ این آیدی سرویس قبلاً ثبت شده است.";
               await bot.editMessageText(editText, editOptions);
             } else {
-              const newService = normalizeServiceData({ username: vpnId });
-              user.services.push(newService);
+             
+              // Add the username to the user's services array and increment totalServices
+              user.services.push({ username: vpnId });
+              user.totalServices += 1;
               await user.save();
-
-              editText = `✅ آیدی سرویس به صورت دستی برای کاربر ثبت شد.\n\nآیدی عددی کاربر: <code>${telegramId}</code>`;
-              await bot.editMessageText(editText, editOptions);
+              
+              await bot.editMessageText(
+                "✅ آیدی سرویس با موفقیت ثبت شد.",
+                editOptions
+              );
             }
           }
         } catch (error) {

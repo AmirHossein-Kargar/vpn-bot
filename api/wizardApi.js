@@ -27,13 +27,8 @@ export async function createVpnService(gig, day, test = 0) {
 
 export async function findService(username) {
   try {
-    // console.log("findService called with username:", username);
-    // console.log("BASE_URL:", BASE_URL);
-
     const params = new URLSearchParams();
     params.append("username", username);
-
-    // console.log("Request params:", params.toString());
 
     const response = await axios.post(`${BASE_URL}/find`, params.toString(), {
       headers: {
@@ -41,9 +36,6 @@ export async function findService(username) {
         Authorization: `Bearer ${process.env.VPN_API_KEY}`,
       },
     });
-
-    // console.log("API Response status:", response.status);
-    // console.log("API Response data:", JSON.stringify(response.data, null, 2));
 
     return response.data;
   } catch (error) {
@@ -101,6 +93,26 @@ export async function changeLinkService(username) {
     console.error("Error in changeLinkService:", error.message);
     if (error.response) {
       console.error("API Error response:", error.response.data);
+      return error.response.data;
+    }
+    throw error;
+  }
+}
+
+// * Delete Service
+export async function deleteService(username) {
+  try {
+    const params = new URLSearchParams();
+    params.append("username", username);
+    const response = await axios.post(`${BASE_URL}/delsvc`, params.toString(), {
+      headers: {
+        "Content-Type": "application/x-www-form-urlencoded",
+        Authorization: `Bearer ${process.env.VPN_API_KEY}`,
+      },
+    });
+    return response.data;
+  } catch (error) {
+    if (error.response) {
       return error.response.data;
     }
     throw error;

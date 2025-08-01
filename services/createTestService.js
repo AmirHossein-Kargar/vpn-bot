@@ -4,7 +4,6 @@ import {
   guideButtons,
 } from "../messages/staticMessages.js";
 import { createTestService as createTestServiceApi } from "../api/wizardApi.js";
-import normalizeServiceData from "../utils/normalizeServiceData.js";
 
 const createTestService = async (bot, msg) => {
   const chatId = msg.chat.id;
@@ -24,9 +23,6 @@ const createTestService = async (bot, msg) => {
   try {
     const data = await createTestServiceApi();
     if (data.ok && data.result) {
-      // Mark user as having received the test
-
-      // Prepare dynamic message
       const result = data.result;
 
       const maxUser = 1;
@@ -43,18 +39,8 @@ const createTestService = async (bot, msg) => {
 
       const username = result.username || "نامشخص";
 
-      // Create test plan object for normalizeServiceData
-      const testPlan = {
-        gig: maxUsageMB,
-        day: 1,
-        name: "سرویس تست",
-      };
-
-      // Normalize service data using the same function as orderService
-      const serviceData = normalizeServiceData(result, testPlan);
-
-      // Add service to user's services array
-      user.services.push(serviceData);
+      // Only save the service id (username) in user's services array
+      user.services.push({ username });
       user.hasReceivedTest = true;
       user.totalServices += 1;
       await user.save();

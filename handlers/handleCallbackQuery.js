@@ -18,8 +18,11 @@ import orderService from "../services/buyService/orderService.js";
 import User from "../models/User.js";
 import invoice from "../models/invoice.js";
 import showServiceDetails from "../services/manageServices/showServiceDetails.js";
-import { changeLinkService, findService } from "../api/wizardApi.js";
-import normalizeServiceData from "../utils/normalizeServiceData.js";
+import {
+  changeLinkService,
+  deleteService,
+  findService,
+} from "../api/wizardApi.js";
 
 const handleCallbackQuery = async (bot, query) => {
   const data = query.data;
@@ -419,6 +422,55 @@ const handleCallbackQuery = async (bot, query) => {
         },
       }
     );
+    return;
+  }
+  if (data.startsWith("delete_service_")) {
+    const username = data.split("delete_service_")[1];
+    await bot.editMessageText("آیا می خواهید این سرویس را حذف کنید؟", {
+      chat_id: chatId,
+      message_id: messageId,
+      reply_markup: {
+        inline_keyboard: [
+          [
+            {
+              text: "❌ خیر",
+              callback_data: `show_service_${username}`,
+            },
+            {
+              text: "✅ بله",
+              callback_data: `confirm_delete_service_${username}`,
+            },
+          ],
+        ],
+      },
+    });
+    await setSession(chatId, {
+      step: "confirm_delete_service",
+      username: username,
+    });
+    return;
+  }
+  if (data.startsWith("confirm_delete_service_")) {
+    const username = data.split("confirm_delete_service_")[1];
+    const res = await deleteService(username);
+    await User.findOneAndUpdate(
+      { telegramId: userId },
+      {
+        $pull: { services: { username: username } },
+        $inc: { totalServices: -1 },
+      }
+    );
+    if (res.result) {
+      await bot.editMessageText("✅ سرویس با موفقیت حذف شد.", {
+        chat_id: chatId,
+        message_id: messageId,
+      });
+    } else {
+      await bot.editMessageText("❌ خطا در حذف سرویس.", {
+        chat_id: chatId,
+        message_id: messageId,
+      });
+    }
     return;
   }
 };
