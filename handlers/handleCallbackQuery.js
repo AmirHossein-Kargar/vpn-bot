@@ -453,13 +453,18 @@ const handleCallbackQuery = async (bot, query) => {
   if (data.startsWith("confirm_delete_service_")) {
     const username = data.split("confirm_delete_service_")[1];
     const res = await deleteService(username);
-    await User.findOneAndUpdate(
-      { telegramId: userId },
-      {
-        $pull: { services: { username: username } },
-        $inc: { totalServices: -1 },
-      }
-    );
+    // Decrement totalServices by 1, but never let it go below 0
+    const user = await User.findOne({ telegramId: userId });
+    if (user) {
+      const newTotal = Math.max(0, (user.totalServices || 0) - 1);
+      await User.updateOne(
+        { telegramId: userId },
+        {
+          $pull: { services: { username: username } },
+          $set: { totalServices: newTotal },
+        }
+      );
+    }
     if (res.result) {
       await bot.editMessageText("✅ سرویس با موفقیت حذف شد.", {
         chat_id: chatId,
