@@ -78,7 +78,6 @@ const generateQRCode = async (bot, chatId, messageId, data, query = {}) => {
         {
           type: "photo",
           media: qrUrl,
-          caption: `🔗 QRCode برای سرویس <code>${username}</code>\n\n📱 این QR کد را با اپلیکیشن VPN خود اسکن کنید.`,
           parse_mode: "HTML",
         },
         {
