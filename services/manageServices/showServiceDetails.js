@@ -51,9 +51,14 @@ const showServiceDetails = async (bot, chatId, username, messageId) => {
 ▫️ یکی از گزینه های زیر را انتخاب کنید.`;
 
     if (messageId) {
-      await bot.editMessageText(message, {
-        chat_id: chatId,
-        message_id: messageId,
+      // Always delete the current message and send a new one to avoid edit conflicts
+      try {
+        await bot.deleteMessage(chatId, messageId);
+      } catch (deleteError) {
+        console.log("Could not delete message:", deleteError.message);
+      }
+
+      await bot.sendMessage(chatId, message, {
         parse_mode: "HTML",
         reply_markup: {
           inline_keyboard: [
@@ -61,19 +66,19 @@ const showServiceDetails = async (bot, chatId, username, messageId) => {
               {
                 text: "‼️چجوری به سرویس متصل بشم‼️",
                 url: "https://t.me/swift_shield/9",
-              }
+              },
             ],
             [
               {
                 text: "🛑 تغییر لینک و قطع دسترسی دیگران 🛑",
                 callback_data: `change_link_${res.username}`,
-              }
+              },
             ],
             [
               {
                 text: "⏳ تمدید سرویس و افزایش حجم",
                 callback_data: "extend_or_increase",
-              }
+              },
             ],
             [
               {
@@ -82,9 +87,9 @@ const showServiceDetails = async (bot, chatId, username, messageId) => {
               },
               {
                 text: "◽️دریافت QRCode",
-                callback_data: `qrcode_${res.username}`
+                callback_data: `qrcode_${res.username}`,
               },
-            ]
+            ],
           ],
         },
       });
