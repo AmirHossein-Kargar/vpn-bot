@@ -23,6 +23,7 @@ import {
   deleteService,
   findService,
 } from "../api/wizardApi.js";
+import generateQRCode from "../services/manageServices/generateQRCode.js";
 
 const handleCallbackQuery = async (bot, query) => {
   const data = query.data;
@@ -85,8 +86,9 @@ const handleCallbackQuery = async (bot, query) => {
     case "admin_back_to_main":
       await sendAdminPanels(bot, chatId, messageId);
       break;
-    case "confirm_payment": {
-    }
+    case "confirm_payment":
+      // Handle confirm payment logic here if needed
+      break;
     case "duration_30":
       await bot.editMessageText(
         "💡 لطفاً یکی از پلن‌های 30 روزه را انتخاب کنید:",
@@ -477,6 +479,9 @@ const handleCallbackQuery = async (bot, query) => {
       });
     }
     return;
+  }
+  if (data.startsWith("qrcode_")) {
+    await generateQRCode(bot, chatId, messageId, data);
   }
 };
 

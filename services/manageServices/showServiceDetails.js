@@ -82,7 +82,7 @@ const showServiceDetails = async (bot, chatId, username, messageId) => {
               },
               {
                 text: "◽️دریافت QRCode",
-                callback_data: "qrcode"
+                callback_data: `qrcode_${res.username}`
               },
             ]
           ],
