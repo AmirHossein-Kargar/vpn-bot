@@ -13,7 +13,6 @@ const userSchema = new mongoose.Schema({
     {
       username: String,
       sub_link: String,
-      tak_links: [String],
       created_at: Date,
       expire_date: String,
       expiration_time: Number,
@@ -21,8 +20,8 @@ const userSchema = new mongoose.Schema({
       gig: Number,
       day: Number,
       uid: String,
-      status: { type: String, default: "active" }
-    }
+      status: { type: String, default: "disabled" },
+    },
   ],
   createdAt: { type: Date, default: Date.now },
 });

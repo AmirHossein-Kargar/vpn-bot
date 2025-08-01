@@ -35,7 +35,7 @@ async function handlePlanOrder(bot, chatId, userId, plan) {
       const successMessage = getSuccessServiceMessage({
         username: serviceData.username,
         smartLink: serviceData.sub_link,
-        singleLink: serviceData.tak_links[0],
+        singleLink: apiResponse.data.result.tak_links[0],
       });
 
       await bot.sendMessage(chatId, successMessage, {

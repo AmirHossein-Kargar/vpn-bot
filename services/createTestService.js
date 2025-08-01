@@ -57,7 +57,6 @@ const createTestService = async (bot, msg) => {
       user.services.push(serviceData);
       user.hasReceivedTest = true;
       user.totalServices += 1;
-
       await user.save();
 
       const message = getTestServiceMessage({

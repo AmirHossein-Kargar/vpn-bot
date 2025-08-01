@@ -1,6 +1,6 @@
 import { findService } from "../../api/wizardApi.js";
 
-const showServiceDetails = async (bot, chatId, username) => {
+const showServiceDetails = async (bot, chatId, username, messageId) => {
   try {
     const apiResponse = await findService(username);
 
@@ -26,8 +26,8 @@ const showServiceDetails = async (bot, chatId, username) => {
     const online = res.online_info || {};
     const latest = res.latest_info || {};
 
-    const expireDatePersian = latest.expire_date;
-    const daysLeft = latest.day;
+    const expireDatePersian = latest.expire_date || "نامشخص";
+    const daysLeft = latest.day ?? "نامشخص";
 
     const smartLink = res.hash
       ? `https://iranisystem.com/bot/sub/?hash=${res.hash}`
@@ -48,40 +48,47 @@ const showServiceDetails = async (bot, chatId, username) => {
 
 <code>${smartLink}</code>
 
-
 ▫️ یکی از گزینه های زیر را انتخاب کنید.`;
 
-    await bot.sendMessage(chatId, message, {
-      parse_mode: "HTML",
-      reply_markup: {
-        inline_keyboard: [
-          [
-            {
-              text: "‼️چجوری به سرویس متصل بشم‼️",
-              url: "https://t.me/swift_shield/9",
-            }
+    if (messageId) {
+      await bot.editMessageText(message, {
+        chat_id: chatId,
+        message_id: messageId,
+        parse_mode: "HTML",
+        reply_markup: {
+          inline_keyboard: [
+            [
+              {
+                text: "‼️چجوری به سرویس متصل بشم‼️",
+                url: "https://t.me/swift_shield/9",
+              }
+            ],
+            [
+              {
+                text: "🛑 تغییر لینک و قطع دسترسی دیگران 🛑",
+                callback_data: `change_link_${res.username}`,
+              }
+            ],
+            [
+              {
+                text: "⏳ تمدید سرویس و افزایش حجم",
+                callback_data: "extend_or_increase",
+              }
+            ],
+            [
+              {
+                text: "🗑 حذف سرویس",
+                callback_data: `delete_service_${res.username}`,
+              },
+              {
+                text: "◽️دریافت QRCode",
+                callback_data: "qrcode"
+              },
+            ]
           ],
-          [
-            {
-              text: "🛑 تغییر لینک و قطع دسترسی دیگران 🛑",
-              callback_data: "change_link",
-            }
-          ],
-          [
-            {
-              text: "⏳ تمدید سرویس و افزایش حجم",
-              callback_data: "extend_or_increase",
-            }
-          ],
-          [
-            {
-              text: "◽️دریافت QRCode",
-              callback_data: "qrcode"
-            }
-          ]
-        ],
-      },
-    });
+        },
+      });
+    }
   } catch (error) {
     console.error("Error showing service:", error);
     await bot.sendMessage(chatId, "❌ خطایی رخ داد، لطفا دوباره تلاش کنید.");

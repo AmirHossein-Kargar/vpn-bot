@@ -11,13 +11,13 @@ export const WELCOME_MESSAGE = `🤖 به ربات سویفت خوش آمدید.
 export const CHOOSE_OPTION_MESSAGE = `🔻لطفا یکی از گزینه های موجود را انتخاب کنید :`;
 
 export function getTestServiceMessage({
-    maxUser,
-    maxUsageMB,
-    smartLink,
-    singleLink,
-    username,
-  }) {
-    return `🎉 <b>سرویس تست یک‌ روزه شما فعال شد!</b>
+  maxUser,
+  maxUsageMB,
+  smartLink,
+  singleLink,
+  username,
+}) {
+  return `🎉 <b>سرویس تست یک‌ روزه شما فعال شد!</b>
   
   🆔 <b>شناسه سرویس:</b> <code>${username}</code>
   👤 <b>حداکثر اتصال:</b> ${maxUser} کاربر
@@ -32,13 +32,11 @@ export function getTestServiceMessage({
   📌 برای کپی لینک، روی آن لمس طولانی کنید یا راست‌کلیک کنید.
   
   ⚠️ این سرویس از نوع <b>Subscription</b> است. جهت اتصال، لطفاً راهنمای استفاده را بررسی کنید.`;
-  }
-  
+}
 
 export { guideButtons } from "../handlers/message/handleGuide.js";
 
-
-export function getSuccessServiceMessage({username, smartLink, singleLink} ) {
+export function getSuccessServiceMessage({ username, smartLink, singleLink }) {
   `✅ <b>سرویس شما با موفقیت ساخته شد.</b>
 
 🆔 <b>آیدی سرویس:</b> <code>${username}</code>
