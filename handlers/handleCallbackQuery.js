@@ -481,7 +481,7 @@ const handleCallbackQuery = async (bot, query) => {
     return;
   }
   if (data.startsWith("qrcode_")) {
-    await generateQRCode(bot, chatId, messageId, data);
+    await generateQRCode(bot, chatId, messageId, data, query);
   }
 };
 
