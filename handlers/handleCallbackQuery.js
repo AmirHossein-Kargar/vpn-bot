@@ -20,6 +20,7 @@ import invoice from "../models/invoice.js";
 import showServiceDetails from "../services/manageServices/showServiceDetails.js";
 import changeServiceLink from "../services/manageServices/changeServiceLink.js";
 import generateQRCode from "../services/manageServices/generateQRCode.js";
+import { deleteService } from "../api/wizardApi.js";
 
 const handleCallbackQuery = async (bot, query) => {
   const data = query.data;

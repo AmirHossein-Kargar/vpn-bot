@@ -5,13 +5,13 @@ export const guideButtons = {
     inline_keyboard: [
       [
         // * Android connection guide
-        { text: "📲 اتصال در اندروید", url: "https://example.com/android" },
+        { text: "📲 اتصال در اندروید", url: "https://t.me/swift_shield/7" },
         // * iOS connection guide
-        { text: "📱 اتصال در آیفون", url: "https://example.com/ios" },
+        { text: "📱 اتصال در آیفون", url: "https://t.me/swift_shield/6" },
       ],
       [
         // * Windows connection guide
-        { text: "💻 اتصال در ویندوز", url: "https://example.com/windows" },
+        { text: "💻 اتصال در ویندوز", url: "https://t.me/swift_shield/8" },
       ],
       [
         // * Guide for purchasing from the bot

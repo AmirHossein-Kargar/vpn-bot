@@ -70,11 +70,9 @@ const showServiceDetails = async (bot, chatId, username, messageId) => {
             ],
             [
               {
-                text: "🛑 تغییر لینک و قطع دسترسی دیگران 🛑",
+                text: "🛑 تغییر لینک 🛑",
                 callback_data: `change_link_${res.username}`,
               },
-            ],
-            [
               {
                 text: "⏳ تمدید سرویس و افزایش حجم",
                 callback_data: "extend_or_increase",
@@ -90,6 +88,12 @@ const showServiceDetails = async (bot, chatId, username, messageId) => {
                 callback_data: `qrcode_${res.username}`,
               },
             ],
+            [
+              {
+                text: "🚫 غیر فعال کردن سرویس",
+                callback_data: `deactivate_service_${res.username}`,
+              },
+            ]
           ],
         },
       });

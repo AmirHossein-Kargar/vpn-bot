@@ -18,7 +18,7 @@ export function getTestServiceMessage({
   username,
 }) {
   return `
-  🆔 <b>شناسه سرویس:</b> <code>${username}</code>
+   <b>شناسه سرویس:</b> <code>${username}</code>
   👤 <b>حداکثر اتصال:</b> ${maxUser} کاربر
   📥 <b>حجم مجاز:</b> ${maxUsageMB} گیگابایت
   
