@@ -307,15 +307,6 @@ const handleCallbackQuery = async (bot, query) => {
       return bot.sendMessage(chatId, "❌ پلن مورد نظر یافت نشد.");
     }
 
-    try {
-      await User.findOneAndUpdate(
-        { telegramId: userId },
-        { $inc: { totalServices: 1 } }
-      );
-    } catch (err) {
-      console.error("Error incrementing totalServices for user:", err);
-    }
-
     await bot.deleteMessage(chatId, messageId);
     await orderService(bot, chatId, userId, selectedPlan);
     return;
@@ -412,9 +403,7 @@ const handleCallbackQuery = async (bot, query) => {
       message_id: messageId,
       reply_markup: {
         inline_keyboard: [
-          [
-            { text: "🔄 بازگشت", callback_data: "back_to_profile" },
-          ],
+          [{ text: "🔄 بازگشت", callback_data: "back_to_profile" }],
         ],
       },
     });

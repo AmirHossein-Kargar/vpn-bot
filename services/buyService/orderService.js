@@ -7,6 +7,7 @@ import {
 import User from "../../models/User.js";
 import formatDate from "../../utils/formatDate.js";
 import { checkUserBalance } from "./checkUserBalance.js";
+import keyboard from "../../keyboards/mainKeyboard.js";
 
 /**
  * Attempts to create a VPN service for the user and send the config.
@@ -51,7 +52,14 @@ async function handlePlanOrder(bot, chatId, userId, plan) {
       user.totalServices = (user.totalServices || 0) + 1;
       await user.save();
 
-      // Get QR code as a file (not as POST, but as a file URL)
+
+      const loadingMsg = await bot.sendMessage(
+        chatId,
+        "⏳ در حال ساخت سرویس ...",
+        keyboard
+      );
+
+      // ساخت QR و پیام موفقیت
       const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?data=${encodeURIComponent(
         smartLink
       )}&size=200x200&margin=20`;
@@ -62,18 +70,24 @@ async function handlePlanOrder(bot, chatId, userId, plan) {
         singleLink,
       });
 
-      // Send config to user
+      // بعد از آماده شدن، پیام کانفیگ را به صورت عکس بفرست (بدون کیبورد)
       await bot.sendPhoto(chatId, qrUrl, {
         caption: successMessage,
         parse_mode: "HTML",
         ...guideButtons,
       });
+
+      // پیام "در حال ساخت سرویس ..." را بعد از ۲ ثانیه پاک کن (کیبورد اصلی باقی می‌ماند)
+      setTimeout(() => {
+        bot.deleteMessage(chatId, loadingMsg.message_id).catch(() => {});
+      }, 2000);
+
       return;
     }
 
     // Automatic creation failed, fallback to manual
+    // Don't increment totalServices here - it will be incremented when admin manually creates the service
     user.balance -= plan.price;
-    user.totalServices = (user.totalServices || 0) + 1;
     await user.save();
     await bot.sendMessage(
       chatId,
