@@ -4,7 +4,8 @@ const validateWithCommas = (text, min = 10000, max = 500000) => {
   if (!commaPattern.test(text)) {
     return {
       valid: false,
-      message: "❌ لطفاً مبلغ را با کاما وارد کنید. مثال: <code>50,000</code> یا <code>120,000</code>",
+      message: "❌ لطفاً مبلغ را به‌درستی و با کاما وارد کنید. مثال: <code>50,000</code> یا <code>120,000</code>",
+      parse_mode: "HTML"
     };
   }
 
@@ -13,7 +14,9 @@ const validateWithCommas = (text, min = 10000, max = 500000) => {
   if (!Number.isInteger(amount) || amount < min || amount > max) {
     return {
       valid: false,
-      message: `❌ مبلغ باید بین ${min.toLocaleString()} تا ${max.toLocaleString()} تومان باشد.`,
+      // Use <code> for numbers to ensure monospace formatting
+      message: `❌ مبلغ باید بین <code>${min.toLocaleString()}</code> تا <code>${max.toLocaleString()}</code> تومان باشد.`,
+      parse_mode: "HTML"
     };
   }
   console.log(amount);

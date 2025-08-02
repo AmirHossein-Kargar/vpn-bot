@@ -62,6 +62,7 @@ const payBank = async (bot, msg, session) => {
       await bot.editMessageText(validation.message, {
         chat_id: chatId,
         message_id: messageId,
+        parse_mode: validation.parse_mode || "HTML",
         reply_markup: {
           inline_keyboard: backButton,
         },
@@ -103,7 +104,9 @@ const payBank = async (bot, msg, session) => {
     "\n" +
     rtl(`🔖 شماره فاکتور: <code>${ltr(paymentId)}</code>`) +
     "\n\n" +
-    rtl(`💳 مبلغ: <code>${text}</code> تومان را به شماره کارت زیر واریز کنید:`) +
+    rtl(
+      `💳 مبلغ: <code>${text}</code> تومان را به شماره کارت زیر واریز کنید:`
+    ) +
     "\n\n" +
     `🔢 شماره کارت: <code>${ltr(ltrCardNumber)}</code>\n\n` +
     rtl("سپس روی دکمه زیر کلیک کرده و رسید واریزی را ارسال نمایید.");

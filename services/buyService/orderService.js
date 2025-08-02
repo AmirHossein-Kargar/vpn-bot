@@ -30,6 +30,7 @@ async function handlePlanOrder(bot, chatId, userId, plan) {
       const username = apiResponse.data.result.username || "نامشخص";
       user.services.push({ username });
       user.balance -= plan.price;
+      user.totalServices = (user.totalServices || 0) + 1;
       await user.save();
 
       const successMessage = getSuccessServiceMessage({
@@ -44,6 +45,7 @@ async function handlePlanOrder(bot, chatId, userId, plan) {
       });
     } else {
       user.balance -= plan.price;
+      user.totalServices = (user.totalServices || 0) + 1;
       await user.save();
       await bot.sendMessage(
         chatId,

@@ -16,7 +16,7 @@ const createTestService = async (bot, msg) => {
   }
 
   if (user.hasReceivedTest == true) {
-    await bot.sendMessage(chatId, "شما قبلاً این سرویس را دریافت کرده‌اید.");
+    await bot.sendMessage(chatId, "⚠️ شما قبلاً این سرویس را دریافت کرده‌اید.");
     return;
   }
 

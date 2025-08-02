@@ -20,8 +20,8 @@ import invoice from "../models/invoice.js";
 import showServiceDetails from "../services/manageServices/showServiceDetails.js";
 import changeServiceLink from "../services/manageServices/changeServiceLink.js";
 import generateQRCode from "../services/manageServices/generateQRCode.js";
-import { deactiveService, deleteService } from "../api/wizardApi.js";
-import deactivateService from "../services/manageServices/deactiveService.js";
+import { deleteService } from "../api/wizardApi.js";
+import deactivateServiceButton from "../services/manageServices/deactiveServiceButton.js";
 
 const handleCallbackQuery = async (bot, query) => {
   const data = query.data;
@@ -402,7 +402,7 @@ const handleCallbackQuery = async (bot, query) => {
     return;
   }
   if (data.startsWith("deactivate_service_")) {
-    await deactivateService(bot, chatId, messageId, data, query);
+    await deactivateServiceButton(bot, chatId, messageId, data, query);
     return;
 };
 }
