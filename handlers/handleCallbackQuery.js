@@ -20,7 +20,8 @@ import invoice from "../models/invoice.js";
 import showServiceDetails from "../services/manageServices/showServiceDetails.js";
 import changeServiceLink from "../services/manageServices/changeServiceLink.js";
 import generateQRCode from "../services/manageServices/generateQRCode.js";
-import { deleteService } from "../api/wizardApi.js";
+import { deactiveService, deleteService } from "../api/wizardApi.js";
+import deactivateService from "../services/manageServices/deactiveService.js";
 
 const handleCallbackQuery = async (bot, query) => {
   const data = query.data;
@@ -340,7 +341,7 @@ const handleCallbackQuery = async (bot, query) => {
     return;
   }
   if (data.startsWith("change_link_")) {
-   await changeServiceLink(bot, chatId, messageId, data, query)
+    await changeServiceLink(bot, chatId, messageId, data, query);
   }
   if (data.startsWith("delete_service_")) {
     const username = data.split("delete_service_")[1];
@@ -398,7 +399,11 @@ const handleCallbackQuery = async (bot, query) => {
   }
   if (data.startsWith("qrcode_")) {
     await generateQRCode(bot, chatId, messageId, data, query);
+    return;
   }
+  if (data.startsWith("deactivate_service_")) {
+    await deactivateService(bot, chatId, messageId, data, query);
+    return;
 };
-
+}
 export default handleCallbackQuery;

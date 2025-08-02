@@ -90,7 +90,7 @@ const showServiceDetails = async (bot, chatId, username, messageId) => {
             ],
             [
               {
-                text: "🚫 غیر فعال کردن سرویس",
+                text: `${online.status === "active" ? "🚫 غیر فعال کردن سرویس" : "✅ فعال کردن سرویس"}`,
                 callback_data: `deactivate_service_${res.username}`,
               },
             ]

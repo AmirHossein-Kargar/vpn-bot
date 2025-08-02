@@ -118,3 +118,22 @@ export async function deleteService(username) {
     throw error;
   }
 }
+
+// * Deactivate Service
+export async function deactiveService(username) {
+  try {
+    const params = new URLSearchParams();
+    params.append("username", username);
+    const response = await axios.post(`${BASE_URL}/reverse_mode`, params.toString(), {
+      headers: {
+        "Content-Type": "application/x-www-form-urlencoded",
+        Authorization: `Bearer ${process.env.VPN_API_KEY}`,
+      },
+    });
+    return response.data;
+  } catch (error) {
+    if (error.response) {
+      return error.response.data;
+    }
+  }
+}
