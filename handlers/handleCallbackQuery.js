@@ -22,6 +22,7 @@ import changeServiceLink from "../services/manageServices/changeServiceLink.js";
 import generateQRCode from "../services/manageServices/generateQRCode.js";
 import { deleteService } from "../api/wizardApi.js";
 import deactivateServiceButton from "../services/manageServices/deactiveServiceButton.js";
+import handleProfile from "./message/handleProfile.js";
 
 const handleCallbackQuery = async (bot, query) => {
   const data = query.data;
@@ -404,6 +405,25 @@ const handleCallbackQuery = async (bot, query) => {
   if (data.startsWith("deactivate_service_")) {
     await deactivateServiceButton(bot, chatId, messageId, data, query);
     return;
+  }
+  if (data.startsWith("alert_discount_code_disabled")) {
+    await bot.editMessageText("کد تخفیف فعلا غیرفعال است.", {
+      chat_id: chatId,
+      message_id: messageId,
+      reply_markup: {
+        inline_keyboard: [
+          [
+            { text: "🔄 بازگشت", callback_data: "back_to_profile" },
+          ],
+        ],
+      },
+    });
+    return;
+  }
+  if (data.startsWith("back_to_profile")) {
+    await bot.deleteMessage(chatId, messageId);
+    await handleProfile(bot, chatId, userId);
+    return;
+  }
 };
-}
 export default handleCallbackQuery;

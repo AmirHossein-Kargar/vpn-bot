@@ -36,9 +36,9 @@ export function getTestServiceMessage({
 export { guideButtons } from "../handlers/message/handleGuide.js";
 
 export function getSuccessServiceMessage({ username, smartLink, singleLink }) {
-  `✅ <b>سرویس شما با موفقیت ساخته شد.</b>
+  return `✅ <b>سرویس شما با موفقیت ساخته شد.</b>
 
-🆔 <b>آیدی سرویس:</b> <code>${username}</code>
+ <b>آیدی سرویس:</b> <code>${username}</code>
 
 🔗 <b>لینک اتصال (Subscription):</b>
 <code>${smartLink}</code>

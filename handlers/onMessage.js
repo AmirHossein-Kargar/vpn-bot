@@ -5,8 +5,6 @@ import payBank from "../paymentHandlers/payBank.js";
 import handleAddBalance from "./admin/handleAddBalance.js";
 import supportMessageHandler from "./supportMessageHandler.js";
 
-import { findService } from "../api/wizardApi.js";
-
 // Top-level function for sending config to user
 async function handleSendConfig(bot, msg, session) {
   const messageId = session.messageId;
@@ -149,12 +147,11 @@ async function handleMessage(bot, msg) {
               editText = "❌ این آیدی سرویس قبلاً ثبت شده است.";
               await bot.editMessageText(editText, editOptions);
             } else {
-             
               // Add the username to the user's services array and increment totalServices
               user.services.push({ username: vpnId });
               user.totalServices += 1;
               await user.save();
-              
+
               await bot.editMessageText(
                 "✅ آیدی سرویس با موفقیت ثبت شد.",
                 editOptions

@@ -1,3 +1,4 @@
+import axios from "axios";
 import { createVpnService } from "../../api/wizardApi.js";
 import {
   getSuccessServiceMessage,
@@ -7,7 +8,12 @@ import User from "../../models/User.js";
 import formatDate from "../../utils/formatDate.js";
 import { checkUserBalance } from "./checkUserBalance.js";
 
+/**
+ * Attempts to create a VPN service for the user and send the config.
+ * If automatic creation fails, notifies admins for manual handling.
+ */
 async function handlePlanOrder(bot, chatId, userId, plan) {
+  // Check user balance
   const hasBalance = await checkUserBalance(userId, plan.price);
   if (!hasBalance) {
     await bot.sendMessage(
@@ -17,44 +23,66 @@ async function handlePlanOrder(bot, chatId, userId, plan) {
     return;
   }
 
+  // Fetch user from DB
+  const user = await User.findOne({ telegramId: userId });
+  if (!user) {
+    await bot.sendMessage(chatId, "❌ کاربر یافت نشد.");
+    return;
+  }
+
   try {
-    const apiResponse = await createVpnService(plan.gig, plan.day, 0);
+    // Try to create VPN service automatically
+    const apiResponse = await createVpnService(plan.gig, plan.days, 0);
 
-    const user = await User.findOne({ telegramId: userId });
-    if (!user) {
-      await bot.sendMessage(chatId, "❌ کاربر یافت نشد.");
-      return;
-    }
+    if (apiResponse && apiResponse.ok && apiResponse.result) {
+      // Service created successfully
+      const username = apiResponse.result.username || "نامشخص";
+      // Compose the correct sub_link as per new format
+      const hash = apiResponse.result.hash;
+      const smartLink = hash
+        ? `https://iranisystem.com/bot/sub/?hash=${hash}`
+        : "";
+      const singleLink = Array.isArray(apiResponse.result.tak_links)
+        ? apiResponse.result.tak_links[0] || ""
+        : "";
 
-    if (apiResponse.ok) {
-      const username = apiResponse.data.result.username || "نامشخص";
       user.services.push({ username });
       user.balance -= plan.price;
       user.totalServices = (user.totalServices || 0) + 1;
       await user.save();
 
+      // Get QR code as a file (not as POST, but as a file URL)
+      const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?data=${encodeURIComponent(
+        smartLink
+      )}&size=200x200&margin=20`;
+
       const successMessage = getSuccessServiceMessage({
-        username: username,
-        smartLink: apiResponse.data.result.sub_link || "",
-        singleLink: apiResponse.data.result.tak_links[0],
+        username,
+        smartLink,
+        singleLink,
       });
 
-      await bot.sendMessage(chatId, successMessage, {
+      // Send config to user
+      await bot.sendPhoto(chatId, qrUrl, {
+        caption: successMessage,
         parse_mode: "HTML",
         ...guideButtons,
       });
-    } else {
-      user.balance -= plan.price;
-      user.totalServices = (user.totalServices || 0) + 1;
-      await user.save();
-      await bot.sendMessage(
-        chatId,
-        "📨 سفارش شما ثبت شد و به زودی بررسی خواهد شد. لطفاً منتظر بمانید."
-      );
+      return;
+    }
 
-      const ADMIN_GROUP_ID = process.env.GROUP_ID;
+    // Automatic creation failed, fallback to manual
+    user.balance -= plan.price;
+    user.totalServices = (user.totalServices || 0) + 1;
+    await user.save();
+    await bot.sendMessage(
+      chatId,
+      "📨 سفارش شما ثبت شد و به زودی بررسی خواهد شد. لطفاً منتظر بمانید."
+    );
 
-      const msg = `📩 <b>سفارش جدید نیازمند ساخت دستی</b>
+    const ADMIN_GROUP_ID = process.env.GROUP_ID;
+
+    const msg = `📩 <b>سفارش جدید نیازمند ساخت دستی</b>
       
     👤 <b>نام:</b> <code>${user.firstName || "نامشخص"}</code>
      <b>آیدی عددی:</b> <code>${user.telegramId}</code>
@@ -73,27 +101,30 @@ async function handlePlanOrder(bot, chatId, userId, plan) {
     🧑‍💼 لطفاً این سفارش را به صورت دستی در پنل ایجاد کرده و سپس ارسال نمایید.
       `;
 
-      await bot.sendMessage(ADMIN_GROUP_ID, msg, {
-        parse_mode: "HTML",
-        reply_markup: {
-          inline_keyboard: [
-            [
-              {
-                text: "ارسال کانفیگ به کاربر",
-                callback_data: `send_config_to_user_${user.telegramId}`,
-              },
-            ],
+    await bot.sendMessage(ADMIN_GROUP_ID, msg, {
+      parse_mode: "HTML",
+      reply_markup: {
+        inline_keyboard: [
+          [
+            {
+              text: "ارسال کانفیگ به کاربر",
+              callback_data: `send_config_to_user_${user.telegramId}`,
+            },
           ],
-        },
-      });
-    }
+        ],
+      },
+    });
+    return;
   } catch (error) {
+    // Log error for debugging
     console.error("Error in plan order", error);
 
     await bot.sendMessage(
       chatId,
       "❌ خطایی در ایجاد سرویس رخ داد. لطفاً بعداً دوباره تلاش کنید."
     );
+    return;
   }
 }
+
 export default handlePlanOrder;

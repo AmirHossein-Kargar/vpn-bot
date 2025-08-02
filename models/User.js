@@ -15,6 +15,9 @@ const userSchema = new mongoose.Schema({
     },
   ],
   createdAt: { type: Date, default: Date.now },
+  hasDiscount: { type: Boolean, default: false },
+  isAdmin: { type: Boolean, default: false },
+  isBanned: { type: Boolean, default: false },
 });
 
 export default mongoose.model("User", userSchema);

@@ -1,5 +1,3 @@
-import plans from "../plans.js";
-
 // * This function handles the "Buy Service" feature.
 // * It sends a message with a list of available plans,
 // * each shown as an inline button the user can tap to select.

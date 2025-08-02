@@ -47,22 +47,20 @@ const handleProfile = async (bot, chatId, userId) => {
 📞 شماره تلفن: <code>${phone}</code>
 🕒 تاریخ عضویت: <code>${formattedDate}</code>`;
 
-    // Add inline button "اعمال کد تخفیف" with emoji
-    const inlineKeyboard = {
+    const reply_markup = {
       reply_markup: {
         inline_keyboard: [
           [
             {
               text: "🎟️ اعمال کد تخفیف",
-              callback_data: "apply_discount_code",
+              callback_data: "alert_discount_code_disabled",
             },
           ],
         ],
       },
-      parse_mode: "HTML",
     };
 
-    bot.sendMessage(chatId, message, { parse_mode: "HTML", ...inlineKeyboard });
+    bot.sendMessage(chatId, message, { parse_mode: "HTML", ...reply_markup });
   } catch (err) {
     bot.sendMessage(chatId, "❌ خطایی رخ داده است. لطفاً دوباره تلاش کنید.");
   }
