@@ -37,7 +37,11 @@ const showServiceDetails = async (bot, chatId, username, messageId) => {
     #⃣ کد سرویس : <code>${res.username}</code>
 
 ▫️ وضعیت سرویس : ${
-      online.status === "active" ? "<code>🟢 فعال</code>" : "🔴 غیرفعال"
+      online.status === "active"
+        ? "<code>🟢 فعال</code>"
+        : online.status === "limited"
+        ? "<code>🔴 منقضی شده</code>"
+        : "🔴 غیرفعال"
     }
 
 📦 حجم سرویس : <code>${latest.gig || "نامشخص"} گیگابایت</code>
@@ -58,49 +62,74 @@ const showServiceDetails = async (bot, chatId, username, messageId) => {
         console.log("Could not delete message:", deleteError.message);
       }
 
+      // Create inline keyboard based on service status
+      const inlineKeyboard = [
+        [
+          {
+            text: "‼️چجوری به سرویس متصل بشم‼️",
+            url: "https://t.me/swift_shield/9",
+          },
+        ],
+      ];
+
+      // Only show change link button if status is not limited
+      if (online.status !== "limited") {
+        inlineKeyboard.push([
+          {
+            text: "🛑 تغییر لینک 🛑",
+            callback_data: `change_link_${res.username}`,
+          },
+          {
+            text: "⏳ تمدید سرویس و افزایش حجم",
+            callback_data: "extend_or_increase",
+          },
+        ]);
+      } else {
+        // For limited status, only show extend service button
+        inlineKeyboard.push([
+          {
+            text: "⏳ تمدید سرویس و افزایش حجم",
+            callback_data: "extend_or_increase",
+          },
+        ]);
+      }
+
+      inlineKeyboard.push([
+        {
+          text: "🗑 حذف سرویس",
+          callback_data: `delete_service_${res.username}`,
+        },
+        {
+          text: "◽️دریافت QRCode",
+          callback_data: `qrcode_${res.username}`,
+        },
+      ]);
+
+      // Only show activate/deactivate button if status is not limited
+      if (online.status !== "limited") {
+        inlineKeyboard.push([
+          {
+            text: `${
+              online.status === "active"
+                ? "🚫 غیر فعال کردن سرویس"
+                : "✅ فعال کردن سرویس"
+            }`,
+            callback_data: `deactivate_service_${res.username}`,
+          },
+        ]);
+      }
+
+      inlineKeyboard.push([
+        {
+          text: "بازگشت به منوی اصلی",
+          callback_data: "buy_service_back_to_main",
+        },
+      ]);
+
       await bot.sendMessage(chatId, message, {
         parse_mode: "HTML",
         reply_markup: {
-          inline_keyboard: [
-            [
-              {
-                text: "‼️چجوری به سرویس متصل بشم‼️",
-                url: "https://t.me/swift_shield/9",
-              },
-            ],
-            [
-              {
-                text: "🛑 تغییر لینک 🛑",
-                callback_data: `change_link_${res.username}`,
-              },
-              {
-                text: "⏳ تمدید سرویس و افزایش حجم",
-                callback_data: "extend_or_increase",
-              },
-            ],
-            [
-              {
-                text: "🗑 حذف سرویس",
-                callback_data: `delete_service_${res.username}`,
-              },
-              {
-                text: "◽️دریافت QRCode",
-                callback_data: `qrcode_${res.username}`,
-              },
-            ],
-            [
-              {
-                text: `${online.status === "active" ? "🚫 غیر فعال کردن سرویس" : "✅ فعال کردن سرویس"}`,
-                callback_data: `deactivate_service_${res.username}`,
-              },
-            ],
-            [
-              {
-                text: "بازگشت به منوی اصلی",
-                callback_data: "buy_service_back_to_main",
-              }
-            ]
-          ],
+          inline_keyboard: inlineKeyboard,
         },
       });
     }

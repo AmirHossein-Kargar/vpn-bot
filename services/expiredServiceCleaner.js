@@ -1,10 +1,10 @@
 import User from "../models/User.js";
-import { findService, deleteService } from "../api/wizardApi.js";
+import { findService } from "../api/wizardApi.js";
 
-// Function to check and clean expired services
-const cleanExpiredServices = async (bot) => {
+// Function to check and notify about expired/limited services
+const checkExpiredServices = async (bot) => {
   try {
-    console.log("🕐 Starting daily expired service cleanup...");
+    console.log("🕐 Starting expired/limited service check...");
 
     // Get all users with services
     const users = await User.find({
@@ -29,55 +29,59 @@ const cleanExpiredServices = async (bot) => {
               apiResponse.result.latest_info
             ) {
               const latest = apiResponse.result.latest_info;
+              const online = apiResponse.result.online_info || {};
               const expirationTime = latest.expiration_time;
               const currentTime = Math.floor(Date.now() / 1000); // Current timestamp in seconds
 
-              // If service is expired (expiration_time < current_time)
-              if (expirationTime && expirationTime < currentTime) {
+              // Check if service is expired by time OR limited by data usage
+              const isExpiredByTime =
+                expirationTime && expirationTime < currentTime;
+              const isLimitedByData = online.status === "limited";
+
+              if (isExpiredByTime || isLimitedByData) {
                 console.log(
-                  `🗑️ Service ${username} for user ${
-                    user.telegramId
-                  } is expired (expired at: ${new Date(
-                    expirationTime * 1000
-                  ).toLocaleString("fa-IR")})`
+                  `⚠️ Service ${username} for user ${user.telegramId} is ${
+                    isExpiredByTime
+                      ? "expired by time"
+                      : "limited by data usage"
+                  }`
                 );
 
-                // Delete from API
-                const deleteResult = await deleteService(username);
+                // Check if we already sent notification for this service
+                const expiredNotificationKey = `expiredNotification_${username}`;
+                const today = new Date().toDateString();
 
-                if (deleteResult && deleteResult.result) {
-                  console.log(
-                    `✅ Service ${username} deleted from API successfully`
-                  );
+                if (
+                  !user[expiredNotificationKey] ||
+                  user[expiredNotificationKey] !== today
+                ) {
+                  // Determine the reason and message
+                  let reason = "";
+                  if (isExpiredByTime && isLimitedByData) {
+                    reason = "منقضی شده و حجم آن تمام شده است";
+                  } else if (isExpiredByTime) {
+                    reason = "منقضی شده است";
+                  } else if (isLimitedByData) {
+                    reason = "حجم آن تمام شده است";
+                  }
 
-                  // Remove from user's services array
-                  user.services = user.services.filter(
-                    (s) => s.username !== username
-                  );
-
-                  // Decrement totalServices but never go below 0
-                  user.totalServices = Math.max(
-                    0,
-                    (user.totalServices || 0) - 1
-                  );
-
-                  await user.save();
-                  console.log(
-                    `✅ Service ${username} removed from database for user ${user.telegramId}`
-                  );
-
-                  // Send notification to user
+                  // Send notification to user about expired/limited service
                   try {
                     await bot.sendMessage(
                       user.telegramId,
-                      `❌ سرویس شما منقضی شده و حذف شد!\n\n🔗 کد سرویس: <code>${username}</code>\n📅 تاریخ انقضا: ${
+                      `⚠️ سرویس شما ${reason}!\n\n🔗 کد سرویس: <code>${username}</code>\n📅 تاریخ انقضا: ${
                         latest.expire_date || "نامشخص"
-                      }\n\n💡 برای خرید سرویس جدید، از منوی اصلی استفاده کنید.`,
+                      }\n📦 حجم سرویس: <code>${
+                        latest.gig || "نامشخص"
+                      } گیگابایت</code>\n📥 حجم مصرفی: <code>${
+                        online.usage_converted || 0
+                      }</code>\n\n💡 برای تمدید سرویس، از منوی مدیریت سرویس‌ها استفاده کنید.`,
                       {
                         parse_mode: "HTML",
                         reply_markup: {
                           keyboard: [
                             ["🛒 خرید سرویس"],
+                            ["📱 مدیریت سرویس‌ها"],
                             ["💰 افزایش موجودی"],
                             ["👤 پروفایل من"],
                           ],
@@ -85,8 +89,13 @@ const cleanExpiredServices = async (bot) => {
                         },
                       }
                     );
+
+                    // Mark that we sent notification today for this service
+                    user[expiredNotificationKey] = today;
+                    await user.save();
+
                     console.log(
-                      `📱 Notification sent to user ${user.telegramId} about expired service ${username}`
+                      `📱 Notification sent to user ${user.telegramId} about ${reason} service ${username}`
                     );
                   } catch (notificationError) {
                     console.error(
@@ -96,19 +105,23 @@ const cleanExpiredServices = async (bot) => {
                   }
                 } else {
                   console.log(
-                    `❌ Failed to delete service ${username} from API:`,
-                    deleteResult
+                    `📱 Already sent notification today for expired/limited service ${username} to user ${user.telegramId}`
                   );
                 }
               } else {
-                // Log remaining time for debugging
+                // Log remaining time and data for debugging
                 if (expirationTime) {
                   const remainingTime = expirationTime - currentTime;
                   const remainingDays = Math.ceil(
                     remainingTime / (24 * 60 * 60)
                   );
+
                   console.log(
-                    `⏰ Service ${username} for user ${user.telegramId} has ${remainingDays} days remaining`
+                    `⏰ Service ${username} for user ${
+                      user.telegramId
+                    } has ${remainingDays} days remaining, usage: ${
+                      online.usage_converted || 0
+                    }`
                   );
                 }
               }
@@ -130,28 +143,31 @@ const cleanExpiredServices = async (bot) => {
       }
     }
 
-    console.log("✅ Daily expired service cleanup completed");
+    console.log("✅ Expired/limited service check completed");
   } catch (error) {
-    console.error("❌ Error in cleanExpiredServices:", error);
+    console.error("❌ Error in checkExpiredServices:", error);
   }
 };
 
 // Function to start the cron job (run daily at 2 AM)
-const startExpiredServiceCleaner = (bot) => {
-  console.log("🕐 Starting expired service cleaner cron job...");
+const startExpiredServiceChecker = (bot) => {
+  console.log("🕐 Starting expired/limited service checker cron job...");
 
-  // Run immediately on startup
-  cleanExpiredServices(bot);
+  // Don't run immediately on startup, only at scheduled times
+  // checkExpiredServices(bot);
 
-  // Then run daily at 2 AM
+  // Run daily at 2 AM
   setInterval(() => {
     const now = new Date();
-    if (now.getHours() === 0 && now.getMinutes() === 0) {
-      cleanExpiredServices(bot);
+    if (now.getHours() === 2 && now.getMinutes() === 0) {
+      console.log("🕐 2 AM - Running scheduled expired service check...");
+      checkExpiredServices(bot);
     }
   }, 60 * 1000); // Check every minute
 
-  console.log("✅ Expired service cleaner cron job started");
+  console.log(
+    "✅ Expired/limited service checker cron job started (runs daily at 2 AM)"
+  );
 };
 
-export { cleanExpiredServices, startExpiredServiceCleaner };
+export { checkExpiredServices, startExpiredServiceChecker };
