@@ -19,9 +19,8 @@ export function getTestServiceMessage({
 }) {
   return `
    <b>شناسه سرویس:</b> <code>${username}</code>
-  👤 <b>حداکثر اتصال:</b> ${maxUser} کاربر
-  📥 <b>حجم مجاز:</b> ${maxUsageMB} گیگابایت
-  
+  👤 <b>حداکثر اتصال:</b> <code>${maxUser} کاربر</code>
+  📥 <b>حجم مجاز:</b> <code>${maxUsageMB} گیگابایت</code>
   🔗 <b>لینک هوشمند (همه لوکیشن‌ها):</b>
   <code>${smartLink}</code>
   

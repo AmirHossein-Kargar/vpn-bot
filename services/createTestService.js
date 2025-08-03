@@ -29,7 +29,11 @@ const createTestService = async (bot, msg) => {
     return;
   }
 
+  let loadingMsg;
   try {
+    // Send "در حال ساخت سرویس ..." message before creating the test service
+    loadingMsg = await bot.sendMessage(chatId, "⏳ در حال ساخت سرویس ...");
+
     const data = await createTestServiceApi();
     if (data && data.ok && data.result) {
       const result = data.result;
@@ -74,13 +78,26 @@ const createTestService = async (bot, msg) => {
         disable_web_page_preview: true,
         reply_markup: guideButtons.reply_markup,
       });
+
+      // Delete the "در حال ساخت سرویس ..." message after sending the service
+      if (loadingMsg && loadingMsg.message_id) {
+        bot.deleteMessage(chatId, loadingMsg.message_id).catch(() => {});
+      }
     } else {
+      // Delete the loading message if error occurs
+      if (loadingMsg && loadingMsg.message_id) {
+        bot.deleteMessage(chatId, loadingMsg.message_id).catch(() => {});
+      }
       await bot.sendMessage(
         chatId,
         "خطا در دریافت سرویس تست. لطفاً بعداً تلاش کنید."
       );
     }
   } catch (error) {
+    // Delete the loading message if error occurs
+    if (loadingMsg && loadingMsg.message_id) {
+      bot.deleteMessage(chatId, loadingMsg.message_id).catch(() => {});
+    }
     await bot.sendMessage(
       chatId,
       "خطا در ارتباط با سرور سرویس تست. لطفاً بعداً تلاش کنید."
