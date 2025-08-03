@@ -4,25 +4,34 @@ import {
   guideButtons,
 } from "../messages/staticMessages.js";
 import { createTestService as createTestServiceApi } from "../api/wizardApi.js";
+import axios from "axios";
 
 const createTestService = async (bot, msg) => {
   const chatId = msg.chat.id;
   const userId = String(msg.from.id);
 
-  let user = await User.findOne({ telegramId: userId });
-
-  if (!user) {
-    user = await User.create({ telegramId: userId });
+  let user;
+  try {
+    user = await User.findOne({ telegramId: userId });
+    if (!user) {
+      user = await User.create({ telegramId: userId });
+    }
+  } catch (err) {
+    await bot.sendMessage(
+      chatId,
+      "❌ خطا در ارتباط با پایگاه داده. لطفاً بعداً تلاش کنید."
+    );
+    return;
   }
 
-  if (user.hasReceivedTest == true) {
+  if (user.hasReceivedTest === true) {
     await bot.sendMessage(chatId, "⚠️ شما قبلاً این سرویس را دریافت کرده‌اید.");
     return;
   }
 
   try {
     const data = await createTestServiceApi();
-    if (data.ok && data.result) {
+    if (data && data.ok && data.result) {
       const result = data.result;
 
       const maxUser = 1;
@@ -32,11 +41,10 @@ const createTestService = async (bot, msg) => {
         ? `https://iranisystem.com/bot/sub/?hash=${result.hash}`
         : result.sub_link || "";
 
-      const QRCode = await axios.post(
-        `https://api.qrserver.com/v1/create-qr-code/?data=${encodeURIComponent(
-          smartLink
-        )}&size=200x200&margin=20`
-      );
+      // Use GET for QR code image, not POST
+      const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?data=${encodeURIComponent(
+        smartLink
+      )}&size=200x200&margin=20`;
 
       const singleLink =
         result.tak_links && result.tak_links.length > 0
@@ -48,7 +56,7 @@ const createTestService = async (bot, msg) => {
       // Only save the service id (username) in user's services array
       user.services.push({ username });
       user.hasReceivedTest = true;
-      user.totalServices += 1;
+      user.totalServices = (user.totalServices || 0) + 1;
       await user.save();
 
       // Send QR code image with all text information in one message
@@ -60,7 +68,7 @@ const createTestService = async (bot, msg) => {
         username,
       });
 
-      await bot.sendPhoto(chatId, QRCode, {
+      await bot.sendPhoto(chatId, qrUrl, {
         caption: `🎉 <b>سرویس تست یک‌ روزه شما فعال شد!</b>\n\n${message}`,
         parse_mode: "HTML",
         disable_web_page_preview: true,

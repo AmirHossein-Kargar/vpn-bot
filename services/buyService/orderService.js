@@ -52,7 +52,7 @@ async function handlePlanOrder(bot, chatId, userId, plan) {
       user.totalServices = (user.totalServices || 0) + 1;
       await user.save();
 
-
+      //  * add a message to the user that the service is being created
       const loadingMsg = await bot.sendMessage(
         chatId,
         "⏳ در حال ساخت سرویس ...",
