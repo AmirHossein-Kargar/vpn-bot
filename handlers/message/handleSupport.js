@@ -7,7 +7,8 @@ const handleSupport = async (bot, chatId, userId) => {
 ‼️ قبل از ارسال پیام به پشتیبانی، قوانین و مقررات سرویس‌ دهی را مطالعه کنید.
 
 📝 لطفاً پیام پشتیبانی خود را در همین چت تایپ و ارسال کنید.
-`;
+
+✅ فایل‌های مجاز: متن، عکس، فیلم`;
 
   const supportKeyboard = {
     reply_markup: {
@@ -28,7 +29,14 @@ const handleSupport = async (bot, chatId, userId) => {
 
   setTimeout(async () => {
     await bot.deleteMessage(chatId, tempMsg.message_id);
-    await bot.sendMessage(chatId, supportMessage, supportKeyboard);
+    const sentMessage = await bot.sendMessage(
+      chatId,
+      supportMessage,
+      supportKeyboard
+    );
+    // Update session with the actual support message ID
+    session.supportMessageId = sentMessage.message_id;
+    await setSession(userId, session);
   }, 1000);
 };
 

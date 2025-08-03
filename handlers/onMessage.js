@@ -67,8 +67,8 @@ async function handleMessage(bot, msg) {
   const chatId = msg.chat.id;
   const session = await getSession(chatId);
 
-  // Forward support messages if in support mode
-  if (session?.support) {
+  // Forward support messages if in support mode (only for text messages)
+  if (session?.support && msg.text) {
     await supportMessageHandler(bot, msg);
     return;
   }

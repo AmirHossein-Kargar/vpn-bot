@@ -13,6 +13,7 @@ import handleProfile from "./handlers/message/handleProfile.js";
 import handleGuide from "./handlers/message/handleGuide.js";
 import handleSupport from "./handlers/message/handleSupport.js";
 import handleMessage from "./handlers/onMessage.js";
+import supportMessageHandler from "./handlers/supportMessageHandler.js";
 import { WELCOME_MESSAGE } from "./messages/staticMessages.js";
 import keyboard from "./keyboards/mainKeyboard.js";
 import { getSession, setSession } from "./config/sessionStore.js";
@@ -95,6 +96,7 @@ bot.on("contact", async (msg) => {
     await bot.sendMessage(chatId, "❌ مشکلی در ذخیره شماره تلفن رخ داد.");
   }
 });
+
 // * Handle inline button (callback_query)
 bot.on("callback_query", async (query) => {
   try {
@@ -104,14 +106,142 @@ bot.on("callback_query", async (query) => {
   }
 });
 
+// * Handle photos (for receipt uploads and support)
 bot.on("photo", async (msg) => {
   const chatId = msg.chat.id;
-  const session = await getSession(chatId);
+  const userId = msg.from.id;
+  const session = await getSession(userId);
 
+  // Check if user is in support mode
+  if (session?.support) {
+    await supportMessageHandler(bot, msg);
+    return;
+  }
+
+  // Handle receipt uploads
   if (session?.step === "waiting_for_receipt_image") {
     const handleBankRecipt = (
       await import("./paymentHandlers/handleBankRecipt.js")
     ).default;
     await handleBankRecipt(bot, msg, session);
+  }
+});
+
+// * Handle videos (for support)
+bot.on("video", async (msg) => {
+  const userId = msg.from.id;
+  const session = await getSession(userId);
+
+  if (session?.support) {
+    await supportMessageHandler(bot, msg);
+  }
+});
+
+// * Handle unsupported media types (for support) - delete and show error
+bot.on("voice", async (msg) => {
+  const chatId = msg.chat.id;
+  const userId = msg.from.id;
+  const session = await getSession(userId);
+
+  if (session?.support) {
+    try {
+      // Delete the unsupported message
+      await bot.deleteMessage(chatId, msg.message_id);
+
+      // Edit the previous support message to show error
+      if (session.supportMessageId) {
+        await bot.editMessageText(
+          `❌ این فایل مجاز نیست!\n\n▫️ جهت ارتباط به صورت مستقیم:\n🔰 @Swift_servicebot\n\n‼️ قبل از ارسال پیام به پشتیبانی، قوانین و مقررات سرویس‌ دهی را مطالعه کنید.\n\n📝 لطفاً پیام پشتیبانی خود را در همین چت تایپ و ارسال کنید.\n\n✅ فایل‌های مجاز: متن، عکس، فیلم`,
+          {
+            chat_id: chatId,
+            message_id: session.supportMessageId,
+            reply_markup: {
+              inline_keyboard: [
+                [
+                  {
+                    text: "🏠 بازگشت به منوی اصلی",
+                    callback_data: "back_to_home",
+                  },
+                ],
+              ],
+            },
+          }
+        );
+      }
+    } catch (error) {
+      console.error("❌ Error deleting unsupported voice message:", error);
+    }
+  }
+});
+
+bot.on("video_note", async (msg) => {
+  const chatId = msg.chat.id;
+  const userId = msg.from.id;
+  const session = await getSession(userId);
+
+  if (session?.support) {
+    try {
+      // Delete the unsupported message
+      await bot.deleteMessage(chatId, msg.message_id);
+
+      // Edit the previous support message to show error
+      if (session.supportMessageId) {
+        await bot.editMessageText(
+          `❌ این فایل مجاز نیست!\n\n▫️ جهت ارتباط به صورت مستقیم:\n🔰 @Swift_servicebot\n\n‼️ قبل از ارسال پیام به پشتیبانی، قوانین و مقررات سرویس‌ دهی را مطالعه کنید.\n\n📝 لطفاً پیام پشتیبانی خود را در همین چت تایپ و ارسال کنید.\n\n✅ فایل‌های مجاز: متن، عکس، فیلم`,
+          {
+            chat_id: chatId,
+            message_id: session.supportMessageId,
+            reply_markup: {
+              inline_keyboard: [
+                [
+                  {
+                    text: "🏠 بازگشت به منوی اصلی",
+                    callback_data: "back_to_home",
+                  },
+                ],
+              ],
+            },
+          }
+        );
+      }
+    } catch (error) {
+      console.error("❌ Error deleting unsupported video_note message:", error);
+    }
+  }
+});
+
+bot.on("document", async (msg) => {
+  const chatId = msg.chat.id;
+  const userId = msg.from.id;
+  const session = await getSession(userId);
+
+  if (session?.support) {
+    try {
+      // Delete the unsupported message
+      await bot.deleteMessage(chatId, msg.message_id);
+
+      // Edit the previous support message to show error
+      if (session.supportMessageId) {
+        await bot.editMessageText(
+          `❌ این فایل مجاز نیست!\n\n▫️ جهت ارتباط به صورت مستقیم:\n🔰 @Swift_servicebot\n\n‼️ قبل از ارسال پیام به پشتیبانی، قوانین و مقررات سرویس‌ دهی را مطالعه کنید.\n\n📝 لطفاً پیام پشتیبانی خود را در همین چت تایپ و ارسال کنید.\n\n✅ فایل‌های مجاز: متن، عکس، فیلم`,
+          {
+            chat_id: chatId,
+            message_id: session.supportMessageId,
+            reply_markup: {
+              inline_keyboard: [
+                [
+                  {
+                    text: "🏠 بازگشت به منوی اصلی",
+                    callback_data: "back_to_home",
+                  },
+                ],
+              ],
+            },
+          }
+        );
+      }
+    } catch (error) {
+      console.error("❌ Error deleting unsupported document message:", error);
+    }
   }
 });

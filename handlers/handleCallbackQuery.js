@@ -38,9 +38,6 @@ const handleCallbackQuery = async (bot, query) => {
       if (session?.paymentId) {
         try {
           await invoice.findOneAndDelete({ paymentId: session.paymentId });
-          console.log(
-            `🗑️ Invoice with paymentId ${session.paymentId} removed from database`
-          );
         } catch (error) {
           console.error("Error removing invoice:", error.message);
         }
@@ -212,10 +209,7 @@ const handleCallbackQuery = async (bot, query) => {
     }
 
     try {
-      await invoice.findOneAndUpdate(
-        { paymentId: paymentId },
-        { status: "rejected" }
-      );
+      await invoice.findOneAndDelete({ paymentId });
 
       await bot.editMessageReplyMarkup(
         { inline_keyboard: [] },
@@ -229,7 +223,10 @@ const handleCallbackQuery = async (bot, query) => {
 
       await bot.sendMessage(
         userId,
-        "❌ پرداخت شما توسط ادمین رد شد. در صورت نیاز با پشتیبانی تماس بگیرید."
+        "❌ پرداخت شما توسط ادمین رد شد. در صورت نیاز با پشتیبانی تماس بگیرید.",
+        {
+          reply_markup: keyboard.reply_markup,
+        }
       );
 
       await bot.answerCallbackQuery(query.id, {
