@@ -21,10 +21,14 @@ import hideKeyboard from "./utils/hideKeyboard.js";
 import createTestService from "./services/createTestService.js";
 import User from "./models/User.js";
 import sendServiceSelectionMenu from "./services/manageServices/sendServiceSelectionMenu.js";
+import { startExpiredServiceCleaner } from "./services/expiredServiceCleaner.js";
 
 let adminIds = process.env.ADMINS.split(",").map((id) => Number(id.trim()));
 
 const bot = await startBot();
+
+// * Start expired service cleaner cron job
+startExpiredServiceCleaner(bot);
 
 // * Handle all incoming messages
 bot.on("message", async (msg) => {
