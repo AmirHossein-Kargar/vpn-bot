@@ -219,3 +219,28 @@ export async function upgradeServiceTime(username, day) {
     }
   }
 }
+// * Upgrade Data
+
+/**
+ * * Upgrade the data for a VPN service.
+ * @param {string} username - The username of the service.
+ * @returns {Promise<Object>} - API response data.
+ */
+export async function upgradeServiceData(username, gig) {
+  const params = new URLSearchParams();
+  params.append('username', username)
+  params.append('gig', gig)
+  try {
+    const response = await axios.post(`${BASE_URL}/upg_size`, params.toString(), {
+      headers: {
+        "Content-Type": "application/x-www-form-urlencoded",
+        Authorization: `Bearer ${process.env.VPN_API_KEY}`,
+      },
+    });
+    return response.data;
+  } catch (error) {
+    if(error.response) {
+      return error.response
+    }
+  }
+}
