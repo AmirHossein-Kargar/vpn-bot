@@ -260,7 +260,7 @@ export async function upgradeServiceData(username, gig) {
 // * Status
 export async function StatusApi() {
   try {
-    axios.get(`${BASE_URL}/status`, {
+    const response = await axios.get(`${BASE_URL}/status`, {
       headers: {
         "Content-Type": "application/x-www-form-urlencoded",
         Authorization: `Bearer ${process.env.VPN_API_KEY}`,
@@ -269,7 +269,8 @@ export async function StatusApi() {
     return response.data;
   } catch (error) {
     if (error.response) {
-      return error.response;
+      return error.response.data;
     }
+    throw error;
   }
 }

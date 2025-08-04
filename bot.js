@@ -26,6 +26,10 @@ import { WELCOME_MESSAGE } from "./messages/staticMessages.js";
 // * 📦 Models
 import User from "./models/User.js";
 
+// * 📦 API
+import { StatusApi } from "./api/wizardApi.js";
+import showStatusApi from "./handlers/admin/showStatusApi.js";
+
 // * 🛡️ Admins
 let adminIds = process.env.ADMINS.split(",").map((id) => Number(id.trim()));
 
@@ -53,6 +57,10 @@ bot.on("message", async (msg) => {
       } else {
         await bot.sendMessage(chatId, "⛔️ شما دسترسی به این بخش را ندارید.");
       }
+      break;
+    }
+    case "/status": {
+      await showStatusApi(bot, msg);
       break;
     }
     case "🎁 سرویس تست":
