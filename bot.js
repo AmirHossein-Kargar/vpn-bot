@@ -3,40 +3,41 @@ import "dotenv/config";
 
 // * 🔌 Core
 import startBot from "./startBot.js";
-import handleContact from "./handlers/contactHandler.js";
 import handleCallbackQuery from "./handlers/handleCallbackQuery.js";
+import handleContact from "./handlers/contactHandler.js";
 
-// * 📦 Services
+// * 📦 Services & Handlers
+import createTestService from "./services/createTestService.js";
 import handleBuyService from "./services/buyService/buyService.js";
-import showPaymentMethods from "./handlers/message/showPaymentMethods.js";
-import handleProfile from "./handlers/message/handleProfile.js";
 import handleGuide from "./handlers/message/handleGuide.js";
-import handleSupport from "./handlers/message/handleSupport.js";
 import handleMessage from "./handlers/onMessage.js";
-import supportMessageHandler from "./handlers/supportMessageHandler.js";
-import { WELCOME_MESSAGE } from "./messages/staticMessages.js";
+import handleProfile from "./handlers/message/handleProfile.js";
+import handleSupport from "./handlers/message/handleSupport.js";
 import keyboard from "./keyboards/mainKeyboard.js";
+import sendServiceSelectionMenu from "./services/manageServices/sendServiceSelectionMenu.js";
+import showPaymentMethods from "./handlers/message/showPaymentMethods.js";
+import supportMessageHandler from "./handlers/supportMessageHandler.js";
+
+// * 📦 Utilities & Config
 import { getSession, setSession } from "./config/sessionStore.js";
 import hideKeyboard from "./utils/hideKeyboard.js";
-import createTestService from "./services/createTestService.js";
-import User from "./models/User.js";
-import sendServiceSelectionMenu from "./services/manageServices/sendServiceSelectionMenu.js";
-// import { startExpiredServiceChecker } from "./services/expiredServiceCleaner.js";
+import { WELCOME_MESSAGE } from "./messages/staticMessages.js";
 
+// * 📦 Models
+import User from "./models/User.js";
+
+// * 🛡️ Admins
 let adminIds = process.env.ADMINS.split(",").map((id) => Number(id.trim()));
 
+// * 🚀 Start Bot
 const bot = await startBot();
 
-// startExpiredServiceChecker(bot);
-
-// * Handle all incoming messages
+// * 📨 Message Handler
 bot.on("message", async (msg) => {
   const chatId = msg.chat.id;
   const userId = msg.from.id;
   const userText = msg.text;
   const session = await getSession(userId);
-
-  const { from, chat, text } = msg;
 
   switch (userText) {
     case "/start": {
@@ -89,7 +90,7 @@ bot.on("message", async (msg) => {
   }
 });
 
-// * Handle phoneNumber contact sharing
+// * ☎️ Contact Handler
 bot.on("contact", async (msg) => {
   try {
     await handleContact(bot, msg);
@@ -100,7 +101,7 @@ bot.on("contact", async (msg) => {
   }
 });
 
-// * Handle inline button (callback_query)
+// * 🔘 Callback Query Handler
 bot.on("callback_query", async (query) => {
   try {
     await handleCallbackQuery(bot, query);
@@ -109,7 +110,7 @@ bot.on("callback_query", async (query) => {
   }
 });
 
-// * Handle photos (for receipt uploads and support)
+// * 🖼️ Photo Handler (for receipt uploads and support)
 bot.on("photo", async (msg) => {
   const chatId = msg.chat.id;
   const userId = msg.from.id;
@@ -130,7 +131,7 @@ bot.on("photo", async (msg) => {
   }
 });
 
-// * Handle videos (for support)
+// * 🎥 Video Handler (for support)
 bot.on("video", async (msg) => {
   const userId = msg.from.id;
   const session = await getSession(userId);
@@ -140,7 +141,7 @@ bot.on("video", async (msg) => {
   }
 });
 
-// * Handle unsupported media types (for support) - delete and show error
+// * 🔊 Voice Handler (unsupported media types for support)
 bot.on("voice", async (msg) => {
   const chatId = msg.chat.id;
   const userId = msg.from.id;
@@ -177,6 +178,7 @@ bot.on("voice", async (msg) => {
   }
 });
 
+// * 🎥 Video Note Handler (unsupported media types for support)
 bot.on("video_note", async (msg) => {
   const chatId = msg.chat.id;
   const userId = msg.from.id;
@@ -213,6 +215,7 @@ bot.on("video_note", async (msg) => {
   }
 });
 
+// * 📄 Document Handler (unsupported media types for support)
 bot.on("document", async (msg) => {
   const chatId = msg.chat.id;
   const userId = msg.from.id;
