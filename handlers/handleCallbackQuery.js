@@ -411,5 +411,12 @@ const handleCallbackQuery = async (bot, query) => {
     await handleProfile(bot, chatId, userId);
     return;
   }
+  if (data.startsWith("extend_service_") || data.startsWith("extend_data_")) {
+    await bot.answerCallbackQuery(query.id, {
+      text: "⛔️ این آپشن در حال حاضر غیرفعال است! لطفا سرویس جدید خریداری فرمایید 🛒",
+      show_alert: true,
+    });
+    return;
+  }
 };
 export default handleCallbackQuery;

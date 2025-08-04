@@ -80,16 +80,24 @@ const showServiceDetails = async (bot, chatId, username, messageId) => {
             callback_data: `change_link_${res.username}`,
           },
           {
-            text: "⏳ تمدید سرویس و افزایش حجم",
-            callback_data: "extend_or_increase",
+            text: "⏳ افزایش زمان سرویس",
+            callback_data: `extend_service_${res.username}`,
+          },
+          {
+            text: "📦 افزایش حجم سرویس",
+            callback_data: `extend_data_${res.username}`,
           },
         ]);
       } else {
         // For limited status, only show extend service button
         inlineKeyboard.push([
           {
-            text: "⏳ تمدید سرویس و افزایش حجم",
-            callback_data: "extend_or_increase",
+            text: "⏳ افزایش زمان سرویس",
+            callback_data: `extend_service_${res.username}`,
+          },
+          {
+            text: "📦 افزایش حجم سرویس",
+            callback_data: `extend_data_${res.username}`,
           },
         ]);
       }
