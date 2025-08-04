@@ -64,27 +64,12 @@ bot.on("message", async (msg) => {
       break;
     }
     case "🎁 سرویس تست":
-      try {
-        await bot.deleteMessage(chatId, msg.message_id);
-      } catch (error) {
-        console.log("❗️خطا در حذف پیام:", error.message);
-      }
       await createTestService(bot, msg);
       break;
     case "🛒 خرید سرویس":
-      try {
-        await bot.deleteMessage(chatId, msg.message_id);
-      } catch (error) {
-        console.log("❗️خطا در حذف پیام:", error.message);
-      }
       await handleBuyService(bot, chatId);
       break;
     case "💰 افزایش موجودی": {
-      try {
-        await bot.deleteMessage(chatId, msg.message_id);
-      } catch (error) {
-        console.log("❗️خطا در حذف پیام:", error.message);
-      }
       await hideKeyboard(bot, chatId);
       const user = await User.findOne({ telegramId: userId });
       if (!user || !user.phoneNumber) {
@@ -97,35 +82,15 @@ bot.on("message", async (msg) => {
       break;
     }
     case "👤 پروفایل من":
-      try {
-        await bot.deleteMessage(chatId, msg.message_id);
-      } catch (error) {
-        console.log("❗️خطا در حذف پیام:", error.message);
-      }
       await handleProfile(bot, chatId, userId);
       break;
     case "📖 راهنما":
-      try {
-        await bot.deleteMessage(chatId, msg.message_id);
-      } catch (error) {
-        console.log("❗️خطا در حذف پیام:", error.message);
-      }
       await handleGuide(bot, chatId);
       break;
     case "🛠 پشتیبانی":
-      try {
-        await bot.deleteMessage(chatId, msg.message_id);
-      } catch (error) {
-        console.log("❗️خطا در حذف پیام:", error.message);
-      }
       await handleSupport(bot, chatId, userId);
       break;
     case "📦 سرویس‌های من":
-      try {
-        await bot.deleteMessage(chatId, msg.message_id);
-      } catch (error) {
-        console.log("❗️خطا در حذف پیام:", error.message);
-      }
       await sendServiceSelectionMenu(bot, chatId, userId);
       break;
     default:
