@@ -52,16 +52,22 @@ const handleCallbackQuery = async (bot, query) => {
         await bot.deleteMessage(chatId, messageId);
       } catch (error) {
         console.log("❗️خطا در حذف پیام اصلی:", error.message);
-      }
-      try {
-        if (session?.supportMessageId) {
-          await bot.deleteMessage(chatId, session.supportMessageId);
-        }
-      } catch (error) {
-        console.log("❗️خطا در حذف پیام پشتیبانی:", error.message);
+        // Continue execution even if message deletion fails
       }
 
+      // Clear session first to prevent race conditions
       await clearSession(chatId);
+
+      // Try to delete support message if it exists and is different from current message
+      if (session?.supportMessageId && session.supportMessageId !== messageId) {
+        try {
+          await bot.deleteMessage(chatId, session.supportMessageId);
+        } catch (error) {
+          console.log("❗️خطا در حذف پیام پشتیبانی:", error.message);
+          // Continue execution even if support message deletion fails
+        }
+      }
+
       await bot.sendMessage(chatId, CHOOSE_OPTION_MESSAGE, keyboard);
       break;
 
@@ -413,7 +419,7 @@ const handleCallbackQuery = async (bot, query) => {
   }
   if (data.startsWith("extend_service_") || data.startsWith("extend_data_")) {
     await bot.answerCallbackQuery(query.id, {
-      text: "⛔️ این آپشن در حال حاضر غیرفعال است! لطفا سرویس جدید خریداری فرمایید 🛒",
+      text: "⛔️ این آپشن در حال حاضر غیرفعال است! لطفا سرویس جدید خریداری فرمایید",
       show_alert: true,
     });
     return;

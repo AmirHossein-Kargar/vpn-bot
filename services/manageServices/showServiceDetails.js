@@ -80,11 +80,11 @@ const showServiceDetails = async (bot, chatId, username, messageId) => {
             callback_data: `change_link_${res.username}`,
           },
           {
-            text: "⏳ افزایش زمان سرویس",
+            text: "⏳ افزایش زمان",
             callback_data: `extend_service_${res.username}`,
           },
           {
-            text: "📦 افزایش حجم سرویس",
+            text: "📦 افزایش حجم",
             callback_data: `extend_data_${res.username}`,
           },
         ]);
@@ -92,11 +92,11 @@ const showServiceDetails = async (bot, chatId, username, messageId) => {
         // For limited status, only show extend service button
         inlineKeyboard.push([
           {
-            text: "⏳ افزایش زمان سرویس",
+            text: "⏳ افزایش زمان",
             callback_data: `extend_service_${res.username}`,
           },
           {
-            text: "📦 افزایش حجم سرویس",
+            text: "📦 افزایش حجم",
             callback_data: `extend_data_${res.username}`,
           },
         ]);

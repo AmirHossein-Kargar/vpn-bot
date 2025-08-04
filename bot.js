@@ -64,12 +64,27 @@ bot.on("message", async (msg) => {
       break;
     }
     case "🎁 سرویس تست":
+      try {
+        await bot.deleteMessage(chatId, msg.message_id);
+      } catch (error) {
+        console.log("❗️خطا در حذف پیام:", error.message);
+      }
       await createTestService(bot, msg);
       break;
     case "🛒 خرید سرویس":
+      try {
+        await bot.deleteMessage(chatId, msg.message_id);
+      } catch (error) {
+        console.log("❗️خطا در حذف پیام:", error.message);
+      }
       await handleBuyService(bot, chatId);
       break;
     case "💰 افزایش موجودی": {
+      try {
+        await bot.deleteMessage(chatId, msg.message_id);
+      } catch (error) {
+        console.log("❗️خطا در حذف پیام:", error.message);
+      }
       await hideKeyboard(bot, chatId);
       const user = await User.findOne({ telegramId: userId });
       if (!user || !user.phoneNumber) {
@@ -82,15 +97,35 @@ bot.on("message", async (msg) => {
       break;
     }
     case "👤 پروفایل من":
+      try {
+        await bot.deleteMessage(chatId, msg.message_id);
+      } catch (error) {
+        console.log("❗️خطا در حذف پیام:", error.message);
+      }
       await handleProfile(bot, chatId, userId);
       break;
     case "📖 راهنما":
+      try {
+        await bot.deleteMessage(chatId, msg.message_id);
+      } catch (error) {
+        console.log("❗️خطا در حذف پیام:", error.message);
+      }
       await handleGuide(bot, chatId);
       break;
     case "🛠 پشتیبانی":
+      try {
+        await bot.deleteMessage(chatId, msg.message_id);
+      } catch (error) {
+        console.log("❗️خطا در حذف پیام:", error.message);
+      }
       await handleSupport(bot, chatId, userId);
       break;
     case "📦 سرویس‌های من":
+      try {
+        await bot.deleteMessage(chatId, msg.message_id);
+      } catch (error) {
+        console.log("❗️خطا در حذف پیام:", error.message);
+      }
       await sendServiceSelectionMenu(bot, chatId, userId);
       break;
     default:
@@ -158,27 +193,36 @@ bot.on("voice", async (msg) => {
   if (session?.support) {
     try {
       // Delete the unsupported message
-      await bot.deleteMessage(chatId, msg.message_id);
+      try {
+        await bot.deleteMessage(chatId, msg.message_id);
+      } catch (deleteError) {
+        console.log("❗️خطا در حذف پیام voice:", deleteError.message);
+        // Continue even if message deletion fails
+      }
 
       // Edit the previous support message to show error
       if (session.supportMessageId) {
-        await bot.editMessageText(
-          `❌ این فایل مجاز نیست!\n\n▫️ جهت ارتباط به صورت مستقیم:\n🔰 @Swift_servicebot\n\n‼️ قبل از ارسال پیام به پشتیبانی، قوانین و مقررات سرویس‌ دهی را مطالعه کنید.\n\n📝 لطفاً پیام پشتیبانی خود را در همین چت تایپ و ارسال کنید.\n\n✅ فایل‌های مجاز: متن، عکس، فیلم`,
-          {
-            chat_id: chatId,
-            message_id: session.supportMessageId,
-            reply_markup: {
-              inline_keyboard: [
-                [
-                  {
-                    text: "🏠 بازگشت به منوی اصلی",
-                    callback_data: "back_to_home",
-                  },
+        try {
+          await bot.editMessageText(
+            `❌ این فایل مجاز نیست!\n\n▫️ جهت ارتباط به صورت مستقیم:\n🔰 @Swift_servicebot\n\n‼️ قبل از ارسال پیام به پشتیبانی، قوانین و مقررات سرویس‌ دهی را مطالعه کنید.\n\n📝 لطفاً پیام پشتیبانی خود را در همین چت تایپ و ارسال کنید.\n\n✅ فایل‌های مجاز: متن، عکس، فیلم`,
+            {
+              chat_id: chatId,
+              message_id: session.supportMessageId,
+              reply_markup: {
+                inline_keyboard: [
+                  [
+                    {
+                      text: "🏠 بازگشت به منوی اصلی",
+                      callback_data: "back_to_home",
+                    },
+                  ],
                 ],
-              ],
-            },
-          }
-        );
+              },
+            }
+          );
+        } catch (editError) {
+          console.log("❗️خطا در ویرایش پیام پشتیبانی:", editError.message);
+        }
       }
     } catch (error) {
       console.error("❌ Error deleting unsupported voice message:", error);
@@ -195,27 +239,36 @@ bot.on("video_note", async (msg) => {
   if (session?.support) {
     try {
       // Delete the unsupported message
-      await bot.deleteMessage(chatId, msg.message_id);
+      try {
+        await bot.deleteMessage(chatId, msg.message_id);
+      } catch (deleteError) {
+        console.log("❗️خطا در حذف پیام video_note:", deleteError.message);
+        // Continue even if message deletion fails
+      }
 
       // Edit the previous support message to show error
       if (session.supportMessageId) {
-        await bot.editMessageText(
-          `❌ این فایل مجاز نیست!\n\n▫️ جهت ارتباط به صورت مستقیم:\n🔰 @Swift_servicebot\n\n‼️ قبل از ارسال پیام به پشتیبانی، قوانین و مقررات سرویس‌ دهی را مطالعه کنید.\n\n📝 لطفاً پیام پشتیبانی خود را در همین چت تایپ و ارسال کنید.\n\n✅ فایل‌های مجاز: متن، عکس، فیلم`,
-          {
-            chat_id: chatId,
-            message_id: session.supportMessageId,
-            reply_markup: {
-              inline_keyboard: [
-                [
-                  {
-                    text: "🏠 بازگشت به منوی اصلی",
-                    callback_data: "back_to_home",
-                  },
+        try {
+          await bot.editMessageText(
+            `❌ این فایل مجاز نیست!\n\n▫️ جهت ارتباط به صورت مستقیم:\n🔰 @Swift_servicebot\n\n‼️ قبل از ارسال پیام به پشتیبانی، قوانین و مقررات سرویس‌ دهی را مطالعه کنید.\n\n📝 لطفاً پیام پشتیبانی خود را در همین چت تایپ و ارسال کنید.\n\n✅ فایل‌های مجاز: متن، عکس، فیلم`,
+            {
+              chat_id: chatId,
+              message_id: session.supportMessageId,
+              reply_markup: {
+                inline_keyboard: [
+                  [
+                    {
+                      text: "🏠 بازگشت به منوی اصلی",
+                      callback_data: "back_to_home",
+                    },
+                  ],
                 ],
-              ],
-            },
-          }
-        );
+              },
+            }
+          );
+        } catch (editError) {
+          console.log("❗️خطا در ویرایش پیام پشتیبانی:", editError.message);
+        }
       }
     } catch (error) {
       console.error("❌ Error deleting unsupported video_note message:", error);
@@ -232,27 +285,36 @@ bot.on("document", async (msg) => {
   if (session?.support) {
     try {
       // Delete the unsupported message
-      await bot.deleteMessage(chatId, msg.message_id);
+      try {
+        await bot.deleteMessage(chatId, msg.message_id);
+      } catch (deleteError) {
+        console.log("❗️خطا در حذف پیام document:", deleteError.message);
+        // Continue even if message deletion fails
+      }
 
       // Edit the previous support message to show error
       if (session.supportMessageId) {
-        await bot.editMessageText(
-          `❌ این فایل مجاز نیست!\n\n▫️ جهت ارتباط به صورت مستقیم:\n🔰 @Swift_servicebot\n\n‼️ قبل از ارسال پیام به پشتیبانی، قوانین و مقررات سرویس‌ دهی را مطالعه کنید.\n\n📝 لطفاً پیام پشتیبانی خود را در همین چت تایپ و ارسال کنید.\n\n✅ فایل‌های مجاز: متن، عکس، فیلم`,
-          {
-            chat_id: chatId,
-            message_id: session.supportMessageId,
-            reply_markup: {
-              inline_keyboard: [
-                [
-                  {
-                    text: "🏠 بازگشت به منوی اصلی",
-                    callback_data: "back_to_home",
-                  },
+        try {
+          await bot.editMessageText(
+            `❌ این فایل مجاز نیست!\n\n▫️ جهت ارتباط به صورت مستقیم:\n🔰 @Swift_servicebot\n\n‼️ قبل از ارسال پیام به پشتیبانی، قوانین و مقررات سرویس‌ دهی را مطالعه کنید.\n\n📝 لطفاً پیام پشتیبانی خود را در همین چت تایپ و ارسال کنید.\n\n✅ فایل‌های مجاز: متن، عکس، فیلم`,
+            {
+              chat_id: chatId,
+              message_id: session.supportMessageId,
+              reply_markup: {
+                inline_keyboard: [
+                  [
+                    {
+                      text: "🏠 بازگشت به منوی اصلی",
+                      callback_data: "back_to_home",
+                    },
+                  ],
                 ],
-              ],
-            },
-          }
-        );
+              },
+            }
+          );
+        } catch (editError) {
+          console.log("❗️خطا در ویرایش پیام پشتیبانی:", editError.message);
+        }
       }
     } catch (error) {
       console.error("❌ Error deleting unsupported document message:", error);

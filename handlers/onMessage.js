@@ -170,7 +170,8 @@ async function handleMessage(bot, msg) {
           await bot.deleteMessage(chatId, msg.message_id);
         }
       } catch (error) {
-        console.error("❌ خطا در حذف پیام ادمین:", error);
+        console.log("❗️خطا در حذف پیام ادمین:", error.message);
+        // Continue execution even if message deletion fails
       }
     }
   }

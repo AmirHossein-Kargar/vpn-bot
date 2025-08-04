@@ -40,27 +40,53 @@ const supportMessageHandler = async (bot, msg) => {
     // Unknown media type - delete the message and edit previous message
     try {
       // Delete the unsupported message
-      await bot.deleteMessage(chatId, msg.message_id);
+      try {
+        await bot.deleteMessage(chatId, msg.message_id);
+      } catch (error) {
+        console.log("❗️خطا در حذف پیام نامعتبر:", error.message);
+        // Continue even if message deletion fails
+      }
 
       // Edit the previous support message to show error
       if (session.supportMessageId) {
-        await bot.editMessageText(
-          `❌ این فایل مجاز نیست!\n\n▫️ جهت ارتباط به صورت مستقیم:\n🔰 @Swift_servicebot\n\n‼️ قبل از ارسال پیام به پشتیبانی، قوانین و مقررات سرویس‌ دهی را مطالعه کنید.\n\n📝 لطفاً پیام پشتیبانی خود را در همین چت تایپ و ارسال کنید.\n\n✅ فایل‌های مجاز: متن، عکس، فیلم`,
-          {
-            chat_id: chatId,
-            message_id: session.supportMessageId,
-            reply_markup: {
-              inline_keyboard: [
-                [
-                  {
-                    text: "🏠 بازگشت به منوی اصلی",
-                    callback_data: "back_to_home",
-                  },
+        try {
+          await bot.editMessageText(
+            `❌ این فایل مجاز نیست!\n\n▫️ جهت ارتباط به صورت مستقیم:\n🔰 @Swift_servicebot\n\n‼️ قبل از ارسال پیام به پشتیبانی، قوانین و مقررات سرویس‌ دهی را مطالعه کنید.\n\n📝 لطفاً پیام پشتیبانی خود را در همین چت تایپ و ارسال کنید.\n\n✅ فایل‌های مجاز: متن، عکس، فیلم`,
+            {
+              chat_id: chatId,
+              message_id: session.supportMessageId,
+              reply_markup: {
+                inline_keyboard: [
+                  [
+                    {
+                      text: "🏠 بازگشت به منوی اصلی",
+                      callback_data: "back_to_home",
+                    },
+                  ],
                 ],
-              ],
-            },
-          }
-        );
+              },
+            }
+          );
+        } catch (editError) {
+          console.log("❗️خطا در ویرایش پیام پشتیبانی:", editError.message);
+          // Send a new message if editing fails
+          await bot.sendMessage(
+            chatId,
+            `❌ این فایل مجاز نیست!\n\n▫️ جهت ارتباط به صورت مستقیم:\n🔰 @Swift_servicebot\n\n‼️ قبل از ارسال پیام به پشتیبانی، قوانین و مقررات سرویس‌ دهی را مطالعه کنید.\n\n📝 لطفاً پیام پشتیبانی خود را در همین چت تایپ و ارسال کنید.\n\n✅ فایل‌های مجاز: متن، عکس، فیلم`,
+            {
+              reply_markup: {
+                inline_keyboard: [
+                  [
+                    {
+                      text: "🏠 بازگشت به منوی اصلی",
+                      callback_data: "back_to_home",
+                    },
+                  ],
+                ],
+              },
+            }
+          );
+        }
       }
     } catch (error) {
       console.error("❌ Error deleting unsupported message:", error);
