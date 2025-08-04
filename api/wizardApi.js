@@ -179,12 +179,16 @@ export async function deactiveService(username) {
     params.append("username", username);
 
     // * Send POST request to deactivate the service
-    const response = await axios.post(`${BASE_URL}/reverse_mode`, params.toString(), {
-      headers: {
-        "Content-Type": "application/x-www-form-urlencoded",
-        Authorization: `Bearer ${process.env.VPN_API_KEY}`,
-      },
-    });
+    const response = await axios.post(
+      `${BASE_URL}/reverse_mode`,
+      params.toString(),
+      {
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded",
+          Authorization: `Bearer ${process.env.VPN_API_KEY}`,
+        },
+      }
+    );
     return response.data;
   } catch (error) {
     // * If API returns an error response, return its data
@@ -203,19 +207,23 @@ export async function deactiveService(username) {
  */
 export async function upgradeServiceTime(username, day) {
   const params = new URLSearchParams();
-  params.append('username', username)
-  params.append('day', day)
+  params.append("username", username);
+  params.append("day", day);
   try {
-    const response = await axios.post(`${BASE_URL}/upg_time`, params.toString(), {
-      headers: {
-        "Content-Type": "application/x-www-form-urlencoded",
-        Authorization: `Bearer ${process.env.VPN_API_KEY}`,
-      },
-    });
+    const response = await axios.post(
+      `${BASE_URL}/upg_time`,
+      params.toString(),
+      {
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded",
+          Authorization: `Bearer ${process.env.VPN_API_KEY}`,
+        },
+      }
+    );
     return response.data;
   } catch (error) {
-    if(error.response) {
-      return error.response
+    if (error.response) {
+      return error.response;
     }
   }
 }
@@ -228,10 +236,31 @@ export async function upgradeServiceTime(username, day) {
  */
 export async function upgradeServiceData(username, gig) {
   const params = new URLSearchParams();
-  params.append('username', username)
-  params.append('gig', gig)
+  params.append("username", username);
+  params.append("gig", gig);
   try {
-    const response = await axios.post(`${BASE_URL}/upg_size`, params.toString(), {
+    const response = await axios.post(
+      `${BASE_URL}/upg_size`,
+      params.toString(),
+      {
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded",
+          Authorization: `Bearer ${process.env.VPN_API_KEY}`,
+        },
+      }
+    );
+    return response.data;
+  } catch (error) {
+    if (error.response) {
+      return error.response;
+    }
+  }
+}
+
+// * Status
+export async function StatusApi() {
+  try {
+    axios.get(`${BASE_URL}/status`, {
       headers: {
         "Content-Type": "application/x-www-form-urlencoded",
         Authorization: `Bearer ${process.env.VPN_API_KEY}`,
@@ -239,8 +268,8 @@ export async function upgradeServiceData(username, gig) {
     });
     return response.data;
   } catch (error) {
-    if(error.response) {
-      return error.response
+    if (error.response) {
+      return error.response;
     }
   }
 }
