@@ -44,31 +44,29 @@ export async function createVpnService(gig, day, test = 0) {
  */
 export async function findService(username) {
   try {
-    // * Prepare form data
     const params = new URLSearchParams();
     params.append("username", username);
 
-    // * Send POST request to find service
-    const response = await axios.post(`${BASE_URL}/find`, params.toString(), {
-      headers: {
-        "Content-Type": "application/x-www-form-urlencoded",
-        Authorization: `Bearer ${process.env.VPN_API_KEY}`,
-      },
-    });
+    const response = await axios.post(
+      `${BASE_URL}/find`,
+      params.toString(),
+      {
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded",
+          Authorization: `Bearer ${process.env.VPN_API_KEY}`,
+        },
+      }
+    );
 
-    return response.data;
-  } catch (error) {
-    // * Log error details for debugging
-    console.log("API Error:", error.message);
-    if (error.response) {
-      console.log("Error response status:", error.response.status);
-      console.log(
-        "Error response data:",
-        JSON.stringify(error.response.data, null, 2)
-      );
-      return error.response.data;
+    if (response && response.data) {
+      return response.data;
+    } else {
+      // Silent error: return undefined if no data
+      return undefined;
     }
-    throw error;
+  } catch (error) {
+    // Silent error: return undefined on any error
+    return undefined;
   }
 }
 

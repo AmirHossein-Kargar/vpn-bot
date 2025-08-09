@@ -1,19 +1,227 @@
 import { findService } from "../../api/wizardApi.js";
+import User from "../../models/User.js";
+
+// Helper function to remove service from database
+const removeServiceFromDatabase = async (username) => {
+  try {
+    const user = await User.findOne({ "services.username": username });
+
+    if (!user) {
+      return { success: false, message: "کاربر یافت نشد" };
+    }
+
+    const newTotal = Math.max(0, (user.totalServices || 0) - 1);
+
+    const updateResult = await User.updateOne(
+      { telegramId: user.telegramId },
+      {
+        $pull: { services: { username: username } },
+        $set: { totalServices: newTotal },
+      }
+    );
+
+    // Verify the service was actually removed
+    const updatedUser = await User.findOne({ "services.username": username });
+    if (updatedUser) {
+      return { success: false, message: "خطا در حذف سرویس از دیتابیس" };
+    } else {
+      return {
+        success: true,
+        message: `سرویس ${username} از سیستم حذف شده و از لیست شما نیز حذف شد.`,
+        modifiedCount: updateResult.modifiedCount,
+      };
+    }
+  } catch (error) {
+    return { success: false, message: "خطا در حذف سرویس از دیتابیس" };
+  }
+};
 
 const showServiceDetails = async (bot, chatId, username, messageId) => {
   try {
     const apiResponse = await findService(username);
 
-    if (!apiResponse) {
-      await bot.sendMessage(chatId, "❌ سرویس یافت نشد.");
+    // Check if service doesn't exist in API (response is false/undefined/null)
+    if (!apiResponse || apiResponse === false) {
+      // Remove service from database since it doesn't exist in API
+      const removalResult = await removeServiceFromDatabase(username);
+
+      // Prepare message
+      const messageText = `❌ سرویس <code>${username}</code> یافت نشد.`;
+
+      // Edit the previous message if messageId is provided
+      if (messageId) {
+        try {
+          await bot.editMessageText(messageText, {
+            chat_id: chatId,
+            message_id: messageId,
+            parse_mode: "HTML",
+            reply_markup: {
+              inline_keyboard: [
+                [
+                  {
+                    text: "🔙 بازگشت به منوی اصلی",
+                    callback_data: "buy_service_back_to_main",
+                  },
+                ],
+              ],
+            },
+          });
+        } catch (editError) {
+          // If editing fails, send a new message
+          await bot.sendMessage(chatId, messageText, {
+            parse_mode: "HTML",
+            reply_markup: {
+              inline_keyboard: [
+                [
+                  {
+                    text: "🔙 بازگشت به منوی اصلی",
+                    callback_data: "buy_service_back_to_main",
+                  },
+                ],
+              ],
+            },
+          });
+        }
+      } else {
+        // If no messageId, send a new message
+        await bot.sendMessage(chatId, messageText, {
+          parse_mode: "HTML",
+          reply_markup: {
+            inline_keyboard: [
+              [
+                {
+                  text: "🔙 بازگشت به منوی اصلی",
+                  callback_data: "buy_service_back_to_main",
+                },
+              ],
+            ],
+          },
+        });
+      }
       return;
     }
 
+    // Check if API returned an error
     if (apiResponse.error) {
-      await bot.sendMessage(
-        chatId,
-        `❌ خطا در دریافت اطلاعات سرویس: ${apiResponse.error}`
-      );
+      // Service might be deleted from API, remove it from database
+      const removalResult = await removeServiceFromDatabase(username);
+
+      // Prepare message based on removal result
+      let messageText;
+      if (removalResult.success) {
+        messageText = `❌ ${removalResult.message}`;
+      } else {
+        messageText = `❌ سرویس <code>${username}</code> یافت نشد. ${removalResult.message}`;
+      }
+
+      // Edit the previous message if messageId is provided
+      if (messageId) {
+        try {
+          await bot.editMessageText(messageText, {
+            chat_id: chatId,
+            message_id: messageId,
+            parse_mode: "HTML",
+            reply_markup: {
+              inline_keyboard: [
+                [
+                  {
+                    text: "🔙 بازگشت به منوی اصلی",
+                    callback_data: "buy_service_back_to_main",
+                  },
+                ],
+              ],
+            },
+          });
+        } catch (editError) {
+          // If editing fails, send a new message
+          await bot.sendMessage(chatId, messageText, {
+            parse_mode: "HTML",
+            reply_markup: {
+              inline_keyboard: [
+                [
+                  {
+                    text: "🔙 بازگشت به منوی اصلی",
+                    callback_data: "buy_service_back_to_main",
+                  },
+                ],
+              ],
+            },
+          });
+        }
+      } else {
+        // If no messageId, send a new message
+        await bot.sendMessage(chatId, messageText, {
+          parse_mode: "HTML",
+          reply_markup: {
+            inline_keyboard: [
+              [
+                {
+                  text: "🔙 بازگشت به منوی اصلی",
+                  callback_data: "buy_service_back_to_main",
+                },
+              ],
+            ],
+          },
+        });
+      }
+      return;
+    }
+
+    // Additional check for empty or invalid result
+    if (!apiResponse.result || typeof apiResponse.result !== "object") {
+      // Try to remove from database as well
+      const removalResult = await removeServiceFromDatabase(username);
+
+      const messageText = `❌ سرویس <code>${username}</code> یافت نشد یا اطلاعات آن نامعتبر است.`;
+
+      if (messageId) {
+        try {
+          await bot.editMessageText(messageText, {
+            chat_id: chatId,
+            message_id: messageId,
+            parse_mode: "HTML",
+            reply_markup: {
+              inline_keyboard: [
+                [
+                  {
+                    text: "🔙 بازگشت به منوی اصلی",
+                    callback_data: "buy_service_back_to_main",
+                  },
+                ],
+              ],
+            },
+          });
+        } catch (editError) {
+          // If editing fails, send a new message
+          await bot.sendMessage(chatId, messageText, {
+            parse_mode: "HTML",
+            reply_markup: {
+              inline_keyboard: [
+                [
+                  {
+                    text: "🔙 بازگشت به منوی اصلی",
+                    callback_data: "buy_service_back_to_main",
+                  },
+                ],
+              ],
+            },
+          });
+        }
+      } else {
+        await bot.sendMessage(chatId, messageText, {
+          parse_mode: "HTML",
+          reply_markup: {
+            inline_keyboard: [
+              [
+                {
+                  text: "🔙 بازگشت به منوی اصلی",
+                  callback_data: "buy_service_back_to_main",
+                },
+              ],
+            ],
+          },
+        });
+      }
       return;
     }
 
@@ -59,7 +267,7 @@ const showServiceDetails = async (bot, chatId, username, messageId) => {
       try {
         await bot.deleteMessage(chatId, messageId);
       } catch (deleteError) {
-        console.log("Could not delete message:", deleteError.message);
+        // Message deletion failed, continue with sending new message
       }
 
       // Create inline keyboard based on service status
@@ -142,7 +350,6 @@ const showServiceDetails = async (bot, chatId, username, messageId) => {
       });
     }
   } catch (error) {
-    console.error("Error showing service:", error);
     await bot.sendMessage(chatId, "❌ خطایی رخ داد، لطفا دوباره تلاش کنید.");
   }
 };
