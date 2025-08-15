@@ -10,6 +10,13 @@ import usersReport from "./admin/usersReport.js";
 import monthlyReport from "./admin/monthlyReport.js";
 import profitChart from "./admin/profitChart.js";
 import cryptoReport from "./admin/cryptoReport.js";
+import {
+  apiServicePurchase,
+  handleApiGigInput,
+  handleApiDaysInput,
+  createApiService,
+  cancelApiPurchase,
+} from "./admin/apiServicePurchase.js";
 import showPaymentMethods from "./message/showPaymentMethods.js";
 import {
   clearSession,
@@ -787,6 +794,75 @@ const handleCallbackQuery = async (bot, query) => {
           ],
         },
       });
+      break;
+    }
+    case "admin_api_service_purchase": {
+      await apiServicePurchase(bot, query, session);
+      break;
+    }
+    case "admin_create_api_service": {
+      await createApiService(bot, query, session);
+      break;
+    }
+    case "admin_cancel_api_purchase": {
+      await cancelApiPurchase(bot, query);
+      break;
+    }
+    case "admin_back_to_panel": {
+      const groupId = process.env.GROUP_ID;
+      const adminIds = (process.env.ADMINS || "")
+        .split(",")
+        .filter(Boolean)
+        .map((id) => Number(id.trim()));
+
+      if (
+        chatId.toString() !== String(groupId) ||
+        !adminIds.includes(Number(userId))
+      ) {
+        await bot.answerCallbackQuery(query.id, {
+          text: "⛔️ دسترسی غیرمجاز",
+          show_alert: true,
+        });
+        break;
+      }
+
+      await bot.editMessageText("🔒 پنل مدیریت", {
+        chat_id: chatId,
+        message_id: messageId,
+        reply_markup: {
+          inline_keyboard: [
+            [
+              {
+                text: "🔍 اسکن ولت TRX",
+                callback_data: "admin_scan_trx_wallet",
+              },
+              {
+                text: "📊 وضعیت سیستم",
+                callback_data: "admin_status",
+              },
+            ],
+            [
+              {
+                text: "💰 گزارش مالی",
+                callback_data: "admin_financial_report",
+              },
+              {
+                text: "🛒 خرید از API",
+                callback_data: "admin_api_service_purchase",
+              },
+            ],
+            [
+              {
+                text: "📨 ارسال پیام به کاربر",
+                callback_data: "admin_send_message_to_user",
+              },
+            ],
+          ],
+        },
+      });
+
+      // پاک کردن session
+      await setSession(chatId, { step: null });
       break;
     }
     case "admin_send_message_to_user": {

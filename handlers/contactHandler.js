@@ -34,7 +34,7 @@ const handleContact = async (bot, msg, afterVerify) => {
   const phoneNumber = msg.contact.phone_number;
 
   // اعتبارسنجی شماره موبایل
-  if (!phoneNumber || typeof phoneNumber !== 'string') {
+  if (!phoneNumber || typeof phoneNumber !== "string") {
     await bot.sendMessage(
       chatId,
       "❌ شماره موبایل نامعتبر است. لطفاً دوباره تلاش کنید.",
@@ -44,7 +44,7 @@ const handleContact = async (bot, msg, afterVerify) => {
   }
 
   // بررسی فرمت شماره موبایل (حداقل 10 رقم)
-  const cleanPhone = phoneNumber.replace(/[^\d]/g, '');
+  const cleanPhone = phoneNumber.replace(/[^\d]/g, "");
   if (cleanPhone.length < 10) {
     await bot.sendMessage(
       chatId,
@@ -61,16 +61,16 @@ const handleContact = async (bot, msg, afterVerify) => {
       // ایجاد کاربر جدید با error handling
       try {
         user = await User.create({
-          firstName: msg.from.first_name || '',
-          lastName: msg.from.last_name || '',
-          username: msg.from.username || '',
+          firstName: msg.from.first_name || "",
+          lastName: msg.from.last_name || "",
+          username: msg.from.username || "",
           telegramId: userId,
           balance: 0,
           successfulPayments: 0,
           totalServices: 0,
           phoneNumber: phoneNumber,
         });
-        
+
         await bot.sendMessage(
           chatId,
           "✅ احراز هویت شما با موفقیت انجام شد",
@@ -78,9 +78,10 @@ const handleContact = async (bot, msg, afterVerify) => {
         );
       } catch (createError) {
         console.error("Error creating user:", createError);
-        
+
         // بررسی اینکه آیا کاربر قبلاً ایجاد شده یا نه
-        if (createError.code === 11000) { // Duplicate key error
+        if (createError.code === 11000) {
+          // Duplicate key error
           user = await User.findOne({ telegramId: userId });
           if (user && !user.phoneNumber) {
             user.phoneNumber = phoneNumber;
@@ -144,7 +145,6 @@ const handleContact = async (bot, msg, afterVerify) => {
     if (afterVerify) {
       await afterVerify();
     }
-
   } catch (error) {
     console.error("Error in handleContact:", error);
     await bot.sendMessage(

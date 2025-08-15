@@ -4,6 +4,10 @@ import handleTonAmount from "../paymentHandlers/handleTonAmount.js";
 import payBank from "../paymentHandlers/payBank.js";
 import handleTrxAmount from "../paymentHandlers/handleTrxAmount.js";
 import supportMessageHandler from "./supportMessageHandler.js";
+import {
+  handleApiGigInput,
+  handleApiDaysInput,
+} from "./admin/apiServicePurchase.js";
 
 // Function to send config to user
 async function handleSendConfig(bot, msg, session) {
@@ -74,6 +78,18 @@ async function handleMessage(bot, msg) {
 
   if (session?.step === "waiting_for_trx_amount" && msg.text) {
     await handleTrxAmount(bot, msg, session);
+    return;
+  }
+
+  // Handle API service purchase - waiting for gig input
+  if (session?.step === "waiting_for_api_gig" && msg.text) {
+    await handleApiGigInput(bot, msg, session);
+    return;
+  }
+
+  // Handle API service purchase - waiting for days input
+  if (session?.step === "waiting_for_api_days" && msg.text) {
+    await handleApiDaysInput(bot, msg, session);
     return;
   }
 

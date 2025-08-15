@@ -110,6 +110,12 @@ const handleGroupMessage = async (bot, msg) => {
                 callback_data: "admin_financial_report",
               },
               {
+                text: "🛒 خرید از API",
+                callback_data: "admin_api_service_purchase",
+              },
+            ],
+            [
+              {
                 text: "📨 ارسال پیام به کاربر",
                 callback_data: "admin_send_message_to_user",
               },
