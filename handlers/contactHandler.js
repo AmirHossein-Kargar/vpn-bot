@@ -33,44 +33,125 @@ const handleContact = async (bot, msg, afterVerify) => {
 
   const phoneNumber = msg.contact.phone_number;
 
-  let user = await User.findOne({ telegramId: userId });
+  // اعتبارسنجی شماره موبایل
+  if (!phoneNumber || typeof phoneNumber !== 'string') {
+    await bot.sendMessage(
+      chatId,
+      "❌ شماره موبایل نامعتبر است. لطفاً دوباره تلاش کنید.",
+      keyboard
+    );
+    return;
+  }
 
-  if (!user) {
-    await User.create({
-      firstName: msg.from.first_name,
-      lastName: msg.from.last_name,
-      username: msg.from.username,
-      telegramId: userId,
-      balance: 0,
-      successfulPayments: 0,
-      totalServices: 0,
-      phoneNumber: phoneNumber,
-    });
+  // بررسی فرمت شماره موبایل (حداقل 10 رقم)
+  const cleanPhone = phoneNumber.replace(/[^\d]/g, '');
+  if (cleanPhone.length < 10) {
     await bot.sendMessage(
       chatId,
-      "✅ احراز هویت شما با موفقیت انجام شد",
+      "❌ شماره موبایل نامعتبر است. لطفاً شماره صحیح را وارد کنید.",
       keyboard
     );
-  } else if (!user.phoneNumber) {
-    user.phoneNumber = phoneNumber;
-    await user.save();
-    await bot.sendMessage(
-      chatId,
-      "✅ شماره تلفن شما با موفقیت به‌روزرسانی شد.",
-      keyboard
-    );
-  } else {
-    await bot.sendMessage(
-      chatId,
-      "ℹ️ شماره تلفن شما قبلاً ثبت شده است.",
-      keyboard
-    );
+    return;
+  }
+
+  try {
+    let user = await User.findOne({ telegramId: userId });
+
+    if (!user) {
+      // ایجاد کاربر جدید با error handling
+      try {
+        user = await User.create({
+          firstName: msg.from.first_name || '',
+          lastName: msg.from.last_name || '',
+          username: msg.from.username || '',
+          telegramId: userId,
+          balance: 0,
+          successfulPayments: 0,
+          totalServices: 0,
+          phoneNumber: phoneNumber,
+        });
+        
+        await bot.sendMessage(
+          chatId,
+          "✅ احراز هویت شما با موفقیت انجام شد",
+          keyboard
+        );
+      } catch (createError) {
+        console.error("Error creating user:", createError);
+        
+        // بررسی اینکه آیا کاربر قبلاً ایجاد شده یا نه
+        if (createError.code === 11000) { // Duplicate key error
+          user = await User.findOne({ telegramId: userId });
+          if (user && !user.phoneNumber) {
+            user.phoneNumber = phoneNumber;
+            await user.save();
+            await bot.sendMessage(
+              chatId,
+              "✅ شماره تلفن شما با موفقیت به‌روزرسانی شد.",
+              keyboard
+            );
+          } else {
+            await bot.sendMessage(
+              chatId,
+              "❌ خطا در ثبت اطلاعات. لطفاً دوباره تلاش کنید.",
+              keyboard
+            );
+          }
+        } else {
+          await bot.sendMessage(
+            chatId,
+            "❌ خطا در ثبت اطلاعات. لطفاً دوباره تلاش کنید.",
+            keyboard
+          );
+        }
+        return;
+      }
+    } else if (!user.phoneNumber) {
+      // به‌روزرسانی شماره تلفن کاربر موجود
+      try {
+        user.phoneNumber = phoneNumber;
+        await user.save();
+        await bot.sendMessage(
+          chatId,
+          "✅ شماره تلفن شما با موفقیت به‌روزرسانی شد.",
+          keyboard
+        );
+      } catch (updateError) {
+        console.error("Error updating user phone:", updateError);
+        await bot.sendMessage(
+          chatId,
+          "❌ خطا در به‌روزرسانی شماره تلفن. لطفاً دوباره تلاش کنید.",
+          keyboard
+        );
+        return;
+      }
+    } else {
+      // شماره تلفن قبلاً ثبت شده
+      await bot.sendMessage(
+        chatId,
+        "ℹ️ شماره تلفن شما قبلاً ثبت شده است.",
+        keyboard
+      );
+      if (afterVerify) {
+        await afterVerify();
+      } else {
+        await handleProfile(bot, chatId, userId);
+      }
+      return;
+    }
+
+    // اجرای callback بعد از احراز هویت موفق
     if (afterVerify) {
       await afterVerify();
-    } else {
-      await handleProfile(bot, chatId, userId);
     }
-    return;
+
+  } catch (error) {
+    console.error("Error in handleContact:", error);
+    await bot.sendMessage(
+      chatId,
+      "❌ خطا در احراز هویت. لطفاً دوباره تلاش کنید.",
+      keyboard
+    );
   }
 };
 
