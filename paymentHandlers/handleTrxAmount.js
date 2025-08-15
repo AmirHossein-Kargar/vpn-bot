@@ -1,4 +1,4 @@
-import validationAmount from "../utils/validationAmount.js";
+import validationAmountTrx from "../utils/validationAmountTrx.js";
 import { getSession, setSession } from "../config/sessionStore.js";
 import { USDPrice } from "../api/USDPrice.js";
 import { TRXPrice } from "../api/TRXPrice.js";
@@ -24,7 +24,7 @@ export default async function handleTrxAmount(bot, msg, session) {
   });
 
   // Validate the amount entered by the user
-  const { valid, amount, message } = validationAmount(text);
+  const { valid, amount, message } = validationAmountTrx(text);
 
   if (!valid) {
     return bot.editMessageText(message, {

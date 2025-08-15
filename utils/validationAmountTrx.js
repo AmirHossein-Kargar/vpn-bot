@@ -1,4 +1,4 @@
-const validateWithCommas = (text, min = 10000, max = 500000) => {
+const validateWithCommasTrx = (text, min = 10000) => {
   const commaPattern = /^\d{1,3}(,\d{3})*$/;
 
   if (!commaPattern.test(text)) {
@@ -12,11 +12,11 @@ const validateWithCommas = (text, min = 10000, max = 500000) => {
 
   const amount = parseInt(text.replace(/,/g, ""));
 
-  if (!Number.isInteger(amount) || amount < min || amount > max) {
+  if (!Number.isInteger(amount) || amount < min) {
     return {
       valid: false,
       // Use <code> for numbers to ensure monospace formatting
-      message: `❌ مبلغ باید بین <code>${min.toLocaleString()}</code> تا <code>${max.toLocaleString()}</code> تومان باشد.`,
+      message: `❌ مبلغ باید حداقل <code>${min.toLocaleString()}</code> تومان باشد.`,
       parse_mode: "HTML",
     };
   }
@@ -24,4 +24,4 @@ const validateWithCommas = (text, min = 10000, max = 500000) => {
   return { valid: true, amount };
 };
 
-export default validateWithCommas;
+export default validateWithCommasTrx;
