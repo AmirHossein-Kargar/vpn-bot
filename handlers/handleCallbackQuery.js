@@ -34,6 +34,102 @@ const handleCallbackQuery = async (bot, query) => {
   const session = await getSession(chatId);
 
   switch (data) {
+    case "admin_financial_report": {
+      const groupId = process.env.GROUP_ID;
+      const adminIds = (process.env.ADMINS || "")
+        .split(",")
+        .filter(Boolean)
+        .map((id) => Number(id.trim()));
+
+      if (
+        chatId.toString() !== String(groupId) ||
+        !adminIds.includes(Number(userId))
+      ) {
+        await bot.answerCallbackQuery(query.id, {
+          text: "⛔️ دسترسی غیرمجاز",
+          show_alert: true,
+        });
+        break;
+      }
+
+      try {
+        // 1) Revenue inputs
+        const paidCrypto = await CryptoInvoice.find({ status: "paid" });
+        const confirmedBank = await invoice.find({
+          status: { $in: ["paid", "confirmed"] },
+        });
+        const cryptoSum = paidCrypto.reduce(
+          (sum, inv) => sum + (inv.amount || 0),
+          0
+        );
+        const bankSum = confirmedBank.reduce(
+          (sum, inv) => sum + (inv.amount || 0),
+          0
+        );
+        const totalTopups = cryptoSum + bankSum;
+
+        // Current liabilities (wallet balances)
+        const users = await User.find({});
+        const totalBalances = users.reduce(
+          (sum, u) => sum + (u.balance || 0),
+          0
+        );
+
+        // Recognized revenue = money actually spent on services
+        const recognizedRevenue = Math.max(0, totalTopups - totalBalances);
+
+        // 2) Estimate sold plans using greedy mapping to known plan prices (no output)
+        const allPlans = [...plans30, ...plans60, ...plans90]
+          .map((p) => ({ price: p.price, gig: p.gig, days: p.days }))
+          .sort((a, b) => b.price - a.price);
+        let remaining = recognizedRevenue;
+        let estGigSold = 0;
+        let estDaysSold = 0;
+        for (const plan of allPlans) {
+          if (plan.price > 0 && remaining >= plan.price) {
+            const cnt = Math.floor(remaining / plan.price);
+            if (cnt > 0) {
+              estGigSold += cnt * (plan.gig || 0);
+              estDaysSold += cnt * (plan.days || 0);
+              remaining -= cnt * plan.price;
+            }
+          }
+        }
+
+        // 3) Cost model based on user's constants (defaults: day=200, gb=3000)
+        const costPerDay = Number(process.env.COST_PER_DAY || 200);
+        const costPerGb = Number(process.env.COST_PER_GB || 300);
+        const totalCost = estDaysSold * costPerDay + estGigSold * costPerGb;
+        const profit = recognizedRevenue - totalCost;
+
+        const report =
+          `💵 مجموع شارژهای تایید شده: <code>${totalTopups.toLocaleString()}</code> تومان\n` +
+          `👛 مجموع موجودی فعلی کاربران: <code>${totalBalances.toLocaleString()}</code> تومان\n` +
+          `📈 سود: <code>${profit.toLocaleString()}</code> تومان`;
+
+        await bot.editMessageText(report, {
+          chat_id: chatId,
+          message_id: messageId,
+          parse_mode: "HTML",
+          reply_markup: {
+            inline_keyboard: [
+              [{ text: "🏠 بازگشت", callback_data: "admin_back_to_panel" }],
+            ],
+          },
+        });
+      } catch (error) {
+        await bot.editMessageText(`❌ خطا در محاسبه گزارش مالی`, {
+          chat_id: chatId,
+          message_id: messageId,
+          reply_markup: {
+            inline_keyboard: [
+              [{ text: "🏠 بازگشت", callback_data: "admin_back_to_panel" }],
+            ],
+          },
+        });
+      }
+      break;
+    }
     case "back_to_topup":
       await bot.deleteMessage(chatId, messageId);
 
@@ -89,22 +185,13 @@ const handleCallbackQuery = async (bot, query) => {
         await bot.deleteMessage(chatId, messageId);
       } catch (error) {
         console.log("❗️خطا در حذف پیام اصلی:", error.message);
-        // Continue execution even if message deletion fails
       }
-
-      // Clear session first to prevent race conditions
       await clearSession(chatId);
-
-      // Try to delete support message if it exists and is different from current message
       if (session?.supportMessageId && session.supportMessageId !== messageId) {
         try {
           await bot.deleteMessage(chatId, session.supportMessageId);
-        } catch (error) {
-          console.log("❗️خطا در حذف پیام پشتیبانی:", error.message);
-          // Continue execution even if support message deletion fails
-        }
+        } catch {}
       }
-
       await bot.sendMessage(chatId, CHOOSE_OPTION_MESSAGE, keyboard);
       break;
 
@@ -141,7 +228,6 @@ const handleCallbackQuery = async (bot, query) => {
       await promptForReceipt(bot, chatId, session);
       break;
     case "admin_scan_trx_wallet": {
-      // فقط در گروه ادمین و برای ادمین‌ها
       const groupId = process.env.GROUP_ID;
       const adminIds = (process.env.ADMINS || "")
         .split(",")
@@ -166,7 +252,6 @@ const handleCallbackQuery = async (bot, query) => {
       break;
     }
     case "admin_status": {
-      // فقط در گروه ادمین و برای ادمین‌ها
       const groupId = process.env.GROUP_ID;
       const adminIds = (process.env.ADMINS || "")
         .split(",")
@@ -188,7 +273,6 @@ const handleCallbackQuery = async (bot, query) => {
         break;
       }
 
-      // ویرایش همان پیام با وضعیت سیستم (به جای ارسال پیام جدید)
       try {
         const { StatusApi } = await import("../api/wizardApi.js");
         const statusData = await StatusApi();
@@ -257,7 +341,6 @@ const handleCallbackQuery = async (bot, query) => {
       break;
     }
     case "admin_back_to_panel": {
-      // بازگشت به پنل مدیریت در گروه ادمین
       const groupId = process.env.GROUP_ID;
       const adminIds = (process.env.ADMINS || "")
         .split(",")
@@ -275,6 +358,9 @@ const handleCallbackQuery = async (bot, query) => {
         break;
       }
 
+      // پاک کردن session برای خروج از حالت‌های مختلف
+      await clearSession(chatId);
+
       await bot.editMessageText("🔒 پنل مدیریت", {
         chat_id: chatId,
         message_id: messageId,
@@ -287,13 +373,64 @@ const handleCallbackQuery = async (bot, query) => {
               },
               { text: "📊 وضعیت سیستم", callback_data: "admin_status" },
             ],
+            [
+              {
+                text: "💰 گزارش مالی",
+                callback_data: "admin_financial_report",
+              },
+              {
+                text: "📨 ارسال پیام به کاربر",
+                callback_data: "admin_send_message_to_user",
+              },
+            ],
           ],
         },
       });
       break;
     }
+    case "admin_send_message_to_user": {
+      const groupId = process.env.GROUP_ID;
+      const adminIds = (process.env.ADMINS || "")
+        .split(",")
+        .filter(Boolean)
+        .map((id) => Number(id.trim()));
+
+      if (
+        chatId.toString() !== String(groupId) ||
+        !adminIds.includes(Number(userId))
+      ) {
+        await bot.answerCallbackQuery(query.id, {
+          text: "⛔️ دسترسی غیرمجاز",
+          show_alert: true,
+        });
+        break;
+      }
+
+      // تنظیم session برای دریافت آیدی کاربر
+      await setSession(chatId, {
+        step: "admin_waiting_for_user_id",
+        action: "send_message_to_user",
+        messageId: messageId, // اضافه کردن messageId به session
+      });
+
+      await bot.editMessageText(
+        "📨 <b>ارسال پیام به کاربر</b>\n\n" +
+          "🔢 لطفاً <b>آیدی عددی</b> کاربر را وارد کنید:\n\n" +
+          "💡 <b>نکته:</b> آیدی عددی را می‌توانید از پروفایل کاربر یا پیام‌های قبلی دریافت کنید.",
+        {
+          chat_id: chatId,
+          message_id: messageId,
+          parse_mode: "HTML",
+          reply_markup: {
+            inline_keyboard: [
+              [{ text: "🏠 بازگشت", callback_data: "admin_back_to_panel" }],
+            ],
+          },
+        }
+      );
+      break;
+    }
     case "confirm_payment":
-      // Handle confirm payment logic here if needed
       break;
     case "duration_30":
       await bot.editMessageText(
@@ -336,18 +473,8 @@ const handleCallbackQuery = async (bot, query) => {
       await bot.deleteMessage(chatId, messageId);
       await handleBuyService(bot, chatId);
       break;
-    // case "pay_ton":
-    //   await showPaymentStep(bot, chatId, messageId, {
-    //     stepKey: "waiting_for_ton_amount",
-    //     message:
-    //       "💠 لطفاً مبلغ مورد نظر را برای پرداخت با تون وارد کنید (بین 50,000 تا 500,000 تومان):",
-    //   });
-    //   break;
-    // default:
-    //   break;
   }
 
-  // Handle confirm payment callback
   if (data.startsWith("confirm_payment_")) {
     const parts = data.split("_");
     if (parts.length >= 5) {
@@ -455,6 +582,15 @@ const handleCallbackQuery = async (bot, query) => {
   if (data.startsWith("send_config_to_user_")) {
     const userId = data.split("send_config_to_user_")[1];
 
+    console.log("🔍 Debug - send_config_to_user callback triggered");
+    console.log(
+      "🔍 Debug - userId from callback:",
+      userId,
+      "type:",
+      typeof userId
+    );
+    console.log("🔍 Debug - chatId:", chatId, "type:", typeof chatId);
+
     const sentMsg = await bot.sendMessage(
       chatId,
       "📝 لطفاً کانفیگ سرویس را ارسال کنید:",
@@ -465,11 +601,14 @@ const handleCallbackQuery = async (bot, query) => {
       }
     );
 
-    await setSession(chatId, {
+    const sessionData = {
       step: "waiting_for_config_details",
       targetUserId: userId,
       messageId: sentMsg.message_id,
-    });
+    };
+
+    console.log("🔍 Debug - setting session data:", sessionData);
+    await setSession(chatId, sessionData);
 
     return;
   }
@@ -564,7 +703,6 @@ const handleCallbackQuery = async (bot, query) => {
   if (data.startsWith("confirm_delete_service_")) {
     const username = data.split("confirm_delete_service_")[1];
     const res = await deleteService(username);
-    // Decrement totalServices by 1, but never let it go below 0
     const user = await User.findOne({ telegramId: userId });
     if (user) {
       const newTotal = Math.max(0, (user.totalServices || 0) - 1);

@@ -1,4 +1,8 @@
 import trxScanner from "../../services/trxWalletScanner.js";
+import CryptoInvoice from "../../models/CryptoInvoice.js";
+import invoice from "../../models/invoice.js";
+import User from "../../models/User.js";
+import { plans30, plans60, plans90 } from "../../services/plans.js";
 
 // ارسال پیام به گروه ادمین
 const sendToAdminGroup = async (bot, message, keyboard = null) => {
@@ -100,6 +104,16 @@ const handleGroupMessage = async (bot, msg) => {
                 callback_data: "admin_status",
               },
             ],
+            [
+              {
+                text: "💰 گزارش مالی",
+                callback_data: "admin_financial_report",
+              },
+              {
+                text: "📨 ارسال پیام به کاربر",
+                callback_data: "admin_send_message_to_user",
+              },
+            ],
           ],
         },
       });
@@ -196,21 +210,63 @@ const handleNewOrders = async (bot, msg) => {
   }
 };
 
-// گزارش مالی
+// گزارش مالی (ساده)
 const handleFinancialReport = async (bot, msg) => {
   const chatId = msg.chat.id;
 
-  const message = `💰 <b>گزارش مالی</b>
-
-📊 <b>آمار کلی:</b>
-• تعداد کاربران: در حال محاسبه...
-• درآمد کل: در حال محاسبه...
-• پرداخت‌های موفق: در حال محاسبه...
-
-💡 <b>راهنما:</b>
-برای گزارش‌های دقیق، از پنل ادمین استفاده کنید.`;
-
   try {
+    // جمع شارژهای تایید شده
+    const paidCrypto = await CryptoInvoice.find({ status: "paid" });
+    const confirmedBank = await invoice.find({
+      status: { $in: ["paid", "confirmed"] },
+    });
+    const cryptoSum = paidCrypto.reduce(
+      (sum, inv) => sum + (inv.amount || 0),
+      0
+    );
+    const bankSum = confirmedBank.reduce(
+      (sum, inv) => sum + (inv.amount || 0),
+      0
+    );
+    const totalTopups = cryptoSum + bankSum;
+
+    // مجموع موجودی فعلی کاربران
+    const users = await User.find({});
+    const totalBalances = users.reduce((sum, u) => sum + (u.balance || 0), 0);
+
+    // درآمد خرج‌شده
+    const recognizedRevenue = Math.max(0, totalTopups - totalBalances);
+
+    // تخمین حجم و روز فروخته‌شده برای محاسبه هزینه
+    const allPlans = [...plans30, ...plans60, ...plans90]
+      .map((p) => ({ price: p.price, gig: p.gig, days: p.days }))
+      .sort((a, b) => b.price - a.price);
+    let remaining = recognizedRevenue;
+    let estGigSold = 0;
+    let estDaysSold = 0;
+    for (const plan of allPlans) {
+      if (plan.price > 0 && remaining >= plan.price) {
+        const cnt = Math.floor(remaining / plan.price);
+        if (cnt > 0) {
+          estGigSold += cnt * (plan.gig || 0);
+          estDaysSold += cnt * (plan.days || 0);
+          remaining -= cnt * plan.price;
+        }
+      }
+    }
+
+    // هزینه‌ها بر اساس ثابت‌ها
+    const costPerDay = Number(process.env.COST_PER_DAY || 200);
+    const costPerGb = Number(process.env.COST_PER_GB || 300);
+    const totalCost = estDaysSold * costPerDay + estGigSold * costPerGb;
+    const profit = recognizedRevenue - totalCost;
+
+    const message =
+      `💰 <b>گزارش مالی</b>\n\n` +
+      `💵 مجموع شارژهای تایید شده: <code>${totalTopups.toLocaleString()}</code> تومان\n` +
+      `👛 مجموع موجودی فعلی کاربران: <code>${totalBalances.toLocaleString()}</code> تومان\n` +
+      `📈 سود: <code>${profit.toLocaleString()}</code> تومان`;
+
     await bot.sendMessage(chatId, message, { parse_mode: "HTML" });
   } catch (error) {
     console.error("❌ Error sending financial report:", error.message);

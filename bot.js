@@ -70,7 +70,7 @@ bot.on("message", async (msg) => {
   const chatId = msg.chat.id;
   const userId = msg.from.id;
   const userText = msg.text;
-  const session = await getSession(userId);
+  const session = await getSession(chatId);
 
   // بررسی اینکه آیا پیام از گروه ادمین است
   if (process.env.GROUP_ID && chatId.toString() === process.env.GROUP_ID) {

@@ -52,6 +52,8 @@ async function handlePlanOrder(bot, chatId, userId, plan) {
       user.totalServices = (user.totalServices || 0) + 1;
       await user.save();
 
+      // (بدون ذخیره سفارش)
+
       //  * add a message to the user that the service is being created
       const loadingMsg = await bot.sendMessage(
         chatId,
@@ -89,6 +91,8 @@ async function handlePlanOrder(bot, chatId, userId, plan) {
     // Don't increment totalServices here - it will be incremented when admin manually creates the service
     user.balance -= plan.price;
     await user.save();
+
+    // (بدون ذخیره سفارش)
     await bot.sendMessage(
       chatId,
       "📨 سفارش شما ثبت شد و به زودی بررسی خواهد شد. لطفاً منتظر بمانید."
