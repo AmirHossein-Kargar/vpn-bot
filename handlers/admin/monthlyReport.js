@@ -10,19 +10,43 @@ const monthlyReport = async (bot, query, session) => {
     // محاسبه تاریخ‌های ماه جاری
     const now = new Date();
 
-    // تبدیل تاریخ میلادی به شمسی
-    const persianDate = new Intl.DateTimeFormat("fa-IR-u-ca-persian", {
-      year: "numeric",
-      month: "numeric",
-      day: "numeric",
-    }).formatToParts(now);
+    // تبدیل تاریخ میلادی به شمسی - روش مطمئن‌تر
+    let persianYear, persianMonth;
+    
+    try {
+      const persianDate = new Intl.DateTimeFormat("fa-IR-u-ca-persian", {
+        year: "numeric",
+        month: "numeric",
+        day: "numeric",
+      }).formatToParts(now);
 
-    const persianYear = parseInt(
-      persianDate.find((part) => part.type === "year").value
-    );
-    const persianMonth = parseInt(
-      persianDate.find((part) => part.type === "month").value
-    );
+      const yearPart = persianDate.find((part) => part.type === "year");
+      const monthPart = persianDate.find((part) => part.type === "month");
+      
+      // تبدیل اعداد فارسی به انگلیسی
+      const convertPersianToEnglish = (str) => {
+        const persianNumbers = ['۰', '۱', '۲', '۳', '۴', '۵', '۶', '۷', '۸', '۹'];
+        const englishNumbers = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'];
+        let result = str;
+        for (let i = 0; i < 10; i++) {
+          result = result.replace(new RegExp(persianNumbers[i], 'g'), englishNumbers[i]);
+        }
+        return result;
+      };
+      
+      persianYear = yearPart ? parseInt(convertPersianToEnglish(yearPart.value)) : new Date().getFullYear();
+      persianMonth = monthPart ? parseInt(convertPersianToEnglish(monthPart.value)) : (new Date().getMonth() + 1);
+      
+      // اطمینان از معتبر بودن مقادیر
+      if (isNaN(persianYear) || persianYear < 1300) persianYear = new Date().getFullYear();
+      if (isNaN(persianMonth) || persianMonth < 1 || persianMonth > 12) persianMonth = new Date().getMonth() + 1;
+      
+    } catch (error) {
+      console.error("خطا در تبدیل تاریخ شمسی:", error);
+      // استفاده از تاریخ میلادی به عنوان پشتیبان
+      persianYear = new Date().getFullYear();
+      persianMonth = new Date().getMonth() + 1;
+    }
 
     // محاسبه تاریخ‌های شروع و پایان ماه شمسی
     const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
@@ -113,10 +137,12 @@ const monthlyReport = async (bot, query, session) => {
       "اسفند",
     ];
 
+    // اطمینان از معتبر بودن شماره ماه
+    const monthIndex = (persianMonth - 1) >= 0 && (persianMonth - 1) < monthNames.length ? (persianMonth - 1) : 0;
+    const monthName = monthNames[monthIndex];
+    
     const report =
-      `📅 <b>گزارش ماهانه ${
-        monthNames[persianMonth - 1]
-      } ${persianYear}</b>\n\n` +
+      `📅 <b>گزارش ماهانه ${monthName} ${persianYear}</b>\n\n` +
       `💰 <b>درآمد ماه جاری:</b>\n` +
       `• کل درآمد: <code>${totalMonthly.toLocaleString()}</code> تومان\n` +
       `• کریپتو: <code>${cryptoSum.toLocaleString()}</code> تومان\n` +
