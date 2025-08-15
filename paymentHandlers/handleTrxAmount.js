@@ -131,11 +131,13 @@ ${error.message}
 
 - - 
 🔄 تایید تراکنش بصورت اتوماتیک حداکثر 5 دقیقه بعد از واریز رمز ارز به مشخصات بالا(آدرس و..)  انجام میگردد.
+نحوه خرید TRX: <a href="https://t.me/swift_shield/18">کلیک کنید</a>
 `,
         {
           chat_id: chatId,
           message_id: botMessageId,
           parse_mode: "HTML",
+          disable_web_page_preview: true,
           reply_markup: {
             inline_keyboard: [
               [
