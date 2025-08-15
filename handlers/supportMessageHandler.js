@@ -120,11 +120,33 @@ const supportMessageHandler = async (bot, msg) => {
     }
 
     // * SEND CONFIRMATION TO USER
-    await bot.sendMessage(
-      chatId,
-      `✅ ${mediaType} شما با موفقیت برای پشتیبانی ارسال شد`,
-      keyboard
-    );
+    if (session.supportMessageId) {
+      try {
+        await bot.editMessageText(
+          `✅ ${mediaType} شما با موفقیت برای پشتیبانی ارسال شد`,
+          {
+            chat_id: chatId,
+            message_id: session.supportMessageId,
+            reply_markup: keyboard.reply_markup,
+          }
+        );
+      } catch (editError) {
+        console.log("❗️خطا در ویرایش پیام پشتیبانی:", editError.message);
+        // اگر ادیت نشد، پیام جدید ارسال کن
+        await bot.sendMessage(
+          chatId,
+          `✅ ${mediaType} شما با موفقیت برای پشتیبانی ارسال شد`,
+          keyboard
+        );
+      }
+    } else {
+      // اگر messageId نبود، پیام جدید ارسال کن
+      await bot.sendMessage(
+        chatId,
+        `✅ ${mediaType} شما با موفقیت برای پشتیبانی ارسال شد`,
+        keyboard
+      );
+    }
 
     // * CLEAR THE SUPPORT SESSION
     session.support = false;
