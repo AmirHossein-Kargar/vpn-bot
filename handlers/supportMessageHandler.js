@@ -127,7 +127,16 @@ const supportMessageHandler = async (bot, msg) => {
           {
             chat_id: chatId,
             message_id: session.supportMessageId,
-            reply_markup: keyboard.reply_markup,
+            reply_markup: {
+              inline_keyboard: [
+                [
+                  {
+                    text: "🏠 بازگشت به منوی اصلی",
+                    callback_data: "back_to_home",
+                  },
+                ],
+              ],
+            },
           }
         );
       } catch (editError) {
