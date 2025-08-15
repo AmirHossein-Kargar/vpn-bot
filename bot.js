@@ -51,19 +51,7 @@ import trxScanner from "./services/trxWalletScanner.js";
 trxScanner.setBotInstance(bot);
 
 // * 🏠 Initialize Group Manager
-import {
-  sendWelcomeMessage,
-  handleGroupMessage,
-} from "./handlers/admin/groupManager.js";
-
-// ارسال پیام خوش‌آمدگویی به گروه ادمین
-setTimeout(async () => {
-  try {
-    await sendWelcomeMessage(bot);
-  } catch (error) {
-    console.error("❌ Error initializing group manager:", error.message);
-  }
-}, 3000); // 3 ثانیه بعد از استارت
+import { handleGroupMessage } from "./handlers/admin/groupManager.js";
 
 // * 📨 Message Handler
 bot.on("message", async (msg) => {
@@ -140,7 +128,7 @@ bot.on("message", async (msg) => {
         );
         break;
       }
-      
+
       console.log("🧪 User initiated mock test...");
       await trxScanner.runAutoMockTest();
       await bot.sendMessage(
@@ -157,7 +145,7 @@ bot.on("message", async (msg) => {
         );
         break;
       }
-      
+
       const args = userText.split(" ");
       if (args.length === 3) {
         const targetUserId = parseInt(args[1]);
@@ -188,7 +176,7 @@ bot.on("message", async (msg) => {
         );
         break;
       }
-      
+
       const rejectArgs = userText.split(" ");
       if (rejectArgs.length === 3) {
         const targetUserId = parseInt(rejectArgs[1]);
