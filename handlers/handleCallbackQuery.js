@@ -1,5 +1,5 @@
 // fuix
-import handleAddBalance from "./admin/handleAddBalance.js";
+import handleTrxWalletScan from "./admin/handleTrxWalletScan.js";
 import showPaymentMethods from "./message/showPaymentMethods.js";
 import {
   clearSession,
@@ -9,7 +9,6 @@ import {
 import keyboard from "../keyboards/mainKeyboard.js";
 import { CHOOSE_OPTION_MESSAGE } from "../messages/staticMessages.js";
 import promptForReceipt from "../paymentHandlers/promptForReceipt.js";
-import sendAdminPanels from "./admin/sendAdminPanels.js";
 import { plans30, plans60, plans90 } from "../services/plans.js";
 import handleBuyService from "../services/buyService/buyService.js";
 import generatePlanButtons from "../keyboards/generatePlanButtons.js";
@@ -17,12 +16,15 @@ import confirmOrder from "../services/buyService/confirmOrder.js";
 import orderService from "../services/buyService/orderService.js";
 import User from "../models/User.js";
 import invoice from "../models/invoice.js";
+import CryptoInvoice from "../models/CryptoInvoice.js";
 import showServiceDetails from "../services/manageServices/showServiceDetails.js";
 import changeServiceLink from "../services/manageServices/changeServiceLink.js";
 import generateQRCode from "../services/manageServices/generateQRCode.js";
 import { deleteService } from "../api/wizardApi.js";
 import deactivateServiceButton from "../services/manageServices/deactiveServiceButton.js";
 import handleProfile from "./message/handleProfile.js";
+import payTrx from "../paymentHandlers/payTrx.js";
+import { sendTrxWallet } from "../paymentHandlers/handleTrxAmount.js";
 
 const handleCallbackQuery = async (bot, query) => {
   const data = query.data;
@@ -35,11 +37,46 @@ const handleCallbackQuery = async (bot, query) => {
     case "back_to_topup":
       await bot.deleteMessage(chatId, messageId);
 
-      if (session?.paymentId) {
+      // Debug: Log session data
+      console.log("🔍 Back to topup - Session data:", {
+        paymentId: session?.paymentId,
+        paymentType: session?.paymentType,
+        chatId: chatId,
+      });
+
+      // اگر کاربر پرداخت کارت به کارت داشت، رسید را حذف کن
+      if (session?.paymentId && session?.paymentType === "bank") {
         try {
           await invoice.findOneAndDelete({ paymentId: session.paymentId });
+          console.log("✅ Bank invoice removed:", session.paymentId);
         } catch (error) {
-          console.error("Error removing invoice:", error.message);
+          console.error("Error removing bank invoice:", error.message);
+        }
+      }
+      // اگر کاربر پرداخت کریپتو داشت، فاکتور کریپتو را حذف کن
+      if (session?.paymentId && session?.paymentType === "crypto") {
+        try {
+          await CryptoInvoice.findOneAndDelete({
+            invoiceId: session.paymentId,
+          });
+          console.log("✅ Crypto invoice removed:", session.paymentId);
+        } catch (error) {
+          console.error("Error removing crypto invoice:", error.message);
+        }
+      }
+      // اگر کاربر پرداخت TRX داشت، فاکتور TRX را حذف کن
+      if (session?.paymentId && session?.paymentType === "trx") {
+        try {
+          console.log(
+            "🔍 Attempting to remove TRX invoice:",
+            session.paymentId
+          );
+          const result = await CryptoInvoice.findOneAndDelete({
+            invoiceId: session.paymentId,
+          });
+          console.log("✅ TRX invoice removed:", result);
+        } catch (error) {
+          console.error("Error removing TRX invoice:", error.message);
         }
       }
 
@@ -78,16 +115,183 @@ const handleCallbackQuery = async (bot, query) => {
         await payBank(bot, query, session);
       }
       break;
+    case "pay_trx":
+      await payTrx(bot, query, session);
+      break;
+    case "send_trx_wallet":
+      await sendTrxWallet(bot, chatId, session);
+      break;
+    case "back_to_home":
+      await bot.deleteMessage(chatId, messageId);
+      await clearSession(chatId);
+      await bot.sendMessage(chatId, "🏠 به منوی اصلی بازگشتید.", {
+        reply_markup: {
+          keyboard: [
+            ["🛒 خرید سرویس"],
+            ["📦 سرویس‌های من", "💰 افزایش موجودی"],
+            ["🎁 سرویس تست", "👤 پروفایل من"],
+            ["🛠 پشتیبانی", "📖 راهنما"],
+          ],
+          resize_keyboard: true,
+        },
+      });
+      break;
 
     case "upload_receipt":
       await promptForReceipt(bot, chatId, session);
       break;
-    case "admin_add_balance":
-      await handleAddBalance(bot, query, session);
+    case "admin_scan_trx_wallet": {
+      // فقط در گروه ادمین و برای ادمین‌ها
+      const groupId = process.env.GROUP_ID;
+      const adminIds = (process.env.ADMINS || "")
+        .split(",")
+        .filter(Boolean)
+        .map((id) => Number(id.trim()));
+
+      if (chatId.toString() !== String(groupId)) {
+        await bot.answerCallbackQuery(query.id, {
+          text: "⛔️ این عملیات فقط در گروه ادمین قابل انجام است",
+          show_alert: true,
+        });
+        break;
+      }
+      if (!adminIds.includes(Number(userId))) {
+        await bot.answerCallbackQuery(query.id, {
+          text: "⛔️ شما دسترسی انجام این عملیات را ندارید",
+          show_alert: true,
+        });
+        break;
+      }
+      await handleTrxWalletScan(bot, query, session);
       break;
-    case "admin_back_to_main":
-      await sendAdminPanels(bot, chatId, messageId);
+    }
+    case "admin_status": {
+      // فقط در گروه ادمین و برای ادمین‌ها
+      const groupId = process.env.GROUP_ID;
+      const adminIds = (process.env.ADMINS || "")
+        .split(",")
+        .filter(Boolean)
+        .map((id) => Number(id.trim()));
+
+      if (chatId.toString() !== String(groupId)) {
+        await bot.answerCallbackQuery(query.id, {
+          text: "⛔️ این عملیات فقط در گروه ادمین قابل انجام است",
+          show_alert: true,
+        });
+        break;
+      }
+      if (!adminIds.includes(Number(userId))) {
+        await bot.answerCallbackQuery(query.id, {
+          text: "⛔️ شما دسترسی انجام این عملیات را ندارید",
+          show_alert: true,
+        });
+        break;
+      }
+
+      // ویرایش همان پیام با وضعیت سیستم (به جای ارسال پیام جدید)
+      try {
+        const { StatusApi } = await import("../api/wizardApi.js");
+        const statusData = await StatusApi();
+
+        if (statusData.ok) {
+          const result = statusData.result;
+          const statusMessage = `📊 وضعیت API\n\n💰 موجودی: <code>${
+            result.balance
+          } تومان</code>\n📦 کل سرویس‌ ها: <code>${
+            result.count_services
+          }</code>\n✅ سرویس‌ های فعال: <code>${
+            result.count_active_services
+          }</code>\n💾 قیمت هر گیگ: <code>${
+            result.per_gb
+          } تومان</code>\n📅 قیمت هر روز: <code>${
+            result.per_day
+          } تومان</code>\n🔗 وضعیت سیستم: <code>${
+            result.system === "connected" ? "🟢 متصل" : "🔴 قطع"
+          }</code>\n⚡ پینگ: <code>${
+            result.ping
+          }ms</code>\n\n🕐 آخرین بروزرسانی: <code>${new Date().toLocaleString(
+            "fa-IR"
+          )}</code>`;
+
+          await bot.editMessageText(statusMessage, {
+            chat_id: chatId,
+            message_id: messageId,
+            parse_mode: "HTML",
+            reply_markup: {
+              inline_keyboard: [
+                [
+                  {
+                    text: "🔍 اسکن ولت TRX",
+                    callback_data: "admin_scan_trx_wallet",
+                  },
+                  { text: "🏠 بازگشت", callback_data: "admin_back_to_panel" },
+                ],
+              ],
+            },
+          });
+        } else {
+          await bot.editMessageText(
+            `❌ خطا در دریافت وضعیت: ${statusData.error || "خطای نامشخص"}`,
+            {
+              chat_id: chatId,
+              message_id: messageId,
+              reply_markup: {
+                inline_keyboard: [
+                  [{ text: "🏠 بازگشت", callback_data: "admin_back_to_panel" }],
+                ],
+              },
+            }
+          );
+        }
+      } catch (error) {
+        await bot.editMessageText(`❌ خطا در دریافت وضعیت`, {
+          chat_id: chatId,
+          message_id: messageId,
+          reply_markup: {
+            inline_keyboard: [
+              [{ text: "🏠 بازگشت", callback_data: "admin_back_to_panel" }],
+            ],
+          },
+        });
+      }
       break;
+    }
+    case "admin_back_to_panel": {
+      // بازگشت به پنل مدیریت در گروه ادمین
+      const groupId = process.env.GROUP_ID;
+      const adminIds = (process.env.ADMINS || "")
+        .split(",")
+        .filter(Boolean)
+        .map((id) => Number(id.trim()));
+
+      if (
+        chatId.toString() !== String(groupId) ||
+        !adminIds.includes(Number(userId))
+      ) {
+        await bot.answerCallbackQuery(query.id, {
+          text: "⛔️ دسترسی غیرمجاز",
+          show_alert: true,
+        });
+        break;
+      }
+
+      await bot.editMessageText("🔒 پنل مدیریت", {
+        chat_id: chatId,
+        message_id: messageId,
+        reply_markup: {
+          inline_keyboard: [
+            [
+              {
+                text: "🔍 اسکن ولت TRX",
+                callback_data: "admin_scan_trx_wallet",
+              },
+              { text: "📊 وضعیت سیستم", callback_data: "admin_status" },
+            ],
+          ],
+        },
+      });
+      break;
+    }
     case "confirm_payment":
       // Handle confirm payment logic here if needed
       break;
@@ -256,14 +460,7 @@ const handleCallbackQuery = async (bot, query) => {
       "📝 لطفاً کانفیگ سرویس را ارسال کنید:",
       {
         reply_markup: {
-          inline_keyboard: [
-            [
-              {
-                text: "🔄 بازگشت به پنل مدیریت",
-                callback_data: "admin_back_to_main",
-              },
-            ],
-          ],
+          inline_keyboard: [],
         },
       }
     );

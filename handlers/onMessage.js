@@ -2,7 +2,8 @@ import { getSession, setSession } from "../config/sessionStore.js";
 import User from "../models/User.js";
 import handleTonAmount from "../paymentHandlers/handleTonAmount.js";
 import payBank from "../paymentHandlers/payBank.js";
-import handleAddBalance from "./admin/handleAddBalance.js";
+import handleTrxAmount from "../paymentHandlers/handleTrxAmount.js";
+
 import supportMessageHandler from "./supportMessageHandler.js";
 
 // Top-level function for sending config to user
@@ -84,11 +85,9 @@ async function handleMessage(bot, msg) {
     return;
   }
 
-  if (
-    session?.step === "waiting_for_user_id" ||
-    session?.step === "waiting_for_amount"
-  ) {
-    await handleAddBalance(bot, msg, session);
+  if (session?.step === "waiting_for_trx_amount" && msg.text) {
+    await handleTrxAmount(bot, msg, session);
+    return;
   }
 
   if (session?.step === "waiting_for_config_details") {

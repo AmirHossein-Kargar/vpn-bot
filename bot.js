@@ -31,10 +31,39 @@ import { StatusApi } from "./api/wizardApi.js";
 import showStatusApi from "./handlers/admin/showStatusApi.js";
 
 // * 🛡️ Admins
-let adminIds = process.env.ADMINS.split(",").map((id) => Number(id.trim()));
+let adminIds = [];
+try {
+  if (process.env.ADMINS) {
+    adminIds = process.env.ADMINS.split(",").map((id) => Number(id.trim()));
+  } else {
+    console.error("❌ ADMINS environment variable not found");
+  }
+} catch (error) {
+  console.error("❌ Error parsing admin IDs:", error.message);
+  adminIds = [];
+}
 
 // * 🚀 Start Bot
 const bot = await startBot();
+
+// * 🔍 Initialize TRX Scanner with bot instance
+import trxScanner from "./services/trxWalletScanner.js";
+trxScanner.setBotInstance(bot);
+
+// * 🏠 Initialize Group Manager
+import {
+  sendWelcomeMessage,
+  handleGroupMessage,
+} from "./handlers/admin/groupManager.js";
+
+// ارسال پیام خوش‌آمدگویی به گروه ادمین
+setTimeout(async () => {
+  try {
+    await sendWelcomeMessage(bot);
+  } catch (error) {
+    console.error("❌ Error initializing group manager:", error.message);
+  }
+}, 3000); // 3 ثانیه بعد از استارت
 
 // * 📨 Message Handler
 bot.on("message", async (msg) => {
@@ -43,20 +72,29 @@ bot.on("message", async (msg) => {
   const userText = msg.text;
   const session = await getSession(userId);
 
+  // بررسی اینکه آیا پیام از گروه ادمین است
+  if (process.env.GROUP_ID && chatId.toString() === process.env.GROUP_ID) {
+    // اگر در این چت گروهی فرآیند فعالی وجود دارد (برای ادمین)، همان هندلر عمومی را صدا بزن
+    if (session?.step) {
+      await handleMessage(bot, msg);
+    } else {
+      await handleGroupMessage(bot, msg);
+    }
+    return;
+  }
+
   switch (userText) {
     case "/start": {
       await bot.sendMessage(chatId, WELCOME_MESSAGE, keyboard);
       break;
     }
-    case "/panel" || "پنل": {
-      if (adminIds.includes(userId)) {
-        const sendAdminPanels = (
-          await import("./handlers/admin/sendAdminPanels.js")
-        ).default;
-        await sendAdminPanels(bot, chatId);
-      } else {
-        await bot.sendMessage(chatId, "⛔️ شما دسترسی به این بخش را ندارید.");
-      }
+    case "/panel":
+    case "پنل": {
+      // پنل مدیریت فقط در گروه ادمین قابل استفاده است
+      await bot.sendMessage(
+        chatId,
+        "⛔️ پنل مدیریت فقط در گروه ادمین در دسترس است. لطفاً دستور را در گروه ارسال کنید."
+      );
       break;
     }
     case "/status": {
@@ -92,6 +130,56 @@ bot.on("message", async (msg) => {
       break;
     case "📦 سرویس‌های من":
       await sendServiceSelectionMenu(bot, chatId, userId);
+      break;
+    case "/test_mock":
+      console.log("🧪 User initiated mock test...");
+      await trxScanner.runAutoMockTest();
+      await bot.sendMessage(
+        chatId,
+        "🧪 Mock test completed! Check console for results."
+      );
+      break;
+    case "/test_confirm":
+      const args = userText.split(" ");
+      if (args.length === 3) {
+        const targetUserId = parseInt(args[1]);
+        const invoiceId = args[2];
+        const result = await trxScanner.mockConfirmTransaction(
+          targetUserId,
+          invoiceId
+        );
+        await bot.sendMessage(
+          chatId,
+          result
+            ? "✅ Mock confirmation successful!"
+            : "❌ Mock confirmation failed!"
+        );
+      } else {
+        await bot.sendMessage(
+          chatId,
+          "📝 Usage: /test_confirm <userId> <invoiceId>"
+        );
+      }
+      break;
+    case "/test_reject":
+      const rejectArgs = userText.split(" ");
+      if (rejectArgs.length === 3) {
+        const targetUserId = parseInt(rejectArgs[1]);
+        const invoiceId = rejectArgs[2];
+        const result = await trxScanner.mockRejectTransaction(
+          targetUserId,
+          invoiceId
+        );
+        await bot.sendMessage(
+          chatId,
+          result ? "❌ Mock rejection successful!" : "❌ Mock rejection failed!"
+        );
+      } else {
+        await bot.sendMessage(
+          chatId,
+          "📝 Usage: /test_reject <userId> <invoiceId>"
+        );
+      }
       break;
     default:
       await handleMessage(bot, msg);

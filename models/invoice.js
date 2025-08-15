@@ -14,6 +14,11 @@ const invoiceSchema = new mongoose.Schema({
     type: Number,
     required: true,
   },
+  paymentType: {
+    type: String,
+    enum: ["bank", "crypto", "trx", "ton"],
+    default: "bank",
+  },
   status: {
     type: String,
     enum: ["unpaid", "paid", "rejected"],

@@ -15,13 +15,13 @@ const showPaymentMethods = async (bot, chatId) => {
     reply_markup: {
       inline_keyboard: [
         [{ text: "💳 کارت‌ به‌ کارت", callback_data: "pay_bank" }],
+        [{ text: "💸 پرداخت با ترون (TRX)", callback_data: "pay_trx" }],
         [{ text: "🔙 بازگشت", callback_data: "back_to_home" }],
 
         // [{ text: "🪙 پرداخت ارز دیجیتال", callback_data: "pay_crypto" }],
 
         // [{ text: "🎟️ وارد کردن ووچر (Voucher)", callback_data: "pay_voucher" }],
 
-        // [{ text: "💸 پرداخت با ترون (TRX)", callback_data: "pay_trx" }],
 
         // [{ text: "💠 پرداخت با تون (TON)", callback_data: "pay_ton" }],
       ],

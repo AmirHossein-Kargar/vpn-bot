@@ -7,10 +7,11 @@ const showStatusApi = async (bot, msg) => {
   // Get admin IDs from environment variable
   const adminIds = process.env.ADMINS.split(",").map((id) => Number(id.trim()));
 
-  if (msg.chat.type === "private") {
+  // فقط در گروه ادمین
+  if (chatId.toString() !== String(process.env.GROUP_ID)) {
     await bot.sendMessage(
       chatId,
-      "⛔️ این دستور فقط در گروه و برای ادمین‌ ها قابل استفاده است."
+      "⛔️ این دستور فقط در گروه ادمین قابل استفاده است."
     );
     return;
   }

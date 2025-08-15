@@ -117,6 +117,7 @@ const payBank = async (bot, msg, session) => {
       paymentId,
       userId: chatId,
       amount: Number(validation.amount) || 0,
+      paymentType: "bank", // Add payment type
     });
   } catch (error) {
     console.error("Error to save invoice", error.message);
@@ -170,6 +171,7 @@ const payBank = async (bot, msg, session) => {
   await setSession(chatId, {
     ...session,
     paymentId,
+    paymentType: "bank", // Add payment type to session
     step: "waiting_for_receipt_image",
     rawAmount: text,
     messageId,
