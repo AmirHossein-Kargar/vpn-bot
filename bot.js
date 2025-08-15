@@ -132,6 +132,15 @@ bot.on("message", async (msg) => {
       await sendServiceSelectionMenu(bot, chatId, userId);
       break;
     case "/test_mock":
+      // بررسی دسترسی ادمین
+      if (!adminIds.includes(userId)) {
+        await bot.sendMessage(
+          chatId,
+          "⛔️ شما دسترسی انجام این عملیات را ندارید."
+        );
+        break;
+      }
+      
       console.log("🧪 User initiated mock test...");
       await trxScanner.runAutoMockTest();
       await bot.sendMessage(
@@ -140,6 +149,15 @@ bot.on("message", async (msg) => {
       );
       break;
     case "/test_confirm":
+      // بررسی دسترسی ادمین
+      if (!adminIds.includes(userId)) {
+        await bot.sendMessage(
+          chatId,
+          "⛔️ شما دسترسی انجام این عملیات را ندارید."
+        );
+        break;
+      }
+      
       const args = userText.split(" ");
       if (args.length === 3) {
         const targetUserId = parseInt(args[1]);
@@ -162,6 +180,15 @@ bot.on("message", async (msg) => {
       }
       break;
     case "/test_reject":
+      // بررسی دسترسی ادمین
+      if (!adminIds.includes(userId)) {
+        await bot.sendMessage(
+          chatId,
+          "⛔️ شما دسترسی انجام این عملیات را ندارید."
+        );
+        break;
+      }
+      
       const rejectArgs = userText.split(" ");
       if (rejectArgs.length === 3) {
         const targetUserId = parseInt(rejectArgs[1]);

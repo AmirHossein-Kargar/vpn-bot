@@ -23,7 +23,6 @@ export default async function payTrx(bot, query, session) {
 
 🔻 <b>محدودیت مبلغ:</b>
 ▫️ حداقل: <code>10,000 تومان</code>
-▫️ حداکثر: <code>500,000 تومان</code>
 
 ✍️ <i>برای ادامه، مبلغ را به صورت صحیح ارسال کنید.</i>`,
       {
