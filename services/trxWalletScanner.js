@@ -10,6 +10,11 @@ class TRXWalletScanner {
     this.isScanning = false;
     this.testMode = false; // حالت تست
     this.botInstance = null; // برای ارسال پیام به کاربران
+    this.scanCount = 0; // تعداد اسکن‌های انجام شده
+    this.lastScanTime = null; // زمان آخرین اسکن
+    this.startTime = Date.now(); // زمان شروع اسکنر
+    this.databaseConnected = false; // وضعیت اتصال دیتابیس
+    this.tronScanConnected = false; // وضعیت اتصال TronScan API
   }
 
   // تنظیم instance bot برای ارسال پیام
@@ -28,6 +33,42 @@ class TRXWalletScanner {
   disableTestMode() {
     this.testMode = false;
     console.log("🚀 Test mode disabled - Using real API");
+  }
+
+  // بررسی وضعیت اتصال دیتابیس
+  async checkDatabaseConnection() {
+    try {
+      if (mongoose.connection && mongoose.connection.readyState === 1) {
+        this.databaseConnected = true;
+        return true;
+      } else {
+        this.databaseConnected = false;
+        return false;
+      }
+    } catch (error) {
+      this.databaseConnected = false;
+      return false;
+    }
+  }
+
+  // بررسی وضعیت اتصال TronScan API
+  async checkTronScanConnection() {
+    try {
+      // تست ساده با درخواست به API
+      const testUrl = `https://apilist.tronscanapi.com/api/account?address=${this.walletAddress}`;
+      const response = await axios.get(testUrl, { timeout: 10000 }); // 10 ثانیه timeout
+
+      if (response.status === 200) {
+        this.tronScanConnected = true;
+        return true;
+      } else {
+        this.tronScanConnected = false;
+        return false;
+      }
+    } catch (error) {
+      this.tronScanConnected = false;
+      return false;
+    }
   }
 
   // شروع اسکن خودکار
@@ -63,9 +104,21 @@ class TRXWalletScanner {
     }
 
     this.isScanning = true;
+    this.scanCount++;
+    this.lastScanTime = Date.now();
+
+    // بررسی وضعیت اتصال دیتابیس و TronScan API
+    await this.checkDatabaseConnection();
+    await this.checkTronScanConnection();
+
     console.log("🔍 Scanning TRX wallet for new transactions...");
 
     try {
+      // دریافت موجودی ولت
+      const walletBalance = this.testMode
+        ? 100.0
+        : await this.fetchWalletBalance();
+
       // دریافت تراکنش‌ها (واقعی یا تست)
       const transactions = this.testMode
         ? await this.getMockTransactions()
@@ -82,10 +135,31 @@ class TRXWalletScanner {
           rejectedInvoices: 0,
           pendingMatches: 0,
           matchedInvoiceDetails: [],
+          recentTransactions: [],
+          totalBalance: walletBalance,
         };
       }
 
-      console.log(`📊 Found ${transactions.length} transactions`);
+      console.log(`📊 Found ${transactions.length} incoming TRX transactions`);
+
+      // نمایش جزئیات تراکنش‌ها
+      if (transactions.length > 0) {
+        console.log("📋 Transaction details:");
+        transactions.forEach((tx, index) => {
+          const amount = parseFloat(tx.amount) / 1000000;
+          const status =
+            tx.confirmed && tx.contractRet === "SUCCESS"
+              ? "✅ Confirmed"
+              : tx.revert
+              ? "❌ Reverted"
+              : "⏳ Pending";
+          console.log(
+            `  ${
+              index + 1
+            }. ${amount} TRX - ${status} - Hash: ${tx.hash.substring(0, 10)}...`
+          );
+        });
+      }
 
       // آمار خلاصه
       const summary = {
@@ -96,6 +170,8 @@ class TRXWalletScanner {
         rejectedInvoices: 0,
         pendingMatches: 0,
         matchedInvoiceDetails: [], // {invoiceId, amount, cryptoAmount}
+        recentTransactions: transactions, // تراکنش‌های اخیر
+        totalBalance: walletBalance, // موجودی کل ولت
       };
 
       // بررسی هر تراکنش
@@ -123,6 +199,8 @@ class TRXWalletScanner {
         rejectedInvoices: 0,
         pendingMatches: 0,
         matchedInvoiceDetails: [],
+        recentTransactions: [],
+        totalBalance: 0,
         error: error.message,
       };
     } finally {
@@ -171,6 +249,52 @@ class TRXWalletScanner {
     return mockTransactions;
   }
 
+  // دریافت موجودی ولت از TronScan API
+  async fetchWalletBalance() {
+    try {
+      const url = `https://apilist.tronscanapi.com/api/account/tokens`;
+      const params = {
+        address: this.walletAddress,
+        start: 0,
+        limit: 100,
+      };
+
+      const response = await axios.get(url, { params });
+
+      if (response.data && response.data.data) {
+        // پیدا کردن TRX balance
+        const trxToken = response.data.data.find(
+          (token) => token.tokenAbbr === "trx" || token.tokenId === "_"
+        );
+
+        if (trxToken) {
+          const balance =
+            parseFloat(trxToken.balance) /
+            Math.pow(10, trxToken.tokenDecimal || 6);
+          return balance;
+        }
+      }
+
+      // Fallback: try to get balance from account info
+      try {
+        const accountUrl = `https://apilist.tronscanapi.com/api/account?address=${this.walletAddress}`;
+        const accountResponse = await axios.get(accountUrl);
+
+        if (accountResponse.data && accountResponse.data.balance) {
+          const fallbackBalance =
+            parseFloat(accountResponse.data.balance) / 1000000;
+          return fallbackBalance;
+        }
+      } catch (fallbackError) {
+        // Fallback failed, continue to default
+      }
+
+      return 0;
+    } catch (error) {
+      return 0;
+    }
+  }
+
   // دریافت تراکنش‌ها از TronScan API
   async fetchTransactions() {
     try {
@@ -178,7 +302,7 @@ class TRXWalletScanner {
       const params = {
         sort: "-timestamp",
         count: true,
-        limit: 50, // افزایش محدودیت برای اطمینان
+        limit: 20, // کاهش محدودیت برای نمایش تعداد واقعی تراکنش‌ها
         start: 0,
         address: this.walletAddress,
       };
@@ -186,7 +310,15 @@ class TRXWalletScanner {
       const response = await axios.get(url, { params });
 
       if (response.data && response.data.data) {
-        return response.data.data;
+        // فیلتر کردن فقط تراکنش‌های ورودی (incoming) به کیف پول
+        const incomingTransactions = response.data.data.filter(
+          (tx) =>
+            tx.toAddress === this.walletAddress &&
+            tx.contractType === 1 &&
+            tx.tokenInfo?.tokenAbbr === "trx"
+        );
+
+        return incomingTransactions;
       }
 
       return [];
@@ -550,6 +682,17 @@ class TRXWalletScanner {
     console.log("🔍 Manual TRX wallet scan initiated...");
     const summary = await this.scanWallet();
     return summary;
+  }
+
+  // بررسی دستی وضعیت اتصال TronScan API
+  async checkTronScanStatus() {
+    console.log("🔍 Manual TronScan API status check...");
+    const isConnected = await this.checkTronScanConnection();
+    return {
+      connected: isConnected,
+      walletAddress: this.walletAddress,
+      timestamp: new Date().toISOString(),
+    };
   }
 
   // تست کامل سیستم

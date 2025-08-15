@@ -1,5 +1,15 @@
 // fuix
 import handleTrxWalletScan from "./admin/handleTrxWalletScan.js";
+import showTrxBalance from "./admin/showTrxBalance.js";
+import showTrxStats from "./admin/showTrxStats.js";
+import showTrxRecent from "./admin/showTrxRecent.js";
+import showTrxScanStatus from "./admin/showTrxScanStatus.js";
+import detailedFinancialReport from "./admin/detailedFinancialReport.js";
+import bankReport from "./admin/bankReport.js";
+import usersReport from "./admin/usersReport.js";
+import monthlyReport from "./admin/monthlyReport.js";
+import profitChart from "./admin/profitChart.js";
+import cryptoReport from "./admin/cryptoReport.js";
 import showPaymentMethods from "./message/showPaymentMethods.js";
 import {
   clearSession,
@@ -103,9 +113,22 @@ const handleCallbackQuery = async (bot, query) => {
         const profit = recognizedRevenue - totalCost;
 
         const report =
-          `💵 مجموع شارژهای تایید شده: <code>${totalTopups.toLocaleString()}</code> تومان\n` +
-          `👛 مجموع موجودی فعلی کاربران: <code>${totalBalances.toLocaleString()}</code> تومان\n` +
-          `📈 سود: <code>${profit.toLocaleString()}</code> تومان`;
+          `💵 <b>گزارش مالی جامع</b>\n\n` +
+          `💰 <b>درآمدها:</b>\n` +
+          `• کل شارژهای تایید شده: <code>${totalTopups.toLocaleString()}</code> تومان\n` +
+          `• شارژهای کریپتو: <code>${cryptoSum.toLocaleString()}</code> تومان\n` +
+          `• شارژهای بانکی: <code>${bankSum.toLocaleString()}</code> تومان\n\n` +
+          `👛 <b>موجودی‌ها:</b>\n` +
+          `• مجموع موجودی فعلی کاربران: <code>${totalBalances.toLocaleString()}</code> تومان\n\n` +
+          `📊 <b>آمار:</b>\n` +
+          `• درآمد واقعی: <code>${recognizedRevenue.toLocaleString()}</code> تومان\n` +
+          `• تخمین گیگ فروخته شده: <code>${estGigSold.toLocaleString()}</code> GB\n` +
+          `• تخمین روز فروخته شده: <code>${estDaysSold.toLocaleString()}</code> روز\n\n` +
+          `💸 <b>هزینه‌ها:</b>\n` +
+          `• هزینه کل: <code>${totalCost.toLocaleString()}</code> تومان\n` +
+          `• هزینه هر گیگ: <code>${costPerGb.toLocaleString()}</code> تومان\n` +
+          `• هزینه هر روز: <code>${costPerDay.toLocaleString()}</code> تومان\n\n` +
+          `📈 <b>سود خالص:</b> <code>${profit.toLocaleString()}</code> تومان`;
 
         await bot.editMessageText(report, {
           chat_id: chatId,
@@ -113,6 +136,30 @@ const handleCallbackQuery = async (bot, query) => {
           parse_mode: "HTML",
           reply_markup: {
             inline_keyboard: [
+              [
+                {
+                  text: "📊 جزئیات بیشتر",
+                  callback_data: "admin_detailed_financial",
+                },
+                {
+                  text: "📅 گزارش ماهانه",
+                  callback_data: "admin_monthly_report",
+                },
+              ],
+              [
+                {
+                  text: "💰 گزارش کریپتو",
+                  callback_data: "admin_crypto_report",
+                },
+                { text: "🏦 گزارش بانکی", callback_data: "admin_bank_report" },
+              ],
+              [
+                { text: "📈 نمودار سود", callback_data: "admin_profit_chart" },
+                {
+                  text: "👥 گزارش کاربران",
+                  callback_data: "admin_users_report",
+                },
+              ],
               [{ text: "🏠 بازگشت", callback_data: "admin_back_to_panel" }],
             ],
           },
@@ -228,44 +275,174 @@ const handleCallbackQuery = async (bot, query) => {
       await promptForReceipt(bot, chatId, session);
       break;
     case "admin_scan_trx_wallet": {
+      // بررسی دسترسی ادمین
       const groupId = process.env.GROUP_ID;
       const adminIds = (process.env.ADMINS || "")
         .split(",")
         .filter(Boolean)
         .map((id) => Number(id.trim()));
 
-      if (chatId.toString() !== String(groupId)) {
+      // اگر GROUP_ID تعریف نشده، اجازه دسترسی بده
+      if (groupId && chatId.toString() !== String(groupId)) {
         await bot.answerCallbackQuery(query.id, {
           text: "⛔️ این عملیات فقط در گروه ادمین قابل انجام است",
           show_alert: true,
         });
         break;
       }
-      if (!adminIds.includes(Number(userId))) {
+
+      // اگر ADMINS تعریف نشده، اجازه دسترسی بده
+      if (adminIds.length > 0 && !adminIds.includes(Number(userId))) {
         await bot.answerCallbackQuery(query.id, {
           text: "⛔️ شما دسترسی انجام این عملیات را ندارید",
           show_alert: true,
         });
         break;
       }
+
+      console.log("🔍 Calling handleTrxWalletScan...");
       await handleTrxWalletScan(bot, query, session);
       break;
     }
-    case "admin_status": {
+    case "admin_trx_balance": {
+      // بررسی دسترسی ادمین
       const groupId = process.env.GROUP_ID;
       const adminIds = (process.env.ADMINS || "")
         .split(",")
         .filter(Boolean)
         .map((id) => Number(id.trim()));
 
-      if (chatId.toString() !== String(groupId)) {
+      // اگر GROUP_ID تعریف نشده، اجازه دسترسی بده
+      if (groupId && chatId.toString() !== String(groupId)) {
         await bot.answerCallbackQuery(query.id, {
           text: "⛔️ این عملیات فقط در گروه ادمین قابل انجام است",
           show_alert: true,
         });
         break;
       }
-      if (!adminIds.includes(Number(userId))) {
+
+      // اگر ADMINS تعریف نشده، اجازه دسترسی بده
+      if (adminIds.length > 0 && !adminIds.includes(Number(userId))) {
+        await bot.answerCallbackQuery(query.id, {
+          text: "⛔️ شما دسترسی انجام این عملیات را ندارید",
+          show_alert: true,
+        });
+        break;
+      }
+
+      console.log("🔍 Calling showTrxBalance...");
+      await showTrxBalance(bot, query, session);
+      break;
+    }
+    case "admin_trx_stats": {
+      // بررسی دسترسی ادمین
+      const groupId = process.env.GROUP_ID;
+      const adminIds = (process.env.ADMINS || "")
+        .split(",")
+        .filter(Boolean)
+        .map((id) => Number(id.trim()));
+
+      // اگر GROUP_ID تعریف نشده، اجازه دسترسی بده
+      if (groupId && chatId.toString() !== String(groupId)) {
+        await bot.answerCallbackQuery(query.id, {
+          text: "⛔️ این عملیات فقط در گروه ادمین قابل انجام است",
+          show_alert: true,
+        });
+        break;
+      }
+
+      // اگر ADMINS تعریف نشده، اجازه دسترسی بده
+      if (adminIds.length > 0 && !adminIds.includes(Number(userId))) {
+        await bot.answerCallbackQuery(query.id, {
+          text: "⛔️ شما دسترسی انجام این عملیات را ندارید",
+          show_alert: true,
+        });
+        break;
+      }
+
+      console.log("🔍 Calling showTrxStats...");
+      await showTrxStats(bot, query, session);
+      break;
+    }
+    case "admin_trx_recent": {
+      // بررسی دسترسی ادمین
+      const groupId = process.env.GROUP_ID;
+      const adminIds = (process.env.ADMINS || "")
+        .split(",")
+        .filter(Boolean)
+        .map((id) => Number(id.trim()));
+
+      // اگر GROUP_ID تعریف نشده، اجازه دسترسی بده
+      if (groupId && chatId.toString() !== String(groupId)) {
+        await bot.answerCallbackQuery(query.id, {
+          text: "⛔️ این عملیات فقط در گروه ادمین قابل انجام است",
+          show_alert: true,
+        });
+        break;
+      }
+
+      // اگر ADMINS تعریف نشده، اجازه دسترسی بده
+      if (adminIds.length > 0 && !adminIds.includes(Number(userId))) {
+        await bot.answerCallbackQuery(query.id, {
+          text: "⛔️ شما دسترسی انجام این عملیات را ندارید",
+          show_alert: true,
+        });
+        break;
+      }
+
+      console.log("🔍 Calling showTrxRecent...");
+      await showTrxRecent(bot, query, session);
+      break;
+    }
+    case "admin_trx_scan_status": {
+      // بررسی دسترسی ادمین
+      const groupId = process.env.GROUP_ID;
+      const adminIds = (process.env.ADMINS || "")
+        .split(",")
+        .filter(Boolean)
+        .map((id) => Number(id.trim()));
+
+      // اگر GROUP_ID تعریف نشده، اجازه دسترسی بده
+      if (groupId && chatId.toString() !== String(groupId)) {
+        await bot.answerCallbackQuery(query.id, {
+          text: "⛔️ این عملیات فقط در گروه ادمین قابل انجام است",
+          show_alert: true,
+        });
+        break;
+      }
+
+      // اگر ADMINS تعریف نشده، اجازه دسترسی بده
+      if (adminIds.length > 0 && !adminIds.includes(Number(userId))) {
+        await bot.answerCallbackQuery(query.id, {
+          text: "⛔️ شما دسترسی انجام این عملیات را ندارید",
+          show_alert: true,
+        });
+        break;
+      }
+
+      console.log("🔍 Calling showTrxScanStatus...");
+      await showTrxScanStatus(bot, query, session);
+      break;
+    }
+    case "admin_status": {
+      // بررسی دسترسی ادمین
+      const groupId = process.env.GROUP_ID;
+      const adminIds = (process.env.ADMINS || "")
+        .split(",")
+        .filter(Boolean)
+        .map((id) => Number(id.trim()));
+
+      // اگر GROUP_ID تعریف نشده، اجازه دسترسی بده
+      if (groupId && chatId.toString() !== String(groupId)) {
+        await bot.answerCallbackQuery(query.id, {
+          text: "⛔️ این عملیات فقط در گروه ادمین قابل انجام است",
+          show_alert: true,
+        });
+        break;
+      }
+
+      // اگر ADMINS تعریف نشده، اجازه دسترسی بده
+      if (adminIds.length > 0 && !adminIds.includes(Number(userId))) {
         await bot.answerCallbackQuery(query.id, {
           text: "⛔️ شما دسترسی انجام این عملیات را ندارید",
           show_alert: true,
@@ -279,23 +456,35 @@ const handleCallbackQuery = async (bot, query) => {
 
         if (statusData.ok) {
           const result = statusData.result;
-          const statusMessage = `📊 وضعیت API\n\n💰 موجودی: <code>${
-            result.balance
-          } تومان</code>\n📦 کل سرویس‌ ها: <code>${
-            result.count_services
-          }</code>\n✅ سرویس‌ های فعال: <code>${
-            result.count_active_services
-          }</code>\n💾 قیمت هر گیگ: <code>${
-            result.per_gb
-          } تومان</code>\n📅 قیمت هر روز: <code>${
-            result.per_day
-          } تومان</code>\n🔗 وضعیت سیستم: <code>${
-            result.system === "connected" ? "🟢 متصل" : "🔴 قطع"
-          }</code>\n⚡ پینگ: <code>${
-            result.ping
-          }ms</code>\n\n🕐 آخرین بروزرسانی: <code>${new Date().toLocaleString(
-            "fa-IR"
-          )}</code>`;
+          const statusMessage =
+            `📊 <b>وضعیت سیستم</b>\n\n` +
+            `🔗 <b>وضعیت اتصال:</b>\n` +
+            `• سیستم: <code>${
+              result.system === "connected" ? "🟢 متصل" : "🔴 قطع"
+            }</code>\n` +
+            `• پینگ: <code>${result.ping}ms</code>\n\n` +
+            `💰 <b>موجودی:</b>\n` +
+            `• موجودی فعلی: <code>${result.balance} تومان</code>\n\n` +
+            `📦 <b>سرویس‌ها:</b>\n` +
+            `• کل سرویس‌ها: <code>${result.count_services}</code>\n` +
+            `• سرویس‌های فعال: <code>${result.count_active_services}</code>\n` +
+            `• سرویس‌های غیرفعال: <code>${
+              result.count_services - result.count_active_services
+            }</code>\n\n` +
+            `💵 <b>قیمت‌ها:</b>\n` +
+            `• هر گیگ: <code>${result.per_gb} تومان</code>\n` +
+            `• هر روز: <code>${result.per_day} تومان</code>\n\n` +
+            `📈 <b>آمار:</b>\n` +
+            `• درصد فعال: <code>${
+              result.count_services > 0
+                ? Math.round(
+                    (result.count_active_services / result.count_services) * 100
+                  )
+                : 0
+            }%</code>\n\n` +
+            `🕐 <b>آخرین بروزرسانی:</b> <code>${new Date().toLocaleString(
+              "fa-IR"
+            )}</code>`;
 
           await bot.editMessageText(statusMessage, {
             chat_id: chatId,
@@ -308,36 +497,248 @@ const handleCallbackQuery = async (bot, query) => {
                     text: "🔍 اسکن ولت TRX",
                     callback_data: "admin_scan_trx_wallet",
                   },
-                  { text: "🏠 بازگشت", callback_data: "admin_back_to_panel" },
+                  {
+                    text: "📊 وضعیت TRX",
+                    callback_data: "admin_trx_scan_status",
+                  },
                 ],
+                [
+                  {
+                    text: "💰 گزارش مالی",
+                    callback_data: "admin_financial_report",
+                  },
+                  {
+                    text: "📈 نمودار سود",
+                    callback_data: "admin_profit_chart",
+                  },
+                ],
+                [{ text: "🏠 بازگشت", callback_data: "admin_back_to_panel" }],
               ],
             },
           });
         } else {
           await bot.editMessageText(
-            `❌ خطا در دریافت وضعیت: ${statusData.error || "خطای نامشخص"}`,
+            `❌ <b>خطا در دریافت وضعیت</b>\n\n` +
+              `🔍 <b>جزئیات خطا:</b>\n` +
+              `• پیام: <code>${statusData.error || "خطای نامشخص"}</code>\n` +
+              `• کد: <code>${statusData.status || "نامشخص"}</code>\n\n` +
+              `💡 <b>راه‌حل:</b>\n` +
+              `• بررسی اتصال اینترنت\n` +
+              `• بررسی API key\n` +
+              `• تلاش مجدد`,
             {
               chat_id: chatId,
               message_id: messageId,
+              parse_mode: "HTML",
               reply_markup: {
                 inline_keyboard: [
-                  [{ text: "🏠 بازگشت", callback_data: "admin_back_to_panel" }],
+                  [
+                    { text: "🔄 تلاش مجدد", callback_data: "admin_status" },
+                    { text: "🏠 بازگشت", callback_data: "admin_back_to_panel" },
+                  ],
                 ],
               },
             }
           );
         }
       } catch (error) {
-        await bot.editMessageText(`❌ خطا در دریافت وضعیت`, {
-          chat_id: chatId,
-          message_id: messageId,
-          reply_markup: {
-            inline_keyboard: [
-              [{ text: "🏠 بازگشت", callback_data: "admin_back_to_panel" }],
-            ],
-          },
-        });
+        console.error("❌ Error in admin status:", error.message);
+
+        await bot.editMessageText(
+          `❌ <b>خطا در دریافت وضعیت</b>\n\n` +
+            `🔍 <b>جزئیات خطا:</b>\n` +
+            `• پیام: <code>${error.message}</code>\n` +
+            `• نوع: <code>${error.name || "نامشخص"}</code>\n\n` +
+            `💡 <b>راه‌حل:</b>\n` +
+            `• بررسی اتصال اینترنت\n` +
+            `• بررسی فایل‌های API\n` +
+            `• تلاش مجدد`,
+          {
+            chat_id: chatId,
+            message_id: messageId,
+            parse_mode: "HTML",
+            reply_markup: {
+              inline_keyboard: [
+                [
+                  { text: "🔄 تلاش مجدد", callback_data: "admin_status" },
+                  { text: "🏠 بازگشت", callback_data: "admin_back_to_panel" },
+                ],
+              ],
+            },
+          }
+        );
       }
+      break;
+    }
+    case "admin_detailed_financial": {
+      const groupId = process.env.GROUP_ID;
+      const adminIds = (process.env.ADMINS || "")
+        .split(",")
+        .filter(Boolean)
+        .map((id) => Number(id.trim()));
+
+      if (
+        chatId.toString() !== String(groupId) ||
+        !adminIds.includes(Number(userId))
+      ) {
+        await bot.answerCallbackQuery(query.id, {
+          text: "⛔️ دسترسی غیرمجاز",
+          show_alert: true,
+        });
+        break;
+      }
+
+      await detailedFinancialReport(bot, query, session);
+      break;
+    }
+    case "admin_bank_report": {
+      // بررسی دسترسی ادمین
+      const groupId = process.env.GROUP_ID;
+      const adminIds = (process.env.ADMINS || "")
+        .split(",")
+        .filter(Boolean)
+        .map((id) => Number(id.trim()));
+
+      // اگر GROUP_ID تعریف نشده، اجازه دسترسی بده
+      if (groupId && chatId.toString() !== String(groupId)) {
+        await bot.answerCallbackQuery(query.id, {
+          text: "⛔️ این عملیات فقط در گروه ادمین قابل انجام است",
+          show_alert: true,
+        });
+        break;
+      }
+
+      // اگر ADMINS تعریف نشده، اجازه دسترسی بده
+      if (adminIds.length > 0 && !adminIds.includes(Number(userId))) {
+        await bot.answerCallbackQuery(query.id, {
+          text: "⛔️ شما دسترسی انجام این عملیات را ندارید",
+          show_alert: true,
+        });
+        break;
+      }
+
+      console.log("🔍 Calling bankReport...");
+      await bankReport(bot, query, session);
+      break;
+    }
+    case "admin_users_report": {
+      // بررسی دسترسی ادمین
+      const groupId = process.env.GROUP_ID;
+      const adminIds = (process.env.ADMINS || "")
+        .split(",")
+        .filter(Boolean)
+        .map((id) => Number(id.trim()));
+
+      // اگر GROUP_ID تعریف نشده، اجازه دسترسی بده
+      if (groupId && chatId.toString() !== String(groupId)) {
+        await bot.answerCallbackQuery(query.id, {
+          text: "⛔️ این عملیات فقط در گروه ادمین قابل انجام است",
+          show_alert: true,
+        });
+        break;
+      }
+
+      // اگر ADMINS تعریف نشده، اجازه دسترسی بده
+      if (adminIds.length > 0 && !adminIds.includes(Number(userId))) {
+        await bot.answerCallbackQuery(query.id, {
+          text: "⛔️ شما دسترسی انجام این عملیات را ندارید",
+          show_alert: true,
+        });
+        break;
+      }
+
+      console.log("🔍 Calling usersReport...");
+      await usersReport(bot, query, session);
+      break;
+    }
+    case "admin_monthly_report": {
+      // بررسی دسترسی ادمین
+      const groupId = process.env.GROUP_ID;
+      const adminIds = (process.env.ADMINS || "")
+        .split(",")
+        .filter(Boolean)
+        .map((id) => Number(id.trim()));
+
+      // اگر GROUP_ID تعریف نشده، اجازه دسترسی بده
+      if (groupId && chatId.toString() !== String(groupId)) {
+        await bot.answerCallbackQuery(query.id, {
+          text: "⛔️ این عملیات فقط در گروه ادمین قابل انجام است",
+          show_alert: true,
+        });
+        break;
+      }
+
+      // اگر ADMINS تعریف نشده، اجازه دسترسی بده
+      if (adminIds.length > 0 && !adminIds.includes(Number(userId))) {
+        await bot.answerCallbackQuery(query.id, {
+          text: "⛔️ شما دسترسی انجام این عملیات را ندارید",
+          show_alert: true,
+        });
+        break;
+      }
+
+      console.log("🔍 Calling monthlyReport...");
+      await monthlyReport(bot, query, session);
+      break;
+    }
+    case "admin_profit_chart": {
+      // بررسی دسترسی ادمین
+      const groupId = process.env.GROUP_ID;
+      const adminIds = (process.env.ADMINS || "")
+        .split(",")
+        .filter(Boolean)
+        .map((id) => Number(id.trim()));
+
+      // اگر GROUP_ID تعریف نشده، اجازه دسترسی بده
+      if (groupId && chatId.toString() !== String(groupId)) {
+        await bot.answerCallbackQuery(query.id, {
+          text: "⛔️ این عملیات فقط در گروه ادمین قابل انجام است",
+          show_alert: true,
+        });
+        break;
+      }
+
+      // اگر ADMINS تعریف نشده، اجازه دسترسی بده
+      if (adminIds.length > 0 && !adminIds.includes(Number(userId))) {
+        await bot.answerCallbackQuery(query.id, {
+          text: "⛔️ شما دسترسی انجام این عملیات را ندارید",
+          show_alert: true,
+        });
+        break;
+      }
+
+      console.log("🔍 Calling profitChart...");
+      await profitChart(bot, query, session);
+      break;
+    }
+    case "admin_crypto_report": {
+      // بررسی دسترسی ادمین
+      const groupId = process.env.GROUP_ID;
+      const adminIds = (process.env.ADMINS || "")
+        .split(",")
+        .filter(Boolean)
+        .map((id) => Number(id.trim()));
+
+      // اگر GROUP_ID تعریف نشده، اجازه دسترسی بده
+      if (groupId && chatId.toString() !== String(groupId)) {
+        await bot.answerCallbackQuery(query.id, {
+          text: "⛔️ این عملیات فقط در گروه ادمین قابل انجام است",
+          show_alert: true,
+        });
+        break;
+      }
+
+      // اگر ADMINS تعریف نشده، اجازه دسترسی بده
+      if (adminIds.length > 0 && !adminIds.includes(Number(userId))) {
+        await bot.answerCallbackQuery(query.id, {
+          text: "⛔️ شما دسترسی انجام این عملیات را ندارید",
+          show_alert: true,
+        });
+        break;
+      }
+
+      console.log("🔍 Calling cryptoReport...");
+      await cryptoReport(bot, query, session);
       break;
     }
     case "admin_back_to_panel": {
